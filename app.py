@@ -5,10 +5,16 @@ POST /calculate
 {
   "name": "홍길동",              // optional
   "birth_datetime": "1984-09-27T20:00:00",  // 필수, 양력 기준, 시간 모름이면 12:00 사용 권장
-  "longitude": 126.9784,          // 필수, 출생지 경도 (서울=126.9784, 베를린=13.405, 프랑크푸르트=8.6821 등)
+  "birth_city": "Berlin",         // longitude 대신 도시 이름으로도 가능 (서버가 자동으로 경도를 찾음)
+  "longitude": 126.9784,          // birth_city 대신 직접 경도를 줄 수도 있음
   "yaja_si_separated": true,      // 선택, 기본 true (야자시/조자시 구분)
   "target_year": 2027             // 선택, 특정 연도 세운(년주)까지 함께 계산하고 싶을 때
 }
+
+longitude와 birth_city 중 하나만 있으면 됩니다. birth_city가 오면 서버가
+자동으로 경도를 찾아서 계산합니다(자주 쓰이는 도시는 내장 표에서 즉시 찾고,
+표에 없는 도시는 무료 지오코딩 서비스로 조회하며, 그마저 실패하면 독일
+중앙 경도를 기본값으로 사용합니다).
 
 응답에는 사주 4주(년/월/일/시), 오행 개수, 그리고 AI 프롬프트에 바로 넣을 수 있는
 "compact" 텍스트 요약이 포함됩니다.
@@ -31,6 +37,58 @@ _lunar, _solar_terms = load_bundled_data()
 ELEMENT_HANJA = {
     "목": "木", "화": "火", "토": "土", "금": "金", "수": "水",
 }
+
+# 자주 나올 도시는 네트워크 호출 없이 즉시 처리 (독일/오스트리아/스위스 주요 도시 + 한국 주요 도시)
+KNOWN_CITY_LONGITUDE = {
+    "berlin": 13.4050, "hamburg": 9.9937, "münchen": 11.5820, "munich": 11.5820,
+    "köln": 6.9603, "koeln": 6.9603, "cologne": 6.9603, "frankfurt": 8.6821,
+    "frankfurt am main": 8.6821, "stuttgart": 9.1829, "düsseldorf": 6.7735,
+    "duesseldorf": 6.7735, "leipzig": 12.3731, "dortmund": 7.4653,
+    "essen": 7.0116, "bremen": 8.8017, "dresden": 13.7373, "hannover": 9.7320,
+    "hanover": 9.7320, "nürnberg": 11.0767, "nuernberg": 11.0767,
+    "nuremberg": 11.0767, "duisburg": 6.7623, "bochum": 7.2160,
+    "wuppertal": 7.1500, "bielefeld": 8.5325, "bonn": 7.0982,
+    "münster": 7.6261, "muenster": 7.6261, "karlsruhe": 8.4037,
+    "mannheim": 8.4660, "augsburg": 10.8978, "wiesbaden": 8.2412,
+    "mönchengladbach": 6.4428, "gelsenkirchen": 7.1013,
+    "braunschweig": 10.5268, "chemnitz": 12.9214, "kiel": 10.1228,
+    "aachen": 6.0839, "wien": 16.3738, "vienna": 16.3738,
+    "salzburg": 13.0550, "graz": 15.4395, "innsbruck": 11.4041,
+    "zürich": 8.5417, "zuerich": 8.5417, "zurich": 8.5417,
+    "bern": 7.4474, "basel": 7.5886, "genf": 6.1432, "geneva": 6.1432,
+    "서울": 126.9784, "seoul": 126.9784, "부산": 129.0756, "busan": 129.0756,
+    "인천": 126.7052, "incheon": 126.7052, "대구": 128.6014, "daegu": 128.6014,
+}
+
+DEFAULT_LONGITUDE = 10.4515  # 독일 중앙 부근 경도 (도시를 못 찾았을 때의 최종 대비값)
+
+
+def _lookup_longitude(city_name):
+    """도시 이름 -> 경도. 1) 내장 표 2) 무료 지오코딩 API 3) 기본값 순으로 시도."""
+    key = city_name.strip().lower()
+    if key in KNOWN_CITY_LONGITUDE:
+        return KNOWN_CITY_LONGITUDE[key], "known_city"
+
+    try:
+        import urllib.parse
+        import urllib.request
+        import json as _json
+
+        url = (
+            "https://geocoding-api.open-meteo.com/v1/search?name="
+            + urllib.parse.quote(city_name)
+            + "&count=1&format=json"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "saju-api/1.0"})
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = _json.loads(resp.read().decode("utf-8"))
+        results = data.get("results") or []
+        if results:
+            return float(results[0]["longitude"]), "geocoded"
+    except Exception:
+        pass
+
+    return DEFAULT_LONGITUDE, "default_fallback"
 
 
 def _pillar_dict(pillar):
@@ -85,23 +143,28 @@ def calculate():
     name = payload.get("name")
     birth_datetime_str = payload.get("birth_datetime")
     longitude = payload.get("longitude")
+    birth_city = payload.get("birth_city")
     yaja_si_separated = payload.get("yaja_si_separated", True)
     target_year = payload.get("target_year")
 
     if not birth_datetime_str:
         return jsonify({"ok": False, "error": "birth_datetime 값이 필요합니다. 예: '1984-09-27T20:00:00'"}), 400
-    if longitude is None:
-        return jsonify({"ok": False, "error": "longitude(경도) 값이 필요합니다."}), 400
+    if longitude is None and not birth_city:
+        return jsonify({"ok": False, "error": "longitude(경도) 또는 birth_city(도시명) 중 하나가 필요합니다."}), 400
 
     try:
         birth_dt = datetime.fromisoformat(birth_datetime_str)
     except ValueError:
         return jsonify({"ok": False, "error": "birth_datetime 형식이 올바르지 않습니다. 'YYYY-MM-DDTHH:MM:SS' 형식을 사용하세요."}), 400
 
-    try:
-        longitude = float(longitude)
-    except (TypeError, ValueError):
-        return jsonify({"ok": False, "error": "longitude 값은 숫자여야 합니다."}), 400
+    longitude_source = "provided"
+    if longitude is not None:
+        try:
+            longitude = float(longitude)
+        except (TypeError, ValueError):
+            return jsonify({"ok": False, "error": "longitude 값은 숫자여야 합니다."}), 400
+    else:
+        longitude, longitude_source = _lookup_longitude(birth_city)
 
     try:
         saju = Saju.from_birth(
@@ -121,7 +184,9 @@ def calculate():
         "input": {
             "name": name,
             "birth_datetime": birth_datetime_str,
+            "birth_city": birth_city,
             "longitude": longitude,
+            "longitude_source": longitude_source,
             "yaja_si_separated": bool(yaja_si_separated),
         },
         "pillars": {
