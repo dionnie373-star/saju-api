@@ -197,7 +197,7 @@ def _count_elements(saju):
     return counts
 
 
-def _build_compact(name, saju, counts):
+def _build_compact(name, saju, counts, yearly=None):
     pillars_str = (
         f"년주 {saju.year_pillar.hanja}({saju.year_pillar.hangul}) / "
         f"월주 {saju.month_pillar.hanja}({saju.month_pillar.hangul}) / "
@@ -214,6 +214,11 @@ def _build_compact(name, saju, counts):
         f"가장 많은 오행: {max_el}({ELEMENT_HANJA[max_el]})",
         f"가장 적은/없는 오행: {', '.join(f'{e}({ELEMENT_HANJA[e]})' for e in min_els)}",
     ]
+    for y in (yearly or []):
+        lines.append(
+            f"{y['year']}년 세운: {y['pillar'].hanja}({y['pillar'].hangul}), "
+            f"천간 오행 {y['pillar'].cheon_gan.o_haeng.hangul}({ELEMENT_HANJA[y['pillar'].cheon_gan.o_haeng.hangul]})"
+        )
     return "\n".join(lines)
 
 
@@ -265,6 +270,28 @@ def calculate():
 
     counts = _count_elements(saju)
 
+    target_years = payload.get("target_years")
+    if not target_years and target_year:
+        target_years = [target_year]
+
+    yearly = []
+    yearly_out = {}
+    if target_years:
+        for y in target_years:
+            try:
+                y = int(y)
+                year_moment = datetime(y, 7, 1, 12, 0)
+                year_saju = Saju.from_birth(
+                    kst_moment=year_moment,
+                    solar_terms=_solar_terms,
+                    longitude=longitude,
+                    yaja_si_separated=bool(yaja_si_separated),
+                )
+                yearly.append({"year": y, "pillar": year_saju.year_pillar})
+                yearly_out[str(y)] = {"year": y, "year_pillar": _pillar_dict(year_saju.year_pillar)}
+            except Exception as e:
+                yearly_out[str(y)] = {"year": y, "error": str(e)}
+
     result = {
         "ok": True,
         "input": {
@@ -284,25 +311,9 @@ def calculate():
         "element_counts": counts,
         "jeonggyeok": getattr(analysis, "jeonggyeok", None) and str(analysis.jeonggyeok),
         "yongsin": getattr(analysis, "yongsin", None) and str(analysis.yongsin),
-        "compact": _build_compact(name, saju, counts),
+        "compact": _build_compact(name, saju, counts, yearly),
+        "yearly": yearly_out,
     }
-
-    if target_year:
-        try:
-            target_year = int(target_year)
-            year_moment = datetime(target_year, 7, 1, 12, 0)
-            year_saju = Saju.from_birth(
-                kst_moment=year_moment,
-                solar_terms=_solar_terms,
-                longitude=longitude,
-                yaja_si_separated=bool(yaja_si_separated),
-            )
-            result["target_year"] = {
-                "year": target_year,
-                "year_pillar": _pillar_dict(year_saju.year_pillar),
-            }
-        except Exception as e:
-            result["target_year_error"] = str(e)
 
     return jsonify(result)
 
