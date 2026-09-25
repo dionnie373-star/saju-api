@@ -21,8 +21,9 @@ longitude와 birth_city 중 하나만 있으면 됩니다. birth_city가 오면 
 """
 
 import os
+import re
 import sys
-from datetime import datetime
+from datetime import datetime, date, time as dtime
 
 from flask import Flask, request, jsonify
 
@@ -91,6 +92,94 @@ def _lookup_longitude(city_name):
     return DEFAULT_LONGITUDE, "default_fallback"
 
 
+def _parse_flexible_date(s):
+    """'1984-09-27', '1984. 9. 27', '27.09.1984' 등 다양한 형식의 날짜 문자열을 date로 변환."""
+    s = s.strip()
+    nums = [int(n) for n in re.findall(r"\d+", s)]
+    if len(nums) < 3:
+        raise ValueError(f"날짜를 해석할 수 없습니다: {s}")
+
+    year = None
+    year_idx = None
+    for i, n in enumerate(nums):
+        if n >= 1000:
+            year = n
+            year_idx = i
+            break
+
+    if year is None:
+        # 4자리 연도를 못 찾은 경우, 순서를 연/월/일로 가정하고 2자리 연도는 2000년대로 취급
+        year, month, day = nums[0], nums[1], nums[2]
+        if year < 100:
+            year += 2000
+    else:
+        rest = nums[:year_idx] + nums[year_idx + 1:]
+        if len(rest) < 2:
+            raise ValueError(f"날짜를 해석할 수 없습니다: {s}")
+        if year_idx == 0:
+            # YYYY-MM-DD / 1984. 9. 27 형식 (연도가 맨 앞)
+            month, day = rest[0], rest[1]
+        else:
+            # DD.MM.YYYY 형식 (독일식, 연도가 맨 뒤)
+            day, month = rest[0], rest[1]
+
+    return date(year, month, day)
+
+
+def _parse_flexible_time(s):
+    """'20:00:00', '오후 8:00:00', '8:00 PM' 등을 time으로 변환. 비어있으면 정오(12:00)."""
+    if not s or not s.strip():
+        return dtime(12, 0, 0)
+
+    s = s.strip()
+    is_pm = ("오후" in s) or bool(re.search(r"\bPM\b", s, re.IGNORECASE))
+    is_am = ("오전" in s) or bool(re.search(r"\bAM\b", s, re.IGNORECASE))
+
+    nums = [int(n) for n in re.findall(r"\d+", s)]
+    if not nums:
+        raise ValueError(f"시간을 해석할 수 없습니다: {s}")
+
+    hour = nums[0]
+    minute = nums[1] if len(nums) > 1 else 0
+    second = nums[2] if len(nums) > 2 else 0
+
+    if is_pm and hour < 12:
+        hour += 12
+    if is_am and hour == 12:
+        hour = 0
+
+    return dtime(hour % 24, minute, second)
+
+
+def _parse_flexible_datetime(date_str, time_str=None):
+    d = _parse_flexible_date(date_str)
+    t = _parse_flexible_time(time_str)
+    return datetime.combine(d, t)
+
+
+def _resolve_birth_datetime(payload):
+    """birth_date(+birth_time) 또는 birth_datetime(ISO 우선, 실패 시 유연 파싱)으로부터 datetime을 얻는다."""
+    birth_date_str = payload.get("birth_date")
+    birth_time_str = payload.get("birth_time")
+    birth_datetime_str = payload.get("birth_datetime")
+
+    if birth_date_str:
+        return _parse_flexible_datetime(birth_date_str, birth_time_str)
+
+    if birth_datetime_str:
+        try:
+            return datetime.fromisoformat(birth_datetime_str)
+        except ValueError:
+            # 'T' 구분자로만 나눈다 (날짜 자체에 공백이 들어있는 로캘이 있어 공백 기준 분리는 쓰지 않음)
+            if "T" in birth_datetime_str:
+                date_part, time_part = birth_datetime_str.split("T", 1)
+            else:
+                date_part, time_part = birth_datetime_str, None
+            return _parse_flexible_datetime(date_part, time_part)
+
+    raise ValueError("birth_datetime 또는 birth_date 값이 필요합니다.")
+
+
 def _pillar_dict(pillar):
     return {
         "hanja": pillar.hanja,
@@ -141,21 +230,18 @@ def calculate():
         return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
 
     name = payload.get("name")
-    birth_datetime_str = payload.get("birth_datetime")
     longitude = payload.get("longitude")
     birth_city = payload.get("birth_city")
     yaja_si_separated = payload.get("yaja_si_separated", True)
     target_year = payload.get("target_year")
 
-    if not birth_datetime_str:
-        return jsonify({"ok": False, "error": "birth_datetime 값이 필요합니다. 예: '1984-09-27T20:00:00'"}), 400
     if longitude is None and not birth_city:
         return jsonify({"ok": False, "error": "longitude(경도) 또는 birth_city(도시명) 중 하나가 필요합니다."}), 400
 
     try:
-        birth_dt = datetime.fromisoformat(birth_datetime_str)
-    except ValueError:
-        return jsonify({"ok": False, "error": "birth_datetime 형식이 올바르지 않습니다. 'YYYY-MM-DDTHH:MM:SS' 형식을 사용하세요."}), 400
+        birth_dt = _resolve_birth_datetime(payload)
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"생년월일시를 해석할 수 없습니다: {e}"}), 400
 
     longitude_source = "provided"
     if longitude is not None:
@@ -183,7 +269,7 @@ def calculate():
         "ok": True,
         "input": {
             "name": name,
-            "birth_datetime": birth_datetime_str,
+            "birth_datetime_parsed": birth_dt.isoformat(),
             "birth_city": birth_city,
             "longitude": longitude,
             "longitude_source": longitude_source,
