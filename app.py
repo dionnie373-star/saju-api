@@ -219,7 +219,9 @@ def _build_compact(name, saju, counts, yearly=None):
             f"{y['year']}년 세운: {y['pillar'].hanja}({y['pillar'].hangul}), "
             f"천간 오행 {y['pillar'].cheon_gan.o_haeng.hangul}({ELEMENT_HANJA[y['pillar'].cheon_gan.o_haeng.hangul]})"
         )
-    return "\n".join(lines)
+    # Make.com 같은 자동화 도구에서 이 문자열을 JSON 안에 그대로 끼워 넣을 때
+    # 실제 줄바꿈 문자가 있으면 JSON이 깨지므로, 줄바꿈 대신 " | "로 구분한다.
+    return " | ".join(lines)
 
 
 @app.route("/", methods=["GET"])
