@@ -142,6 +142,24 @@ _PDF_STYLES = {
 }
 
 
+_BOLD_MARKDOWN_RE = re.compile(r"\*\*(.+?)\*\*")
+
+
+def _strip_unsupported_glyphs(text):
+    """Helvetica(WinAnsiEncoding)가 못 그리는 문자(대부분 이모지)를 제거.
+
+    이모지는 거의 다 유니코드 서플리멘터리 평면(코드포인트 > 0xFFFF)에 있고,
+    독일어 움라우트/줄표/따옴표 등 실제로 쓰는 문자는 전부 그 이하라서
+    이 기준으로만 걸러도 안전하다. 그대로 두면 화면에 네모(■)로 깨져 보인다.
+    """
+    return "".join(ch for ch in text if ord(ch) <= 0xFFFF)
+
+
+def _markdown_bold_to_reportlab(text):
+    """`**굵게**` 마크다운을 reportlab Paragraph가 이해하는 `<b>굵게</b>`로 변환."""
+    return _BOLD_MARKDOWN_RE.sub(r"<b>\1</b>", text)
+
+
 def _report_text_to_flowables(report_text):
     """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환."""
     flowables = []
@@ -150,9 +168,12 @@ def _report_text_to_flowables(report_text):
         if not line:
             flowables.append(Spacer(1, 2 * mm))
             continue
-        # PDF 인코딩은 Helvetica 코어 폰트(Latin-1)라 독일어 움라우트(äöüß)는 문제없지만
-        # '<', '&' 등은 escape 해줘야 reportlab의 미니 마크업 파서가 안 깨진다.
+        line = _strip_unsupported_glyphs(line)
+        # PDF 인코딩은 Helvetica 코어 폰트(Latin-1/WinAnsi)라 독일어 움라우트(äöüß)나
+        # 줄표(–/—) 등은 문제없지만, '<', '&' 등은 escape 해줘야 reportlab의
+        # 미니 마크업 파서가 안 깨진다. 이스케이프 후에 **굵게** -> <b> 변환.
         safe = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        safe = _markdown_bold_to_reportlab(safe)
         if line.startswith("## "):
             flowables.append(Paragraph(safe[3:].strip(), _PDF_STYLES["h2"]))
         elif line.startswith("### "):
