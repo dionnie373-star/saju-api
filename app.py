@@ -407,18 +407,25 @@ def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggy
     return " | ".join(lines)
 
 
-@app.route("/", methods=["GET"])
-def health():
-    return jsonify({"ok": True, "service": "saju-api", "status": "running"})
+class CalcError(Exception):
+    """run_calculation()에서 잘못된 입력/계산 오류를 알릴 때 쓰는 예외.
+
+    HTTP 라우트(/calculate)에서는 이걸 잡아서 400/500 JSON 응답으로 바꾸고,
+    pipeline처럼 HTTP를 거치지 않는 내부 호출에서는 그냥 예외로 전파시킨다.
+    """
+
+    def __init__(self, message, status=400):
+        super().__init__(message)
+        self.status = status
 
 
-@app.route("/calculate", methods=["POST"])
-def calculate():
-    try:
-        payload = request.get_json(force=True, silent=False) or {}
-    except Exception:
-        return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
+def run_calculation(payload):
+    """사주 계산의 핵심 로직. /calculate 라우트와 report_pipeline이 공유한다.
 
+    입력: 요청 payload(dict, /calculate 문서의 필드들).
+    출력: /calculate가 그대로 jsonify하는 것과 동일한 result dict.
+    실패 시 CalcError를 던진다(.status에 적절한 HTTP 상태 코드).
+    """
     name = payload.get("name")
     longitude = payload.get("longitude")
     birth_city = payload.get("birth_city")
@@ -426,19 +433,19 @@ def calculate():
     target_year = payload.get("target_year")
 
     if longitude is None and not birth_city:
-        return jsonify({"ok": False, "error": "longitude(경도) 또는 birth_city(도시명) 중 하나가 필요합니다."}), 400
+        raise CalcError("longitude(경도) 또는 birth_city(도시명) 중 하나가 필요합니다.")
 
     try:
         birth_dt = _resolve_birth_datetime(payload)
     except Exception as e:
-        return jsonify({"ok": False, "error": f"생년월일시를 해석할 수 없습니다: {e}"}), 400
+        raise CalcError(f"생년월일시를 해석할 수 없습니다: {e}") from e
 
     longitude_source = "provided"
     if longitude is not None:
         try:
             longitude = float(longitude)
         except (TypeError, ValueError):
-            return jsonify({"ok": False, "error": "longitude 값은 숫자여야 합니다."}), 400
+            raise CalcError("longitude 값은 숫자여야 합니다.") from None
     else:
         longitude, longitude_source = _lookup_longitude(birth_city)
 
@@ -451,7 +458,7 @@ def calculate():
         )
         analysis = SajuAnalysis(saju)
     except Exception as e:
-        return jsonify({"ok": False, "error": f"사주 계산 중 오류가 발생했습니다: {e}"}), 500
+        raise CalcError(f"사주 계산 중 오류가 발생했습니다: {e}", status=500) from e
 
     counts = _count_elements(saju)
     ilgan_strength = IlganStrengthAnalyzer.analyze(saju)
@@ -551,7 +558,79 @@ def calculate():
         "daewoon_compact": daewoon_compact,
     }
 
+    return result
+
+
+@app.route("/", methods=["GET"])
+def health():
+    return jsonify({"ok": True, "service": "saju-api", "status": "running"})
+
+
+@app.after_request
+def _add_cors_headers(response):
+    """랜딩페이지(Claude 아티팩트 등 별도 도메인)에서 이 API를 호출할 수 있도록 CORS 허용.
+
+    ALLOWED_ORIGIN 환경변수로 특정 도메인만 허용하도록 좁힐 수 있다.
+    기본값은 "*"(모든 도메인) — MVP 단계에서는 편의상 열어두고,
+    실사용자 결제가 붙기 전에 실제 랜딩페이지 도메인으로 좁히는 걸 권장.
+    """
+    origin = os.environ.get("ALLOWED_ORIGIN", "*")
+    response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return response
+
+
+@app.route("/calculate", methods=["POST", "OPTIONS"])
+def calculate():
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        payload = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
+
+    try:
+        result = run_calculation(payload)
+    except CalcError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
     return jsonify(result)
+
+
+@app.route("/signup", methods=["POST", "OPTIONS"])
+def signup():
+    """무료 리포트 신청 엔드포인트 (랜딩페이지 폼에서 호출).
+
+    받은 정보로 사주를 계산하고, Claude로 무료 리포트 텍스트를 생성해서
+    PDF로 만든 뒤 이메일로 발송한다. 유료/프리미엄은 결제 연동이 붙기 전까지는
+    이 엔드포인트로 노출하지 않는다(결제 확인 후 별도 웹훅에서 트리거할 예정).
+    """
+    if request.method == "OPTIONS":
+        return "", 204
+
+    try:
+        payload = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
+
+    email = (payload.get("email") or "").strip()
+    if not email or "@" not in email:
+        return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
+
+    try:
+        calc_result = run_calculation(payload)
+    except CalcError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
+    from report_pipeline import PipelineError, run_free_signup
+
+    try:
+        run_free_signup(payload=payload, calc_result=calc_result)
+    except PipelineError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
+    return jsonify({"ok": True, "message": "리포트를 생성해서 이메일로 발송했습니다."})
 
 
 if __name__ == "__main__":
