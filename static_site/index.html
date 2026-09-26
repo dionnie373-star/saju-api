@@ -18,6 +18,8 @@
   @media (max-width: 640px) {
     .hero-content-pad { padding-top: 20px !important; padding-bottom: 56px !important; }
     .hero-gap { gap: 32px !important; }
+    .cmpTable th, .cmpTable td { padding: 10px 8px !important; font-size: 12.5px !important; }
+    .cmpTable th:not(:first-child) { width: auto !important; }
   }
 </style>
 </head>
@@ -291,7 +293,7 @@
 
       <!-- Feature-Vergleichstabelle -->
       <div style="width: 100%; overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; overflow: hidden; font-size: 14.5px;">
+        <table class="cmpTable" style="width: 100%; border-collapse: collapse; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; overflow: hidden; font-size: 14.5px;">
           <thead>
             <tr style="background: #EDE6D9;">
               <th style="text-align: left; padding: 16px 20px; font-weight: 600; color: #3B3630;">Inhalt</th>
