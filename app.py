@@ -633,6 +633,69 @@ def signup():
     return jsonify({"ok": True, "message": "리포트를 생성해서 이메일로 발송했습니다."})
 
 
+@app.route("/internal/send-report", methods=["POST", "OPTIONS"])
+def internal_send_report():
+    """결제 확인 후 유료(paid)/프리미엄(premium) 리포트를 발송하는 내부 엔드포인트.
+
+    아직 결제 플랫폼(Paddle/Lemon Squeezy 등)을 정하지 않았기 때문에, 지금은
+    플랫폼 웹훅이 결제를 확인한 뒤 호출할 수 있는 범용 엔드포인트로 만들어둔다.
+    실제 플랫폼이 정해지면 이 라우트 앞에 그 플랫폼 고유의 웹훅 서명 검증을
+    추가하거나, 플랫폼 웹훅 → (서명 검증) → 이 엔드포인트 호출 형태로 연결하면 된다.
+    지금은 최소한의 보호로 공유 비밀키(X-Webhook-Secret 헤더 vs WEBHOOK_SECRET
+    환경변수)만 확인한다.
+
+    요청 본문 예시 (paid):
+      {"tier": "paid", "email": "...", "name": "...",
+       "birth_date": "...", "birth_time": "...", "birth_city": "...",
+       "monthly_year": 2027}   // 생략하면 내년으로 자동 설정
+    요청 본문 예시 (premium):
+      {"tier": "premium", "email": "...", "name": "...",
+       "birth_date": "...", "birth_time": "...", "birth_city": "...",
+       "gender": "female"}
+    """
+    if request.method == "OPTIONS":
+        return "", 204
+
+    secret = os.environ.get("WEBHOOK_SECRET")
+    if secret and request.headers.get("X-Webhook-Secret") != secret:
+        return jsonify({"ok": False, "error": "인증 실패"}), 401
+
+    try:
+        payload = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
+
+    tier = payload.get("tier")
+    if tier not in ("paid", "premium"):
+        return jsonify({"ok": False, "error": "tier는 'paid' 또는 'premium'이어야 합니다."}), 400
+
+    email = (payload.get("email") or "").strip()
+    if not email or "@" not in email:
+        return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
+
+    if tier == "paid":
+        payload.setdefault("monthly_year", date.today().year + 1)
+    elif tier == "premium" and not payload.get("gender"):
+        return jsonify({"ok": False, "error": "premium 리포트에는 gender가 필요합니다."}), 400
+
+    try:
+        calc_result = run_calculation(payload)
+    except CalcError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
+    from report_pipeline import PipelineError, run_paid_signup, run_premium_signup
+
+    try:
+        if tier == "paid":
+            run_paid_signup(payload=payload, calc_result=calc_result)
+        else:
+            run_premium_signup(payload=payload, calc_result=calc_result)
+    except PipelineError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
+    return jsonify({"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."})
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)

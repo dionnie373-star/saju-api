@@ -250,6 +250,26 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
 """
 
 
+def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename):
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pdf_path = os.path.join(tmpdir, pdf_filename)
+        build_pdf(pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text)
+
+        name_suffix = f" {name}" if name else ""
+        html_body = email_html_template.format(name_suffix=name_suffix)
+
+        send_email(
+            to_email=email,
+            subject=email_subject,
+            html_body=html_body,
+            attachment_path=pdf_path,
+            attachment_name=pdf_filename,
+        )
+    return {"ok": True}
+
+
 def run_free_signup(*, payload, calc_result):
     """무료 리포트 전체 파이프라인: AI 텍스트 생성 -> PDF -> 이메일 발송.
 
@@ -264,26 +284,116 @@ def run_free_signup(*, payload, calc_result):
         {"4.data.compact": calc_result["compact"], "compact": calc_result["compact"]},
     )
 
-    import tempfile
+    return _send_report(
+        email=email,
+        name=name,
+        pdf_title="Dein Saju-Profil",
+        pdf_subtitle=f"Erstellt für {name}" if name else "Dein persönliches Fünf-Elemente-Profil",
+        report_text=report_text,
+        email_subject=_FREE_EMAIL_SUBJECT,
+        email_html_template=_FREE_EMAIL_HTML_TEMPLATE,
+        pdf_filename="Palja-Profil.pdf",
+    )
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        pdf_path = os.path.join(tmpdir, "palja-profil.pdf")
-        build_pdf(
-            pdf_path,
-            title="Dein Saju-Profil",
-            subtitle=f"Erstellt für {name}" if name else "Dein persönliches Fünf-Elemente-Profil",
-            report_text=report_text,
+
+_PAID_EMAIL_SUBJECT = "Dein Palja-Jahresreport ist da 📖"
+
+_PAID_EMAIL_HTML_TEMPLATE = """\
+<div style="font-family: 'Work Sans', Arial, sans-serif; color: #211D1A; max-width: 560px; margin: 0 auto;">
+  <h1 style="font-family: Georgia, serif; font-size: 22px; font-weight: 500;">PALJA</h1>
+  <p style="font-size: 15px; line-height: 1.6; color: #3B3630;">
+    Hallo{name_suffix},<br><br>
+    vielen Dank für deinen Kauf. Dein persönlicher Jahresreport nach der koreanischen Saju-Tradition —
+    mit allen 12 Monaten im Detail — liegt dieser E-Mail als PDF bei.
+  </p>
+  <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
+    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    medizinische oder psychologische Beratung.
+  </p>
+</div>
+"""
+
+
+def run_paid_signup(*, payload, calc_result):
+    """유료(9,90€) 12개월 연간 리포트 파이프라인.
+
+    calc_result에는 monthly_compact가 있어야 한다(=run_calculation 호출 시
+    payload에 monthly_year를 넘겼어야 함). 결제 웹훅에서 이 함수를 호출하기 전에
+    호출측이 monthly_year를 채워서 run_calculation을 실행해야 한다.
+    """
+    name = (payload.get("name") or "").strip()
+    email = payload["email"].strip()
+
+    if not calc_result.get("monthly_compact"):
+        raise PipelineError(
+            "월별 데이터(monthly_compact)가 없습니다. run_calculation 호출 시 "
+            "monthly_year를 지정해야 유료 리포트를 만들 수 있습니다.",
+            status=500,
         )
 
-        name_suffix = f" {name}" if name else ""
-        html_body = _FREE_EMAIL_HTML_TEMPLATE.format(name_suffix=name_suffix)
+    report_text = call_claude(
+        "paid_report_prompt.json",
+        {"compact": calc_result["compact"], "monthly_compact": calc_result["monthly_compact"]},
+    )
 
-        send_email(
-            to_email=email,
-            subject=_FREE_EMAIL_SUBJECT,
-            html_body=html_body,
-            attachment_path=pdf_path,
-            attachment_name="Palja-Profil.pdf",
+    return _send_report(
+        email=email,
+        name=name,
+        pdf_title="Dein Saju-Jahresreport",
+        pdf_subtitle=f"Erstellt für {name}" if name else "Dein persönlicher Jahresreport",
+        report_text=report_text,
+        email_subject=_PAID_EMAIL_SUBJECT,
+        email_html_template=_PAID_EMAIL_HTML_TEMPLATE,
+        pdf_filename="Palja-Jahresreport.pdf",
+    )
+
+
+_PREMIUM_EMAIL_SUBJECT = "Deine Palja-Lebenskarte ist da 🧭"
+
+_PREMIUM_EMAIL_HTML_TEMPLATE = """\
+<div style="font-family: 'Work Sans', Arial, sans-serif; color: #211D1A; max-width: 560px; margin: 0 auto;">
+  <h1 style="font-family: Georgia, serif; font-size: 22px; font-weight: 500;">PALJA</h1>
+  <p style="font-size: 15px; line-height: 1.6; color: #3B3630;">
+    Hallo{name_suffix},<br><br>
+    vielen Dank für deinen Kauf. Deine persönliche Lebenskarte nach der koreanischen Saju-Tradition —
+    mit deinen 10-Jahres-Lebensphasen — liegt dieser E-Mail als PDF bei.
+  </p>
+  <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
+    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    medizinische oder psychologische Beratung.
+  </p>
+</div>
+"""
+
+
+def run_premium_signup(*, payload, calc_result):
+    """프리미엄(대운) 인생 지도 리포트 파이프라인.
+
+    calc_result에는 daewoon_compact가 있어야 한다(=run_calculation 호출 시
+    payload에 gender를 넘겼어야 함).
+    """
+    name = (payload.get("name") or "").strip()
+    email = payload["email"].strip()
+
+    if not calc_result.get("daewoon_compact"):
+        raise PipelineError(
+            "대운 데이터(daewoon_compact)가 없습니다. run_calculation 호출 시 "
+            "gender를 지정해야 프리미엄 리포트를 만들 수 있습니다.",
+            status=500,
         )
 
-    return {"ok": True}
+    report_text = call_claude(
+        "premium_report_prompt.json",
+        {"compact": calc_result["compact"], "daewoon_compact": calc_result["daewoon_compact"]},
+    )
+
+    return _send_report(
+        email=email,
+        name=name,
+        pdf_title="Deine Saju-Lebenskarte",
+        pdf_subtitle=f"Erstellt für {name}" if name else "Deine persönliche Lebenskarte",
+        report_text=report_text,
+        email_subject=_PREMIUM_EMAIL_SUBJECT,
+        email_html_template=_PREMIUM_EMAIL_HTML_TEMPLATE,
+        pdf_filename="Palja-Lebenskarte.pdf",
+    )
