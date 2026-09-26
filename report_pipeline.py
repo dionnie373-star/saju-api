@@ -146,13 +146,14 @@ _BOLD_MARKDOWN_RE = re.compile(r"\*\*(.+?)\*\*")
 
 
 def _strip_unsupported_glyphs(text):
-    """Helvetica(WinAnsiEncoding)가 못 그리는 문자(대부분 이모지)를 제거.
+    """Helvetica(WinAnsiEncoding=cp1252)가 못 그리는 문자를 전부 제거.
 
-    이모지는 거의 다 유니코드 서플리멘터리 평면(코드포인트 > 0xFFFF)에 있고,
-    독일어 움라우트/줄표/따옴표 등 실제로 쓰는 문자는 전부 그 이하라서
-    이 기준으로만 걸러도 안전하다. 그대로 두면 화면에 네모(■)로 깨져 보인다.
+    이모지뿐 아니라 한자/한글(AI가 간지를 丙午 같은 한자로 쓰는 경우 등)도
+    Helvetica 코어 폰트로는 렌더링이 안 돼서 네모(■)로 깨져 보인다.
+    cp1252로 인코딩 가능한 문자만 남기면(독일어 움라우트/줄표/따옴표 등은
+    전부 포함됨) 이 문제를 한 번에 해결할 수 있다.
     """
-    return "".join(ch for ch in text if ord(ch) <= 0xFFFF)
+    return text.encode("cp1252", errors="ignore").decode("cp1252")
 
 
 def _markdown_bold_to_reportlab(text):
