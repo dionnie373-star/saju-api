@@ -28,6 +28,7 @@ import hmac
 import os
 import re
 import sys
+import threading
 from datetime import datetime, date, time as dtime
 
 from flask import Flask, request, jsonify, send_from_directory
@@ -721,6 +722,16 @@ PADDLE_PRICE_TIER_MAP = {
     "pri_01m3f9bjxx7sgpr1wvm5g8k61r": "premium",   # Palja Lebenskarte (Premium) - EUR 24.90
 }
 
+# Paddle은 우리 서버의 응답이 늦으면(리포트 생성에 수십 초가 걸림) 같은
+# transaction.completed 이벤트를 여러 번 재전송한다. 트랜잭션 ID(data.id)
+# 기준으로 "이미 처리 완료된" 결제를 기록해두고, 재전송이 들어오면 리포트를
+# 다시 생성/발송하지 않고 조용히 200으로 응답한다.
+# (참고: 처리 도중 실패하면 목록에서 제거해서 다음 재시도가 정상적으로
+#  다시 시도될 수 있게 한다. 메모리 기반이라 서버 재시작 시 초기화되지만,
+#  Paddle의 재시도는 보통 몇 분 안에 끝나므로 이 용도로는 충분하다.)
+_PROCESSED_PADDLE_TRANSACTIONS = set()
+_PROCESSED_PADDLE_LOCK = threading.Lock()
+
 
 def _verify_paddle_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
     """Paddle 웹훅 서명(Paddle-Signature 헤더)을 검증한다.
@@ -783,6 +794,17 @@ def paddle_webhook():
     data = event.get("data") or {}
     custom_data = data.get("custom_data") or {}
 
+    transaction_id = data.get("id")
+    if transaction_id:
+        with _PROCESSED_PADDLE_LOCK:
+            if transaction_id in _PROCESSED_PADDLE_TRANSACTIONS:
+                return jsonify({"ok": True, "duplicate": True, "message": "이미 처리된 트랜잭션입니다."})
+            _PROCESSED_PADDLE_TRANSACTIONS.add(transaction_id)
+            # 메모리 누수 방지용 상한선 (평소에는 절대 도달하지 않음)
+            if len(_PROCESSED_PADDLE_TRANSACTIONS) > 2000:
+                _PROCESSED_PADDLE_TRANSACTIONS.clear()
+                _PROCESSED_PADDLE_TRANSACTIONS.add(transaction_id)
+
     items = data.get("items") or []
     price_id = None
     if items:
@@ -790,7 +812,16 @@ def paddle_webhook():
 
     tier = PADDLE_PRICE_TIER_MAP.get(price_id)
     if not tier:
+        if transaction_id:
+            with _PROCESSED_PADDLE_LOCK:
+                _PROCESSED_PADDLE_TRANSACTIONS.discard(transaction_id)
         return jsonify({"ok": False, "error": f"등록되지 않은 price_id: {price_id}"}), 400
+
+    def _unmark_transaction():
+        # 처리에 실패하면 목록에서 빼서, Paddle이 재시도할 때 다시 시도할 수 있게 한다.
+        if transaction_id:
+            with _PROCESSED_PADDLE_LOCK:
+                _PROCESSED_PADDLE_TRANSACTIONS.discard(transaction_id)
 
     email = (
         custom_data.get("email")
@@ -798,6 +829,7 @@ def paddle_webhook():
         or ""
     ).strip()
     if not email or "@" not in email:
+        _unmark_transaction()
         return jsonify({"ok": False, "error": "customData에 유효한 email이 없습니다."}), 400
 
     payload = dict(custom_data)
@@ -806,11 +838,13 @@ def paddle_webhook():
     if tier == "paid":
         payload.setdefault("monthly_year", date.today().year + 1)
     elif tier == "premium" and not payload.get("gender"):
+        _unmark_transaction()
         return jsonify({"ok": False, "error": "premium 리포트에는 gender가 필요합니다."}), 400
 
     try:
         calc_result = run_calculation(payload)
     except CalcError as e:
+        _unmark_transaction()
         return jsonify({"ok": False, "error": str(e)}), e.status
 
     from report_pipeline import PipelineError, run_paid_signup, run_premium_signup
@@ -821,7 +855,11 @@ def paddle_webhook():
         else:
             run_premium_signup(payload=payload, calc_result=calc_result)
     except PipelineError as e:
+        _unmark_transaction()
         return jsonify({"ok": False, "error": str(e)}), e.status
+    except Exception:
+        _unmark_transaction()
+        raise
 
     return jsonify({"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."})
 
