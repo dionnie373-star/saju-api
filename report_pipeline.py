@@ -221,9 +221,17 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
         msg.attach(part)
 
     try:
-        with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30) as server:
-            server.login(smtp_user, smtp_password)
-            server.sendmail(from_email, [to_email], msg.as_string())
+        if smtp_port == 465:
+            # 465 = 처음부터 SSL로 암호화된 연결 (SendGrid 등)
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30) as server:
+                server.login(smtp_user, smtp_password)
+                server.sendmail(from_email, [to_email], msg.as_string())
+        else:
+            # 587 = 평문으로 연결 후 STARTTLS로 암호화 전환 (Brevo 등)
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.sendmail(from_email, [to_email], msg.as_string())
     except (smtplib.SMTPException, OSError) as e:
         raise PipelineError(f"이메일 발송 중 오류: {e}", status=502) from e
 
