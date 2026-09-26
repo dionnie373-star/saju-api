@@ -137,6 +137,15 @@
           <input id="email" type="email" placeholder="du@beispiel.de" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
         </div>
 
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(nur für Premium-Lebenskarte nötig)</span></label>
+          <select id="gender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            <option value="">Bitte wählen</option>
+            <option value="female">Weiblich</option>
+            <option value="male">Männlich</option>
+          </select>
+        </div>
+
         <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
           Kostenloses Saju-Profil erhalten
         </button>
@@ -255,9 +264,30 @@
             <li>Monatliche Reflexionen und dein persönlicher Jahreskompass</li>
             <li><strong>Als PDF</strong> zum Aufbewahren und Nachlesen</li>
           </ul>
+          <button type="button" id="buyPaidBtn" style="margin-top: auto; padding: 12px 18px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+            Jahresreport bestellen — 9,90 €
+          </button>
+        </div>
+
+        <div style="flex: 1 1 320px; max-width: 380px; background: #FFFFFF; border: 2px solid #C1442E; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Premium-Lebenskarte</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">24,90 €</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
+            <li>Alles aus dem Jahresreport</li>
+            <li><strong>Lebensphasen-Analyse (Daewoon)</strong> — deine großen 10-Jahres-Zyklen</li>
+            <li>Langfristige Muster in Beziehungen, Beruf und Finanzen</li>
+            <li><strong>Als PDF</strong> — dein persönlicher Lebenskompass</li>
+          </ul>
+          <button type="button" id="buyPremiumBtn" style="margin-top: auto; padding: 12px 18px; background: #211D1A; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+            Lebenskarte bestellen — 24,90 €
+          </button>
         </div>
 
       </div>
+
+      <p id="checkoutError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
 
       <!-- Feature-Vergleichstabelle -->
       <div style="width: 100%; overflow-x: auto;">
@@ -328,7 +358,62 @@
 
 </div>
 
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
+(function () {
+  // Paddle 샌드박스 테스트 환경. 실서비스 오픈 전에 live 토큰/environment로 교체할 것.
+  var PADDLE_CLIENT_TOKEN = 'test_13d5f1ab829b75084a15dc9341e';
+  var PADDLE_PRICE_IDS = {
+    paid: 'pri_01m3f98f0s27hjx0xy4bc9em4d',       // Palja Jahresreport - EUR 9.90
+    premium: 'pri_01m3f9bjxx7sgpr1wvm5g8k61r',    // Palja Lebenskarte (Premium) - EUR 24.90
+  };
+
+  if (window.Paddle) {
+    Paddle.Environment.set('sandbox');
+    Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
+  }
+
+  var checkoutErrorEl = document.getElementById('checkoutError');
+
+  function showCheckoutError(msg) {
+    checkoutErrorEl.textContent = msg;
+    checkoutErrorEl.style.display = 'block';
+  }
+
+  function openCheckout(tier) {
+    checkoutErrorEl.style.display = 'none';
+
+    var birthdate = document.getElementById('birthdate').value.trim();
+    var birthtime = document.getElementById('birthtime').value.trim();
+    var birthplace = document.getElementById('birthplace').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var gender = document.getElementById('gender').value.trim();
+
+    if (!birthdate) { showCheckoutError('Bitte gib oben zuerst dein Geburtsdatum an.'); return; }
+    if (!birthplace) { showCheckoutError('Bitte gib oben zuerst deinen Geburtsort an.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCheckoutError('Bitte gib oben zuerst eine gültige E-Mail-Adresse an.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('Für die Premium-Lebenskarte wähle bitte oben dein Geschlecht aus.'); return; }
+    if (!window.Paddle) { showCheckoutError('Zahlungsanbieter konnte nicht geladen werden. Bitte versuch es später erneut.'); return; }
+
+    var customData = {
+      email: email,
+      birth_date: birthdate,
+      birth_time: birthtime,
+      birth_city: birthplace,
+    };
+    if (gender) { customData.gender = gender; }
+
+    Paddle.Checkout.open({
+      items: [{ priceId: PADDLE_PRICE_IDS[tier], quantity: 1 }],
+      customer: { email: email },
+      customData: customData,
+    });
+  }
+
+  document.getElementById('buyPaidBtn').addEventListener('click', function () { openCheckout('paid'); });
+  document.getElementById('buyPremiumBtn').addEventListener('click', function () { openCheckout('premium'); });
+})();
+
 (function () {
   // 같은 오리진에서 서빙되므로 상대경로로 호출 (CORS/CSP 문제 없음)
   var API_BASE = '';
