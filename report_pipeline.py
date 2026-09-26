@@ -156,9 +156,18 @@ def _strip_unsupported_glyphs(text):
     return text.encode("cp1252", errors="ignore").decode("cp1252")
 
 
+_ITALIC_MARKDOWN_RE = re.compile(r"\*(.+?)\*")
+
+
 def _markdown_bold_to_reportlab(text):
-    """`**굵게**` 마크다운을 reportlab Paragraph가 이해하는 `<b>굵게</b>`로 변환."""
-    return _BOLD_MARKDOWN_RE.sub(r"<b>\1</b>", text)
+    """`**굵게**`/`*기울임*` 마크다운을 reportlab Paragraph 태그로 변환.
+
+    반드시 **(굵게)를 먼저 치환한 다음 남은 단일 *(기울임)을 치환해야
+    **텍스트**가 <i>텍스트</i><i></i> 식으로 잘못 쪼개지지 않는다.
+    """
+    text = _BOLD_MARKDOWN_RE.sub(r"<b>\1</b>", text)
+    text = _ITALIC_MARKDOWN_RE.sub(r"<i>\1</i>", text)
+    return text
 
 
 def _report_text_to_flowables(report_text):
