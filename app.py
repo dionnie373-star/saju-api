@@ -8,7 +8,8 @@ POST /calculate
   "birth_city": "Berlin",         // longitude 대신 도시 이름으로도 가능 (서버가 자동으로 경도를 찾음)
   "longitude": 126.9784,          // birth_city 대신 직접 경도를 줄 수도 있음
   "yaja_si_separated": true,      // 선택, 기본 true (야자시/조자시 구분)
-  "target_year": 2027             // 선택, 특정 연도 세운(년주)까지 함께 계산하고 싶을 때
+  "target_year": 2027,            // 선택, 특정 연도 세운(년주)까지 함께 계산하고 싶을 때
+  "monthly_year": 2027            // 선택, 유료 리포트용: 이 해 1~12월 월별 흐름(월주+십성+축) 계산
 }
 
 longitude와 birth_city 중 하나만 있으면 됩니다. birth_city가 오면 서버가
@@ -33,6 +34,7 @@ from korean_saju import (  # noqa: E402
     IlganStrengthAnalyzer,
     Saju,
     SajuAnalysis,
+    ShipsinCalculator,
     load_bundled_data,
 )
 
@@ -43,6 +45,20 @@ _lunar, _solar_terms = load_bundled_data()
 ELEMENT_HANJA = {
     "목": "木", "화": "火", "토": "土", "금": "金", "수": "水",
 }
+
+# 십성 -> 유료 리포트용 "축(재물/관계/직업/총운)" 매핑.
+# 관성(정관/편관)은 전통적으로 배우자를 상징하지만, 성별을 단정하지 않기 위해
+# "관계에서의 책임·구조"로 중립적으로 재해석해 관계운 축에 배정한다.
+SHIPSIN_AXIS = {
+    "정재": "재물운", "편재": "재물운",
+    "정관": "관계운", "편관": "관계운",
+    "식신": "직업운", "상관": "직업운",
+    "정인": "총운", "편인": "총운",
+    "비견": "총운", "겁재": "총운",
+}
+# 우선순위: 그 달에 여러 축이 겹치면 이 순서대로 하나를 대표 축으로 뽑는다
+# (재물/관계/직업처럼 구체적인 축을 총운보다 우선한다).
+AXIS_PRIORITY = ["재물운", "관계운", "직업운", "총운"]
 
 # 자주 나올 도시는 네트워크 호출 없이 즉시 처리 (독일/오스트리아/스위스 주요 도시 + 한국 주요 도시)
 KNOWN_CITY_LONGITUDE = {
@@ -202,6 +218,73 @@ def _count_elements(saju):
     return counts
 
 
+MONTH_NAMES_KO = [
+    "1월", "2월", "3월", "4월", "5월", "6월",
+    "7월", "8월", "9월", "10월", "11월", "12월",
+]
+
+
+def _compute_monthly_forecast(day_stem, target_year, solar_terms, longitude, yaja_si_separated=True):
+    """target_year 1~12월의 월주(月柱)와 그 달의 십성(일간 기준)을 계산.
+
+    월주는 태어난 사람의 사주와 무관하게 절기 기준으로 정해지므로,
+    각 달의 15일 정오를 기준 시점으로 잡아 월주만 뽑아내면 된다
+    (유료 리포트의 '이번 해 월별 흐름'용 데이터).
+    십성은 이 사람의 일간(day_stem)을 기준으로 계산해서,
+    그 달이 재물운/관계운/직업운/총운 중 어디에 해당하는지 축을 매긴다.
+    """
+    months = []
+    for m in range(1, 13):
+        probe = datetime(target_year, m, 15, 12, 0)
+        probe_saju = Saju.from_birth(
+            kst_moment=probe,
+            solar_terms=solar_terms,
+            longitude=longitude,
+            yaja_si_separated=bool(yaja_si_separated),
+        )
+        mp = probe_saju.month_pillar
+        stem_shipsin = ShipsinCalculator.for_cheon_gan(day_stem, mp.cheon_gan)
+        branch_shipsin = ShipsinCalculator.for_ji_ji(day_stem, mp.ji_ji)
+
+        axes_present = {
+            SHIPSIN_AXIS[s.hangul]
+            for s in (stem_shipsin, branch_shipsin)
+            if s.hangul in SHIPSIN_AXIS
+        }
+        primary_axis = next((a for a in AXIS_PRIORITY if a in axes_present), "총운")
+
+        months.append({
+            "month": m,
+            "month_name": MONTH_NAMES_KO[m - 1],
+            "pillar": {
+                "hanja": mp.hanja,
+                "hangul": mp.hangul,
+                "cheon_gan_element": mp.cheon_gan.o_haeng.hangul,
+                "ji_ji_element": mp.ji_ji.o_haeng.hangul,
+            },
+            "shipsin": {
+                "cheon_gan": stem_shipsin.hangul,
+                "ji_ji": branch_shipsin.hangul,
+            },
+            "axis": primary_axis,
+        })
+    return months
+
+
+def _build_monthly_compact(target_year, months):
+    """월별 데이터를 AI 프롬프트에 바로 넣을 수 있는 한 줄짜리 텍스트로 압축."""
+    lines = [f"{target_year}년 월별 흐름 (일간 기준 십성으로 계산):"]
+    for mo in months:
+        p = mo["pillar"]
+        el_str = f"{p['cheon_gan_element']}{ELEMENT_HANJA[p['cheon_gan_element']]}/{p['ji_ji_element']}{ELEMENT_HANJA[p['ji_ji_element']]}"
+        lines.append(
+            f"{mo['month_name']}: {p['hanja']}({p['hangul']}) 오행={el_str} "
+            f"십성(천간/지지)={mo['shipsin']['cheon_gan']}/{mo['shipsin']['ji_ji']} "
+            f"| 이 달의 축={mo['axis']}"
+        )
+    return " | ".join(lines)
+
+
 def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggyeok=None, yongsin=None):
     pillars_str = (
         f"년주 {saju.year_pillar.hanja}({saju.year_pillar.hangul}) / "
@@ -295,6 +378,8 @@ def calculate():
     if not target_years and target_year:
         target_years = [target_year]
 
+    monthly_year = payload.get("monthly_year")  # 유료 리포트용: 이 해의 12개월 흐름 계산
+
     yearly = []
     yearly_out = {}
     if target_years:
@@ -312,6 +397,23 @@ def calculate():
                 yearly_out[str(y)] = {"year": y, "year_pillar": _pillar_dict(year_saju.year_pillar)}
             except Exception as e:
                 yearly_out[str(y)] = {"year": y, "error": str(e)}
+
+    monthly_out = None
+    monthly_compact = None
+    if monthly_year:
+        try:
+            monthly_year = int(monthly_year)
+            months = _compute_monthly_forecast(
+                day_stem=saju.day_stem,
+                target_year=monthly_year,
+                solar_terms=_solar_terms,
+                longitude=longitude,
+                yaja_si_separated=bool(yaja_si_separated),
+            )
+            monthly_out = {"year": monthly_year, "months": months}
+            monthly_compact = _build_monthly_compact(monthly_year, months)
+        except Exception as e:
+            monthly_out = {"year": monthly_year, "error": str(e)}
 
     result = {
         "ok": True,
@@ -342,6 +444,8 @@ def calculate():
             ilgan_strength=ilgan_strength, jeonggyeok=jeonggyeok, yongsin=yongsin,
         ),
         "yearly": yearly_out,
+        "monthly": monthly_out,
+        "monthly_compact": monthly_compact,
     }
 
     return jsonify(result)
