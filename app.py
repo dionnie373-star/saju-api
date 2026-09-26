@@ -29,7 +29,12 @@ from flask import Flask, request, jsonify
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
-from korean_saju import Saju, SajuAnalysis, load_bundled_data  # noqa: E402
+from korean_saju import (  # noqa: E402
+    IlganStrengthAnalyzer,
+    Saju,
+    SajuAnalysis,
+    load_bundled_data,
+)
 
 app = Flask(__name__)
 
@@ -197,7 +202,7 @@ def _count_elements(saju):
     return counts
 
 
-def _build_compact(name, saju, counts, yearly=None):
+def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggyeok=None, yongsin=None):
     pillars_str = (
         f"년주 {saju.year_pillar.hanja}({saju.year_pillar.hangul}) / "
         f"월주 {saju.month_pillar.hanja}({saju.month_pillar.hangul}) / "
@@ -207,13 +212,24 @@ def _build_compact(name, saju, counts, yearly=None):
     counts_str = ", ".join(f"{el}{ELEMENT_HANJA[el]} {cnt}개" for el, cnt in counts.items())
     max_el = max(counts, key=counts.get)
     min_els = [el for el, cnt in counts.items() if cnt == min(counts.values())]
+    day_stem_el = saju.day_stem.o_haeng.hangul
     lines = [
         f"이름: {name or '(미입력)'}",
         f"사주: {pillars_str}",
         f"오행 분포: {counts_str}",
         f"가장 많은 오행: {max_el}({ELEMENT_HANJA[max_el]})",
         f"가장 적은/없는 오행: {', '.join(f'{e}({ELEMENT_HANJA[e]})' for e in min_els)}",
+        f"일간(본인 자신): {saju.day_stem.hangul}({saju.day_stem.hanja}), 오행 {day_stem_el}({ELEMENT_HANJA[day_stem_el]})",
     ]
+    if ilgan_strength is not None:
+        lines.append(
+            f"일간 강약: {ilgan_strength.level.hangul}({ilgan_strength.level.hanja}) "
+            f"[점수 {ilgan_strength.total:.1f}/10] — {ilgan_strength.reason}"
+        )
+    if jeonggyeok is not None:
+        lines.append(f"격국: {jeonggyeok}")
+    if yongsin is not None:
+        lines.append(f"{yongsin} (이 사람에게 필요한 기운) — 근거: {yongsin.reason}")
     for y in (yearly or []):
         lines.append(
             f"{y['year']}년 세운: {y['pillar'].hanja}({y['pillar'].hangul}), "
@@ -271,6 +287,9 @@ def calculate():
         return jsonify({"ok": False, "error": f"사주 계산 중 오류가 발생했습니다: {e}"}), 500
 
     counts = _count_elements(saju)
+    ilgan_strength = IlganStrengthAnalyzer.analyze(saju)
+    jeonggyeok = getattr(analysis, "jeonggyeok", None)
+    yongsin = getattr(analysis, "yongsin", None)
 
     target_years = payload.get("target_years")
     if not target_years and target_year:
@@ -311,9 +330,17 @@ def calculate():
             "hour": _pillar_dict(saju.hour_pillar),
         },
         "element_counts": counts,
-        "jeonggyeok": getattr(analysis, "jeonggyeok", None) and str(analysis.jeonggyeok),
-        "yongsin": getattr(analysis, "yongsin", None) and str(analysis.yongsin),
-        "compact": _build_compact(name, saju, counts, yearly),
+        "ilgan_strength": {
+            "level": ilgan_strength.level.hangul,
+            "score": round(ilgan_strength.total, 2),
+            "reason": ilgan_strength.reason,
+        },
+        "jeonggyeok": jeonggyeok and str(jeonggyeok),
+        "yongsin": yongsin and str(yongsin),
+        "compact": _build_compact(
+            name, saju, counts, yearly,
+            ilgan_strength=ilgan_strength, jeonggyeok=jeonggyeok, yongsin=yongsin,
+        ),
         "yearly": yearly_out,
     }
 
