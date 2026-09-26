@@ -579,6 +579,24 @@ def landing_page():
     return send_from_directory(STATIC_SITE_DIR, "index.html")
 
 
+# 법적 필수 페이지 (초안 — 실 오픈 전 실제 정보로 채우고 법률 검토 필요.
+# static_site/*.html 상단의 "Entwurf" 경고 참고).
+_LEGAL_PAGES = {
+    "impressum": "impressum.html",
+    "datenschutz": "datenschutz.html",
+    "agb": "agb.html",
+    "widerruf": "widerruf.html",
+}
+
+
+@app.route("/<page>", methods=["GET"])
+def legal_page(page):
+    filename = _LEGAL_PAGES.get(page)
+    if not filename:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return send_from_directory(STATIC_SITE_DIR, filename)
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "saju-api", "status": "running"})
