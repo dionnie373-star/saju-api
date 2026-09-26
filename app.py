@@ -23,6 +23,8 @@ longitude와 birth_city 중 하나만 있으면 됩니다. birth_city가 오면 
 "compact" 텍스트 요약이 포함됩니다.
 """
 
+import hashlib
+import hmac
 import os
 import re
 import sys
@@ -688,6 +690,119 @@ def internal_send_report():
     if not email or "@" not in email:
         return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
 
+    if tier == "paid":
+        payload.setdefault("monthly_year", date.today().year + 1)
+    elif tier == "premium" and not payload.get("gender"):
+        return jsonify({"ok": False, "error": "premium 리포트에는 gender가 필요합니다."}), 400
+
+    try:
+        calc_result = run_calculation(payload)
+    except CalcError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
+    from report_pipeline import PipelineError, run_paid_signup, run_premium_signup
+
+    try:
+        if tier == "paid":
+            run_paid_signup(payload=payload, calc_result=calc_result)
+        else:
+            run_premium_signup(payload=payload, calc_result=calc_result)
+    except PipelineError as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+
+    return jsonify({"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."})
+
+
+# Paddle 상품 가격(price) ID -> 우리 시스템의 리포트 등급(tier) 매핑.
+# Paddle 대시보드에서 상품/가격을 만들 때 생긴 pri_... ID를 여기 등록해두면,
+# 결제 완료 웹훅이 어떤 리포트를 보내야 할지 알 수 있다.
+PADDLE_PRICE_TIER_MAP = {
+    "pri_01m3f98f0s27hjx0xy4bc9em4d": "paid",      # Palja Jahresreport (Paid) - EUR 9.90
+    "pri_01m3f9bjxx7sgpr1wvm5g8k61r": "premium",   # Palja Lebenskarte (Premium) - EUR 24.90
+}
+
+
+def _verify_paddle_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
+    """Paddle 웹훅 서명(Paddle-Signature 헤더)을 검증한다.
+
+    헤더 형식: "ts=<유닉스시간>;h1=<HMAC-SHA256 hex>"
+    서명 대상 문자열은 "{ts}:{raw_request_body}" 이고, 키는 Paddle이 발급한
+    notification destination의 시크릿 키(pdl_ntfset_...)다.
+    (참고: https://developer.paddle.com/webhooks/signature-verification)
+    """
+    if not secret or not signature_header:
+        return False
+
+    parts = {}
+    for chunk in signature_header.split(";"):
+        if "=" in chunk:
+            k, v = chunk.split("=", 1)
+            parts[k.strip()] = v.strip()
+
+    ts = parts.get("ts")
+    h1 = parts.get("h1")
+    if not ts or not h1:
+        return False
+
+    signed_payload = f"{ts}:{raw_body.decode('utf-8')}"
+    computed = hmac.new(
+        secret.encode("utf-8"), signed_payload.encode("utf-8"), hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(computed, h1)
+
+
+@app.route("/webhooks/paddle", methods=["POST"])
+def paddle_webhook():
+    """Paddle 결제 완료(transaction.completed) 웹훅.
+
+    Paddle Checkout을 열 때 프론트엔드가 customData로 birth_date/birth_time/
+    birth_city/email/name/(premium이면 gender)을 함께 보내면, 결제가 끝난 뒤
+    Paddle이 이 엔드포인트를 호출한다. 여기서는:
+      1) Paddle-Signature 헤더로 진짜 Paddle이 보낸 요청인지 검증
+      2) 어떤 가격(price)이 결제됐는지로 paid/premium 등급을 판별
+      3) customData에 담아온 생년월일시 정보로 사주를 계산해서 리포트 발송
+    """
+    raw_body = request.get_data()
+    secret = os.environ.get("PADDLE_WEBHOOK_SECRET")
+    signature = request.headers.get("Paddle-Signature", "")
+
+    if not _verify_paddle_signature(raw_body, signature, secret):
+        return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
+
+    try:
+        event = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
+
+    event_type = event.get("event_type")
+    if event_type != "transaction.completed":
+        # 우리가 구독하지 않은 이벤트가 오더라도 200으로 조용히 무시한다
+        # (Paddle은 2xx가 아니면 재시도하므로, 관심 없는 이벤트도 200을 줘야 한다).
+        return jsonify({"ok": True, "ignored": event_type})
+
+    data = event.get("data") or {}
+    custom_data = data.get("custom_data") or {}
+
+    items = data.get("items") or []
+    price_id = None
+    if items:
+        price_id = ((items[0] or {}).get("price") or {}).get("id")
+
+    tier = PADDLE_PRICE_TIER_MAP.get(price_id)
+    if not tier:
+        return jsonify({"ok": False, "error": f"등록되지 않은 price_id: {price_id}"}), 400
+
+    email = (
+        custom_data.get("email")
+        or (data.get("customer") or {}).get("email")
+        or ""
+    ).strip()
+    if not email or "@" not in email:
+        return jsonify({"ok": False, "error": "customData에 유효한 email이 없습니다."}), 400
+
+    payload = dict(custom_data)
+    payload["email"] = email
+    payload["tier"] = tier
     if tier == "paid":
         payload.setdefault("monthly_year", date.today().year + 1)
     elif tier == "premium" and not payload.get("gender"):
