@@ -9,7 +9,9 @@ POST /calculate
   "longitude": 126.9784,          // birth_city 대신 직접 경도를 줄 수도 있음
   "yaja_si_separated": true,      // 선택, 기본 true (야자시/조자시 구분)
   "target_year": 2027,            // 선택, 특정 연도 세운(년주)까지 함께 계산하고 싶을 때
-  "monthly_year": 2027            // 선택, 유료 리포트용: 이 해 1~12월 월별 흐름(월주+십성+축) 계산
+  "monthly_year": 2027,           // 선택, 유료 리포트용: 이 해 1~12월 월별 흐름(월주+십성+축) 계산
+  "gender": "female",             // 선택, 프리미엄 리포트용: 대운 계산에 필요 ("male"/"female" 또는 "남"/"여")
+  "daewoon_count": 8              // 선택, 프리미엄 리포트용: 대운 몇 단위(10년)까지 계산할지 (기본 8 = 80년치)
 }
 
 longitude와 birth_city 중 하나만 있으면 됩니다. birth_city가 오면 서버가
@@ -31,6 +33,8 @@ from flask import Flask, request, jsonify
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
 from korean_saju import (  # noqa: E402
+    Daewoon,
+    Gender,
     IlganStrengthAnalyzer,
     Saju,
     SajuAnalysis,
@@ -285,6 +289,86 @@ def _build_monthly_compact(target_year, months):
     return " | ".join(lines)
 
 
+def _resolve_gender(gender_str):
+    key = (gender_str or "").strip().lower()
+    if key in ("male", "m", "남", "남성", "남자"):
+        return Gender.MALE
+    if key in ("female", "f", "여", "여성", "여자"):
+        return Gender.FEMALE
+    raise ValueError("gender 값은 'male' 또는 'female'(또는 '남'/'여')이어야 합니다.")
+
+
+def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8):
+    """프리미엄(대운) 리포트용: 10년 단위 대운 시퀀스 + 각 시기의 십성/축 계산.
+
+    대운의 진행 방향(순행/역행)은 연간(年干)의 음양과 성별의 조합으로 정해지므로
+    (양남·음녀=순행, 음남·양녀=역행), 대운 계산에는 성별이 반드시 필요하다.
+    각 대운 시기의 십성은 이 사람의 일간(day_stem) 기준으로 계산해서
+    재물운/관계운/직업운/총운 중 어느 축이 두드러지는 시기인지 매긴다.
+    """
+    gender = _resolve_gender(gender_str)
+    daewoon = Daewoon.compute(saju=saju, gender=gender, solar_terms=solar_terms, count=count)
+
+    birth_date = saju.kst_moment.date()
+    today = date.today()
+    current_age = today.year - birth_date.year - (
+        (today.month, today.day) < (birth_date.month, birth_date.day)
+    )
+
+    entries = []
+    for i, entry in enumerate(daewoon.entries):
+        stem_shipsin = ShipsinCalculator.for_cheon_gan(day_stem, entry.gan_ji.cheon_gan)
+        branch_shipsin = ShipsinCalculator.for_ji_ji(day_stem, entry.gan_ji.ji_ji)
+        axes_present = {
+            SHIPSIN_AXIS[s.hangul]
+            for s in (stem_shipsin, branch_shipsin)
+            if s.hangul in SHIPSIN_AXIS
+        }
+        primary_axis = next((a for a in AXIS_PRIORITY if a in axes_present), "총운")
+        end_age = entry.start_age + 9
+        entries.append({
+            "index": i + 1,
+            "start_age": entry.start_age,
+            "end_age": end_age,
+            "start_year": birth_date.year + entry.start_age,
+            "pillar": {
+                "hanja": entry.gan_ji.hanja,
+                "hangul": entry.gan_ji.hangul,
+                "cheon_gan_element": entry.gan_ji.cheon_gan.o_haeng.hangul,
+                "ji_ji_element": entry.gan_ji.ji_ji.o_haeng.hangul,
+            },
+            "shipsin": {
+                "cheon_gan": stem_shipsin.hangul,
+                "ji_ji": branch_shipsin.hangul,
+            },
+            "axis": primary_axis,
+            "is_current": entry.start_age <= current_age <= end_age,
+        })
+
+    return {
+        "gender": gender.value,
+        "forward": daewoon.forward,
+        "current_age": current_age,
+        "entries": entries,
+    }
+
+
+def _build_daewoon_compact(daewoon_out):
+    direction = "순행" if daewoon_out["forward"] else "역행"
+    lines = [f"대운 방향: {direction} | 현재 만 나이: {daewoon_out['current_age']}세"]
+    for e in daewoon_out["entries"]:
+        marker = " ← 현재 대운" if e["is_current"] else ""
+        p = e["pillar"]
+        el_str = f"{p['cheon_gan_element']}{ELEMENT_HANJA[p['cheon_gan_element']]}/{p['ji_ji_element']}{ELEMENT_HANJA[p['ji_ji_element']]}"
+        lines.append(
+            f"{e['start_age']}~{e['end_age']}세({e['start_year']}년~): "
+            f"{p['hanja']}({p['hangul']}) 오행={el_str} "
+            f"십성(천간/지지)={e['shipsin']['cheon_gan']}/{e['shipsin']['ji_ji']} "
+            f"| 이 시기의 축={e['axis']}{marker}"
+        )
+    return " | ".join(lines)
+
+
 def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggyeok=None, yongsin=None):
     pillars_str = (
         f"년주 {saju.year_pillar.hanja}({saju.year_pillar.hangul}) / "
@@ -379,6 +463,8 @@ def calculate():
         target_years = [target_year]
 
     monthly_year = payload.get("monthly_year")  # 유료 리포트용: 이 해의 12개월 흐름 계산
+    gender = payload.get("gender")  # 프리미엄 리포트용: 대운 계산에 필요
+    daewoon_count = payload.get("daewoon_count", 8)  # 프리미엄 리포트용: 대운 몇 단위(10년)까지
 
     yearly = []
     yearly_out = {}
@@ -415,6 +501,21 @@ def calculate():
         except Exception as e:
             monthly_out = {"year": monthly_year, "error": str(e)}
 
+    daewoon_out = None
+    daewoon_compact = None
+    if gender:
+        try:
+            daewoon_out = _compute_daewoon_forecast(
+                saju=saju,
+                day_stem=saju.day_stem,
+                gender_str=gender,
+                solar_terms=_solar_terms,
+                count=int(daewoon_count),
+            )
+            daewoon_compact = _build_daewoon_compact(daewoon_out)
+        except Exception as e:
+            daewoon_out = {"error": str(e)}
+
     result = {
         "ok": True,
         "input": {
@@ -446,6 +547,8 @@ def calculate():
         "yearly": yearly_out,
         "monthly": monthly_out,
         "monthly_compact": monthly_compact,
+        "daewoon": daewoon_out,
+        "daewoon_compact": daewoon_compact,
     }
 
     return jsonify(result)
