@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palja — Koreanische Saju-Selbstreflexion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FAF7F1; font-family: 'Work Sans', sans-serif; color: #211D1A; }
+  h1, h2, .display { font-family: 'Fraunces', serif; }
+  a { color: #C1442E; }
+  a:hover { color: #9C3624; }
+  input:focus { outline: 2px solid #C1442E; outline-offset: 2px; }
+  button:focus-visible { outline: 2px solid #211D1A; outline-offset: 2px; }
+  ::placeholder { color: #A79E93; }
+  @media (max-width: 640px) {
+    .hero-content-pad { padding-top: 20px !important; padding-bottom: 56px !important; }
+    .hero-gap { gap: 32px !important; }
+  }
+</style>
+</head>
+<body>
+
+<div style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch;">
+
+  <!-- Hero: 안개 낀 한국의 밤 (달빛 아래 한옥과 갓 쓴 선비) -->
+  <div class="hero-pad" style="position: relative; width: 100%; box-sizing: border-box; overflow: hidden; background: #0A0E1A;">
+
+    <svg viewBox="0 0 1200 480" preserveAspectRatio="xMidYMax slice" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block;">
+      <defs>
+        <linearGradient id="paljaSky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0A0E1A"/>
+          <stop offset="50%" stop-color="#161F38"/>
+          <stop offset="100%" stop-color="#2B3A5C"/>
+        </linearGradient>
+        <radialGradient id="paljaMoonGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#F5E7C4" stop-opacity="0.85"/>
+          <stop offset="55%" stop-color="#F5E7C4" stop-opacity="0.14"/>
+          <stop offset="100%" stop-color="#F5E7C4" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="paljaMist" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#E8E6DC" stop-opacity="0"/>
+          <stop offset="100%" stop-color="#E8E6DC" stop-opacity="0.18"/>
+        </linearGradient>
+      </defs>
+
+      <rect x="0" y="0" width="1200" height="480" fill="url(#paljaSky)"/>
+
+      <circle cx="970" cy="120" r="150" fill="url(#paljaMoonGlow)"/>
+      <circle cx="970" cy="120" r="42" fill="#F5E7C4"/>
+
+      <circle cx="140" cy="70" r="1.6" fill="#E8E6DC" opacity="0.65"/>
+      <circle cx="300" cy="45" r="1.2" fill="#E8E6DC" opacity="0.5"/>
+      <circle cx="560" cy="85" r="1.4" fill="#E8E6DC" opacity="0.55"/>
+      <circle cx="740" cy="35" r="1.1" fill="#E8E6DC" opacity="0.45"/>
+      <circle cx="1120" cy="230" r="1.3" fill="#E8E6DC" opacity="0.45"/>
+      <circle cx="60" cy="180" r="1.1" fill="#E8E6DC" opacity="0.4"/>
+
+      <polygon points="0,330 140,255 320,315 500,235 680,305 860,245 1040,310 1200,260 1200,480 0,480" fill="#141D33"/>
+      <polygon points="0,390 200,325 400,375 600,315 800,370 980,320 1200,365 1200,480 0,480" fill="#0C1220"/>
+
+      <!-- 한옥 지붕 실루엣 -->
+      <path d="M70,388 C100,362 122,350 165,350 C208,350 230,362 260,388 L260,398 L70,398 Z" fill="#080C16"/>
+      <rect x="108" y="393" width="10" height="34" fill="#080C16"/>
+      <rect x="212" y="393" width="10" height="34" fill="#080C16"/>
+
+      <rect x="0" y="320" width="1200" height="100" fill="url(#paljaMist)"/>
+
+      <!-- 인물 주변 달빛 산란 -->
+      <ellipse cx="555" cy="300" rx="130" ry="100" fill="url(#paljaMoonGlow)" opacity="0.4"/>
+
+      <!-- 갓 쓴 선비 실루엣 (조선시대) -->
+      <g transform="translate(555,300) scale(1.5)" fill="#05070C" stroke="#5A6C93" stroke-width="1" stroke-linejoin="round">
+        <ellipse cx="0" cy="122" rx="20" ry="4" fill="#05070C" stroke="none" opacity="0.45"/>
+        <path d="M0,96 C-7,58 -5,26 0,10 C5,26 7,58 0,96 Z"/>
+        <path d="M-15,96 L15,96 L11,118 L-11,118 Z"/>
+        <line x1="15" y1="35" x2="24" y2="112" stroke="#05070C" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="0" cy="4" r="7.5"/>
+        <ellipse cx="0" cy="-7" rx="23" ry="5"/>
+        <rect x="-7.5" y="-22" width="15" height="16" rx="2"/>
+      </g>
+
+      <circle cx="200" cy="360" r="18" fill="#C1442E" opacity="0.3"/>
+      <circle cx="200" cy="360" r="5" fill="#C1442E" opacity="0.85"/>
+    </svg>
+
+    <div style="position: absolute; inset: 0; background: linear-gradient(100deg, rgba(10,14,26,0.72) 0%, rgba(10,14,26,0.32) 28%, rgba(10,14,26,0) 48%); pointer-events: none;"></div>
+
+    <div style="position: relative; z-index: 1; display: flex; flex-direction: column;">
+
+      <div style="width: 100%; box-sizing: border-box; padding: 28px 6vw; display: flex; justify-content: space-between; align-items: center;">
+        <div class="display" style="font-size: 22px; font-weight: 600; letter-spacing: 0.04em; color: #F3EFE4;">PALJA</div>
+        <div style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #C9C3B4;">Koreanische Saju-Tradition</div>
+      </div>
+
+      <div class="hero-content-pad" style="width: 100%; box-sizing: border-box; padding: 32px 6vw 96px; display: flex; justify-content: center;">
+        <div class="hero-gap" style="width: 100%; max-width: 1100px; display: flex; gap: 64px; flex-wrap: wrap; align-items: flex-start;">
+
+          <div style="flex: 1 1 420px; min-width: 320px; display: flex; flex-direction: column; gap: 24px; padding-top: 12px;">
+            <h1 class="display" style="margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 500; line-height: 1.15; color: #F8F4E9; text-wrap: balance;">
+              Entdecke die koreanische Kunst der Selbstreflexion.
+            </h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #D8D2C2; max-width: 480px;">
+              Entdecke dein persönliches Fünf-Elemente-Profil nach der traditionellen koreanischen Saju-Lehre —
+              kostenlos und in wenigen Minuten direkt in deinem Postfach.
+            </p>
+            <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: #C1442E;"></div>
+              <span style="font-size: 14px; color: #ADA694;">Basiert auf deinem exakten Geburtszeitpunkt — keine generischen Ergebnisse.</span>
+            </div>
+          </div>
+
+      <div style="flex: 1 1 380px; min-width: 300px; max-width: 440px; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);">
+        <h2 class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Dein kostenloses Saju-Profil</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="birthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
+          <input id="birthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
+          <input id="birthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1;">
+          <span style="font-size: 12px; color: #8A8074;">Geburtszeit unbekannt? Wir verwenden ersatzweise 12:00 Uhr. Dein Profil kann dadurch leicht abweichen.</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
+          <input id="birthplace" type="text" required placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+          <span style="font-size: 12px; color: #8A8074;">Nötig für die genaue Berechnung deiner Geburtszeitzone.</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="email" style="font-size: 13px; font-weight: 500; color: #4A4239;">E-Mail-Adresse</label>
+          <input id="email" type="email" placeholder="du@beispiel.de" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Kostenloses Saju-Profil erhalten
+        </button>
+
+        <p id="errorMsg" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <p style="margin: 0; font-size: 12.5px; color: #8A8074; text-align: center; line-height: 1.5;">
+          Kostenlos · Ergebnis per E-Mail · dauert etwa 2 Minuten
+        </p>
+        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center; line-height: 1.5;">
+          Deine Angaben werden ausschließlich zur Erstellung deines Profils verwendet und vertraulich behandelt.
+          Mehr dazu in unserer <span style="text-decoration: underline; cursor: pointer;">Datenschutzerklärung</span>.
+        </p>
+      </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saekdong stripe -->
+  <div style="width: 100%; height: 6px; display: flex;">
+    <div style="flex: 1; background: #2F6F4E;"></div>
+    <div style="flex: 1; background: #C1442E;"></div>
+    <div style="flex: 1; background: #D4A017;"></div>
+    <div style="flex: 1; background: #F1ECE1; border-top: 1px solid #E4DCD1; border-bottom: 1px solid #E4DCD1; box-sizing: border-box;"></div>
+    <div style="flex: 1; background: #201C1A;"></div>
+  </div>
+
+  <!-- Wie es funktioniert -->
+  <div style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center; background: #F3EEE4;">
+    <div style="width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 40px;">
+      <h2 class="display" style="margin: 0; font-size: 28px; font-weight: 500; text-align: center;">So funktioniert's</h2>
+      <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;">
+
+        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">1</div>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Geburtsdaten eingeben</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Datum, Uhrzeit (optional) und Ort — mehr brauchen wir nicht.</p>
+        </div>
+
+        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">2</div>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Dein persönliches Fünf-Elemente-Profil wird erstellt</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Nach der traditionellen koreanischen Saju-Lehre, exakt für deinen Geburtszeitpunkt.</p>
+        </div>
+
+        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">3</div>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Dein Profil direkt per E-Mail</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Als PDF — zum Lesen, Aufheben oder Teilen.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Beispielauszug -->
+  <div style="width: 100%; box-sizing: border-box; padding: 72px 6vw; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 800px; display: flex; flex-direction: column; gap: 24px; align-items: center; text-align: center;">
+      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Ein Blick hinein</h2>
+
+      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-left: 4px solid #C1442E; border-radius: 4px; padding: 32px 36px; box-sizing: border-box; text-align: left;">
+        <p style="margin: 0 0 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #A79E93;">Beispielauszug aus dem kostenlosen Profil</p>
+        <p style="margin: 0; font-size: 16.5px; line-height: 1.75; color: #3B3630; font-style: italic;">
+          „In deinem Chart treten vor allem Holz und Wasser hervor. In Korea gibt es eine jahrhundertealte Tradition,
+          die eigene Geburtszeit als einzigartiges Zusammenspiel von fünf Elementen zu verstehen …"
+        </p>
+      </div>
+
+      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-left: 4px solid #211D1A; border-radius: 4px; padding: 32px 36px; box-sizing: border-box; text-align: left;">
+        <p style="margin: 0 0 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #A79E93;">Beispielauszug aus dem Jahresreport — September</p>
+        <p style="margin: 0; font-size: 16.5px; line-height: 1.75; color: #3B3630; font-style: italic;">
+          „Der September bringt eine Verbindung, die im Jahr selten auftritt: die Qualität, die traditionell mit
+          Ressourcen und Ertrag verbunden wird, trifft auf jene, die für Struktur und Verantwortung steht. Gab es in
+          diesem Monat eine Gelegenheit, bei der sich Einsatz spürbar auszahlen könnte …"
+        </p>
+      </div>
+
+      <p style="margin: 0; font-size: 13px; color: #A79E93; font-style: italic;">Beispielhafte, nicht personenbezogene Auszüge zur Veranschaulichung von Stil und Tiefe.</p>
+      <p style="margin: 0; font-size: 14px; color: #8A8074;">So beginnt dein Profil — der Jahresreport begleitet dich anschließend Monat für Monat.</p>
+    </div>
+  </div>
+
+  <!-- Kostenlos vs Jahresreport -->
+  <div style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #F3EEE4;">
+    <div style="width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <h2 class="display" style="margin: 0; font-size: 28px; font-weight: 500; text-align: center;">Wie tief möchtest du gehen?</h2>
+        <p style="margin: 0; font-size: 15px; color: #6B625A; text-align: center; max-width: 520px;">
+          Das kostenlose Profil ist dein Ausgangspunkt. Der Jahresreport begleitet dich Monat für Monat durchs ganze Jahr.
+        </p>
+      </div>
+      <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
+
+        <div style="flex: 1 1 320px; max-width: 380px; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Kostenloses Profil</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">0 €</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
+            <li>Deine Fünf-Elemente-Zusammensetzung</li>
+            <li>Eine erste Einschätzung deiner Persönlichkeit</li>
+            <li>Rückblick &amp; Ausblick aufs Jahr (Überblick)</li>
+          </ul>
+        </div>
+
+        <div style="flex: 1 1 320px; max-width: 380px; background: #211D1A; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; color: #FAF7F1;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Jahresreport</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">9,90 €</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #E8E2D8;">
+            <li><strong>Monatliche Impulse</strong> für alle 12 Monate</li>
+            <li><strong>Vertiefte Einblicke</strong> in Beziehungen, Beruf und persönliche Ziele</li>
+            <li>Monatliche Reflexionen und dein persönlicher Jahreskompass</li>
+            <li><strong>Als PDF</strong> zum Aufbewahren und Nachlesen</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Feature-Vergleichstabelle -->
+      <div style="width: 100%; overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; overflow: hidden; font-size: 14.5px;">
+          <thead>
+            <tr style="background: #EDE6D9;">
+              <th style="text-align: left; padding: 16px 20px; font-weight: 600; color: #3B3630;">Inhalt</th>
+              <th style="text-align: center; padding: 16px 20px; font-weight: 600; color: #3B3630; width: 160px;">Kostenlos</th>
+              <th style="text-align: center; padding: 16px 20px; font-weight: 600; color: #3B3630; width: 160px;">Jahresreport</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Deine Fünf-Elemente-Zusammensetzung</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Persönlichkeits-Einschätzung</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Kurz &amp; allgemein</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Vertieft &amp; individuell</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Rückblick &amp; Ausblick aufs Jahr</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Überblick</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Alle 12 Monate einzeln</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Monatliche Reflexionsimpulse</td>
+              <td style="text-align: center; padding: 14px 20px; color: #C7BEB1; font-size: 17px;">–</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Einblicke zu Beziehungen, Beruf &amp; Zielen</td>
+              <td style="text-align: center; padding: 14px 20px; color: #C7BEB1; font-size: 17px;">–</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Persönlicher Jahreskompass zum Abschluss</td>
+              <td style="text-align: center; padding: 14px 20px; color: #C7BEB1; font-size: 17px;">–</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Format</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">E-Mail</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">PDF zum Aufbewahren</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="width: 100%; box-sizing: border-box; padding: 40px 6vw; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
+    <div class="display" style="font-size: 16px; font-weight: 600; letter-spacing: 0.04em;">PALJA</div>
+    <p style="margin: 0; font-size: 12.5px; color: #9A9186; max-width: 520px; line-height: 1.6;">
+      Palja dient der Unterhaltung und persönlichen Selbstreflexion. Es handelt sich nicht um eine wissenschaftliche
+      Diagnose oder eine sichere Zukunftsvorhersage und ersetzt keine medizinische oder psychologische Beratung.
+    </p>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 14px; color: #6B625A; text-decoration: underline;">
+      <span>Impressum</span>
+      <span>Datenschutz</span>
+      <span>AGB</span>
+      <span>Widerruf</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // 같은 오리진에서 서빙되므로 상대경로로 호출 (CORS/CSP 문제 없음)
+  var API_BASE = '';
+
+  var btn = document.getElementById('submitBtn');
+  var errorEl = document.getElementById('errorMsg');
+  var status = 'idle';
+
+  var labels = {
+    idle: 'Kostenloses Saju-Profil erhalten',
+    loading: 'Wird erstellt …',
+    sent: 'Unterwegs zu dir ✓',
+    error: 'Erneut versuchen',
+  };
+
+  function setStatus(next, msg) {
+    status = next;
+    btn.textContent = labels[next] || labels.idle;
+    if (msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    } else {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+  }
+
+  btn.addEventListener('click', async function () {
+    if (status === 'loading') return;
+
+    var birthdate = document.getElementById('birthdate').value.trim();
+    var birthtime = document.getElementById('birthtime').value.trim();
+    var birthplace = document.getElementById('birthplace').value.trim();
+    var email = document.getElementById('email').value.trim();
+
+    if (!birthdate) { setStatus('error', 'Bitte gib dein Geburtsdatum an.'); return; }
+    if (!birthplace) { setStatus('error', 'Bitte gib deinen Geburtsort an.'); return; }
+    if (!email || email.indexOf('@') === -1) { setStatus('error', 'Bitte gib eine gültige E-Mail-Adresse an.'); return; }
+
+    setStatus('loading');
+
+    try {
+      var res = await fetch(API_BASE + '/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          birth_date: birthdate,
+          birth_time: birthtime,
+          birth_city: birthplace,
+          email: email,
+        }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || data.ok === false) {
+        setStatus('error', data.error || 'Etwas ist schiefgelaufen. Bitte versuch es später erneut.');
+        return;
+      }
+      setStatus('sent');
+    } catch (err) {
+      setStatus('error', 'Verbindung zum Server nicht möglich. Bitte versuch es später erneut.');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

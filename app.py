@@ -28,7 +28,7 @@ import re
 import sys
 from datetime import datetime, date, time as dtime
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
@@ -561,7 +561,22 @@ def run_calculation(payload):
     return result
 
 
+STATIC_SITE_DIR = os.path.join(os.path.dirname(__file__), "static_site")
+
+
 @app.route("/", methods=["GET"])
+def landing_page():
+    """랜딩페이지를 이 API와 같은 오리진(same-origin)에서 서빙한다.
+
+    Claude 아티팩트 위에 올렸을 때는 아티팩트 자체의 CSP(connect-src)가
+    외부 API(fetch) 호출을 막아버려서, 신청 폼이 서버에 도달하지 못했다.
+    같은 Flask 앱에서 정적 파일로 서빙하면 프론트엔드/백엔드가 같은 출처가
+    되어 이 제한이 사라진다.
+    """
+    return send_from_directory(STATIC_SITE_DIR, "index.html")
+
+
+@app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "saju-api", "status": "running"})
 
