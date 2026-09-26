@@ -190,18 +190,87 @@ def _text_width(text, font="Helvetica", size=10.5):
 # 이메일 발송
 # ---------------------------------------------------------------------------
 
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
+
+
+def _send_email_via_brevo_api(*, to_email, subject, html_body, from_email, from_name,
+                               attachment_path=None, attachment_name=None):
+    """Brevo 트랜잭션 이메일 HTTP API로 발송 (포트 443, SMTP 포트 차단과 무관).
+
+    Render 같은 일부 무료 호스팅은 이메일 발송용 포트(25/465/587)를 막아버려서
+    smtplib로는 소켓 연결 자체가 응답 없이 멈추는 문제가 있었다. HTTP API는
+    Claude API 호출과 똑같이 443 포트로 통신하므로 이 제한과 무관하게 동작한다.
+    """
+    import base64
+
+    api_key = os.environ.get("BREVO_API_KEY")
+    payload = {
+        "sender": {"name": from_name, "email": from_email},
+        "to": [{"email": to_email}],
+        "subject": subject,
+        "htmlContent": html_body,
+    }
+
+    if attachment_path:
+        with open(attachment_path, "rb") as f:
+            content_b64 = base64.b64encode(f.read()).decode("ascii")
+        payload["attachment"] = [{
+            "content": content_b64,
+            "name": attachment_name or os.path.basename(attachment_path),
+        }]
+
+    try:
+        resp = requests.post(
+            BREVO_API_URL,
+            headers={
+                "api-key": api_key,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            json=payload,
+            timeout=60,
+        )
+    except requests.RequestException as e:
+        raise PipelineError(f"이메일 발송(Brevo API) 중 오류: {e}", status=502) from e
+
+    if resp.status_code >= 300:
+        raise PipelineError(
+            f"이메일 발송(Brevo API) 실패: {resp.status_code} {resp.text[:300]}",
+            status=502,
+        )
+
+
 def send_email(*, to_email, subject, html_body, attachment_path=None, attachment_name=None):
+    from_email = os.environ.get("FROM_EMAIL")
+    from_name = os.environ.get("FROM_NAME", "Palja")
+
+    if not from_email:
+        raise PipelineError("FROM_EMAIL 환경변수가 설정되어 있지 않습니다.", status=500)
+
+    # Brevo API 키가 있으면 HTTP API로 발송 (권장: 포트 차단 문제 없음).
+    brevo_api_key = os.environ.get("BREVO_API_KEY")
+    if brevo_api_key:
+        _send_email_via_brevo_api(
+            to_email=to_email,
+            subject=subject,
+            html_body=html_body,
+            from_email=from_email,
+            from_name=from_name,
+            attachment_path=attachment_path,
+            attachment_name=attachment_name,
+        )
+        return
+
+    # 그 외에는 기존 SMTP 방식 (SMTP 포트가 막혀있지 않은 호스팅 환경에서만 동작).
     smtp_host = os.environ.get("SMTP_HOST")
     smtp_user = os.environ.get("SMTP_USER")
     smtp_password = os.environ.get("SMTP_PASSWORD")
-    from_email = os.environ.get("FROM_EMAIL")
-    from_name = os.environ.get("FROM_NAME", "Palja")
     smtp_port = int(os.environ.get("SMTP_PORT", "465"))
 
-    if not (smtp_host and smtp_user and smtp_password and from_email):
+    if not (smtp_host and smtp_user and smtp_password):
         raise PipelineError(
-            "이메일 발송 환경변수(SMTP_HOST/SMTP_USER/SMTP_PASSWORD/FROM_EMAIL)가 "
-            "설정되어 있지 않습니다.",
+            "이메일 발송 환경변수가 부족합니다. BREVO_API_KEY를 설정하거나, "
+            "SMTP_HOST/SMTP_USER/SMTP_PASSWORD를 설정하세요.",
             status=500,
         )
 
@@ -222,12 +291,10 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
 
     try:
         if smtp_port == 465:
-            # 465 = 처음부터 SSL로 암호화된 연결 (SendGrid 등)
             with smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=30) as server:
                 server.login(smtp_user, smtp_password)
                 server.sendmail(from_email, [to_email], msg.as_string())
         else:
-            # 587 = 평문으로 연결 후 STARTTLS로 암호화 전환 (Brevo 등)
             with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
                 server.starttls()
                 server.login(smtp_user, smtp_password)
