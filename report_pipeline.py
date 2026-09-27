@@ -266,12 +266,48 @@ def _regenerate_with_correction(prompt_template_name, variables, correction_note
         return None
 
 
-def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None, min_words=0):
+def _build_correction_note(validation, *, min_words):
+    """검증 결과를 바탕으로 재생성용 교정 지시문을 만든다.
+
+    분량 미달은 특히 재시도에서도 잘 안 고쳐지는 문제로 실제 테스트에서 확인됐다
+    (한 번 교정해도 여전히 목표에 못 미침). "충분히 늘려서 다시 쓰세요" 같은
+    막연한 지시보다 실제 부족한 단어 수를 숫자로 알려주는 쪽이 효과적이므로,
+    분량 문제가 있으면 현재/목표/부족분을 명시한다.
+    """
+    issues_text = "\n".join(
+        f"- 문제: \"{issue.get('claim', '')}\"\n  {issue.get('problem', '')}"
+        for issue in validation["issues"]
+    )
+    length_hint = ""
+    for issue in validation["issues"]:
+        m = re.search(r"분량 미달: (\d+)단어 \(최소 (\d+)단어", issue.get("problem", ""))
+        if m:
+            current, required = int(m.group(1)), int(m.group(2))
+            shortfall = required - current
+            length_hint = (
+                f"\n\n[분량 문제 - 구체적 지시] 지금 쓴 초안은 {current}단어인데 최소 "
+                f"{required}단어가 필요합니다({shortfall}단어 부족). 요약이나 결론을 "
+                f"짧게 줄이는 방식이 아니라, 각 챕터/구간마다 구체적인 예시와 설명을 "
+                f"1~2문단씩 추가해서 전체 분량을 늘리세요. 특히 분량이 적었던 챕터부터 "
+                f"우선적으로 늘리세요."
+            )
+            break
+
+    return (
+        "\n\n[자동 검증 결과 - 반드시 수정] 방금 작성한 초안에서 아래와 같은 문제가 "
+        "발견되었습니다. 이 문제들을 고쳐서 리포트 전체를 처음부터 다시 작성하세요. "
+        "특히 오행/축 등장 횟수와 관련된 숫자는 [계산된 사실]에 이미 정확히 계산되어 "
+        "있으니 그 숫자를 그대로 사용하세요:\n" + issues_text + length_hint
+    )
+
+
+def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None, min_words=0, max_retries=2):
     """call_claude로 리포트를 생성하고, 두 종류의 자동 검증을 거친 뒤 문제가 있으면
 
-    한 번만 자동으로 재생성을 시도한다(사람 검수 없이 AI가 AI 출력을 스스로 고치는
-    자동화 루프). 두 번째 시도에서도 문제가 남으면, 발송을 막지 않고 그대로
-    진행하되 로그에 검증 결과를 남긴다(관리자가 나중에 모니터링할 수 있도록).
+    최대 max_retries번 자동으로 재생성을 시도한다(사람 검수 없이 AI가 AI 출력을
+    스스로 고치는 자동화 루프). 재시도를 다 쓰고도 문제가 남으면, 발송을 막지
+    않고 그대로 진행하되 로그에 검증 결과를 남긴다(관리자가 나중에 모니터링할
+    수 있도록).
 
     검증은 두 단계다:
     1. check_mechanical_rules - 금지 단어/한자/분량처럼 코드로 100% 정확하게 확인
@@ -281,6 +317,10 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
        사실 일치 여부를 2차(저렴한) Claude 호출로 확인. computed_facts를 이미
        프롬프트에 줬기 때문에 대부분의 숫자 오류는 애초에 나오지 않아야 하지만,
        안전망으로 유지한다.
+
+    재시도는 1회로는 분량 미달 같은 문제가 완전히 안 고쳐지는 경우가 실제
+    테스트로 확인됐기 때문에 기본 2회까지 시도한다(총 최대 3번 생성: 원본 +
+    재시도 2회). 매 재시도마다 현재 상태 기준으로 새 교정 지시를 만든다.
 
     반환값: (report_text, validation_result) - validation_result에는 "consistent"와
     "issues"가 들어있고, mechanical 문제는 issues 안에 {"claim": "...", "problem": "..."}
@@ -301,28 +341,21 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
 
     validation = _full_validation(report_text)
 
-    if not validation["consistent"]:
-        issues_text = "\n".join(
-            f"- 문제: \"{issue.get('claim', '')}\"\n  {issue.get('problem', '')}"
-            for issue in validation["issues"]
-        )
-        correction_note = (
-            "\n\n[자동 검증 결과 - 반드시 수정] 방금 작성한 초안에서 아래와 같은 문제가 "
-            "발견되었습니다. 이 문제들을 고쳐서 리포트 전체를 처음부터 다시 작성하세요. "
-            "특히 오행/축 등장 횟수와 관련된 숫자는 [계산된 사실]에 이미 정확히 계산되어 "
-            "있으니 그 숫자를 그대로 사용하고, 분량이 부족하다면 각 섹션 설명을 충분히 "
-            "늘려서 다시 쓰세요:\n" + issues_text
-        )
+    attempts = 0
+    while not validation["consistent"] and attempts < max_retries:
+        attempts += 1
+        correction_note = _build_correction_note(validation, min_words=min_words)
         retried_text = _regenerate_with_correction(
             prompt_template_name, variables, correction_note, api_key=api_key
         )
-        if retried_text:
-            report_text = retried_text
-            validation = _full_validation(report_text)
+        if not retried_text:
+            break
+        report_text = retried_text
+        validation = _full_validation(report_text)
 
     if not validation["consistent"]:
         print(
-            f"[report_pipeline] 경고: {prompt_template_name} 자동 재생성 후에도 "
+            f"[report_pipeline] 경고: {prompt_template_name} 자동 재생성 {attempts}회 후에도 "
             f"검증 실패 - issues={validation.get('issues')}"
         )
 
