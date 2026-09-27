@@ -33,6 +33,7 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.platypus import (
+    HRFlowable,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -122,24 +123,40 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90):
 # PDF 생성
 # ---------------------------------------------------------------------------
 
+# 폰트: 사이트는 헤딩에 Fraunces(세리프)+본문에 Work Sans를 쓰는데, 커스텀 폰트
+# 임베딩 없이도 브랜드 톤에 가깝게 하려고 reportlab 코어 폰트 중 세리프 계열인
+# Times를 헤딩에 써서 "그냥 워드 문서" 같던 인상을 줄였다 (본문은 가독성 위해
+# Helvetica 유지 — 사이트에서도 세리프 헤딩 + 산세리프 본문 조합을 씀).
 _PDF_STYLES = {
     "title": ParagraphStyle(
-        "PaljaTitle", fontName="Helvetica-Bold", fontSize=22, leading=28,
-        spaceAfter=4 * mm, textColor="#211D1A",
+        "PaljaTitle", fontName="Times-Bold", fontSize=24, leading=30,
+        spaceAfter=2 * mm, textColor="#211D1A",
     ),
     "subtitle": ParagraphStyle(
-        "PaljaSubtitle", fontName="Helvetica", fontSize=11, leading=15,
-        spaceAfter=10 * mm, textColor="#6B625A",
+        "PaljaSubtitle", fontName="Times-Italic", fontSize=12, leading=16,
+        spaceAfter=10 * mm, textColor="#8A6F5C",
     ),
     "h2": ParagraphStyle(
-        "PaljaH2", fontName="Helvetica-Bold", fontSize=15, leading=20,
-        spaceBefore=6 * mm, spaceAfter=3 * mm, textColor="#211D1A",
+        "PaljaH2", fontName="Times-Bold", fontSize=16, leading=21,
+        spaceBefore=7 * mm, spaceAfter=1 * mm, textColor="#211D1A",
     ),
     "body": ParagraphStyle(
         "PaljaBody", fontName="Helvetica", fontSize=10.5, leading=16,
         spaceAfter=3.5 * mm, textColor="#3B3630",
     ),
+    "bullet": ParagraphStyle(
+        "PaljaBullet", fontName="Helvetica", fontSize=10.5, leading=16,
+        spaceAfter=2 * mm, textColor="#3B3630",
+        leftIndent=4 * mm, bulletIndent=0, bulletFontName="Helvetica",
+    ),
 }
+
+# h2 제목 바로 아래 그리는 얇은 테라코타 밑줄 — 사이트의 브랜드 액센트 컬러(#C1442E)를
+# PDF에도 살짝 가져와서, 완전히 무채색이던 예전 PDF보다 브랜드 일관성을 높임.
+_H2_RULE = HRFlowable(
+    width=18 * mm, thickness=1.6, color="#C1442E", spaceBefore=0, spaceAfter=4 * mm,
+    hAlign="LEFT", lineCap="round",
+)
 
 
 _BOLD_MARKDOWN_RE = re.compile(r"\*\*(.+?)\*\*")
@@ -186,10 +203,19 @@ def _report_text_to_flowables(report_text):
         safe = _markdown_bold_to_reportlab(safe)
         if line.startswith("## "):
             flowables.append(Paragraph(safe[3:].strip(), _PDF_STYLES["h2"]))
+            flowables.append(_H2_RULE)
         elif line.startswith("### "):
             flowables.append(Paragraph(safe[4:].strip(), _PDF_STYLES["h2"]))
+            flowables.append(_H2_RULE)
         elif line.startswith("# "):
             flowables.append(Paragraph(safe[2:].strip(), _PDF_STYLES["h2"]))
+            flowables.append(_H2_RULE)
+        elif line.startswith("- ") or line.startswith("* ") or line.startswith("• "):
+            # 예전엔 이 줄들이 그냥 "- 텍스트"로 그대로 찍혀서 제대로 된 글머리
+            # 기호처럼 안 보였음 — reportlab의 bulletText로 실제 불릿을 그린다.
+            flowables.append(
+                Paragraph(safe[2:].strip(), _PDF_STYLES["bullet"], bulletText="•")
+            )
         else:
             flowables.append(Paragraph(safe, _PDF_STYLES["body"]))
     return flowables
