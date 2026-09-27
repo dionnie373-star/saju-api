@@ -160,6 +160,64 @@ class TimezoneBugFixTests(unittest.TestCase):
         # 원본 "현지 시각"은 그대로 보존되어야 한다(나이 계산 등에 쓰임).
         self.assertEqual(result["input"]["birth_datetime_parsed"], "1991-03-14T07:30:00")
 
+        # 2026-09-28 production 검증에서 실측 확인된 정답값 그대로 고정(회귀 안전망).
+        # 이 4주 중 하나라도 바뀌면 timezone/진태양시 파이프라인이 어딘가 깨진 것이다.
+        pillars = result["pillars"]
+        self.assertEqual(pillars["year"]["hanja"], "辛未")
+        self.assertEqual(pillars["month"]["hanja"], "辛卯")
+        self.assertEqual(pillars["day"]["hanja"], "癸未")
+        self.assertEqual(pillars["hour"]["hanja"], "丙辰")  # 辰時 — 子時 아님(버그였던 부분)
+
+    def test_run_calculation_dst_winter_vs_summer_produce_different_hour_pillars(self):
+        """같은 07:30 입력이라도 겨울(CET)과 여름(CEST)은 실제 UTC 절대시각이
+        달라서 시주가 달라야 한다 — DST가 KST 환산 단계에서 실제로 반영된다는
+        end-to-end 증거(단순 kst_equivalent_moment 값이 아니라 최종 시주까지)."""
+        winter = run_calculation({
+            "birth_date": "1991-01-14", "birth_time": "07:30", "birth_city": "Berlin",
+        })
+        summer = run_calculation({
+            "birth_date": "1991-07-14", "birth_time": "07:30", "birth_city": "Berlin",
+        })
+        self.assertEqual(winter["input"]["kst_equivalent_moment"], "1991-01-14T15:30:00")
+        self.assertEqual(summer["input"]["kst_equivalent_moment"], "1991-07-14T14:30:00")
+        self.assertEqual(winter["pillars"]["hour"]["hanja"], "戊辰")
+        self.assertEqual(summer["pillars"]["hour"]["hanja"], "己卯")
+        self.assertNotEqual(winter["pillars"]["hour"], summer["pillars"]["hour"])
+
+    def test_run_calculation_midnight_rollover_is_internally_consistent(self):
+        """베를린 23:30(자정 전)과 다음날 00:30(자정 후) — local date가 하루
+        넘어가면 KST-환산 날짜와 일주도 함께, 논리적으로 일관되게 넘어가야 한다.
+        둘 다 실제로 자정 근접 시각이므로 시주가 子時(甲子)로 나오는 것 자체는
+        정상이다 — 버그였던 것은 "07:30 같은 낮 시간"이 子時로 나오는 것이었다."""
+        before = run_calculation({
+            "birth_date": "1991-03-14", "birth_time": "23:30", "birth_city": "Berlin",
+        })
+        after = run_calculation({
+            "birth_date": "1991-03-15", "birth_time": "00:30", "birth_city": "Berlin",
+        })
+        self.assertEqual(before["input"]["kst_equivalent_moment"], "1991-03-15T07:30:00")
+        self.assertEqual(after["input"]["kst_equivalent_moment"], "1991-03-15T08:30:00")
+        # 로컬 날짜가 03-14 -> 03-15로 넘어가면 일주도 함께 넘어간다.
+        self.assertEqual(before["pillars"]["day"]["hanja"], "癸未")
+        self.assertEqual(after["pillars"]["day"]["hanja"], "甲申")
+        # 둘 다 자정 근접 시각이라 시주는 子時(甲子)로 동일 — 정상.
+        self.assertEqual(before["pillars"]["hour"]["hanja"], "甲子")
+        self.assertEqual(after["pillars"]["hour"]["hanja"], "甲子")
+
+    def test_run_calculation_seoul_pillars_are_the_known_good_regression_values(self):
+        """한국 사용자 계산은 이번 timezone 수정과 무관하게(항등변환이므로)
+        수정 전과 완전히 동일해야 한다 — 정확한 4주 값을 고정해 회귀를 막는다."""
+        result = run_calculation({
+            "birth_date": "1991-03-14", "birth_time": "07:30", "birth_city": "Seoul",
+        })
+        self.assertEqual(result["input"]["timezone"], "Asia/Seoul")
+        self.assertEqual(result["input"]["kst_equivalent_moment"], "1991-03-14T07:30:00")
+        pillars = result["pillars"]
+        self.assertEqual(pillars["year"]["hanja"], "辛未")
+        self.assertEqual(pillars["month"]["hanja"], "辛卯")
+        self.assertEqual(pillars["day"]["hanja"], "癸未")
+        self.assertEqual(pillars["hour"]["hanja"], "乙卯")
+
     def test_same_literal_clock_time_gives_different_pillars_in_berlin_vs_seoul(self):
         # 이게 바로 실측으로 발견한 버그의 핵심 증거: 도시만 바꿨는데 일간(본인
         # 자신, 일주의 천간)까지 달라지면 안 되는 게 아니라 — 실제 절대적인 출생
