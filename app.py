@@ -30,7 +30,8 @@ import re
 import sys
 import threading
 import time
-from datetime import datetime, date, time as dtime
+from datetime import datetime, date, time as dtime, timedelta, timezone as dt_timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import Flask, request, jsonify, send_from_directory
 
@@ -92,12 +93,67 @@ KNOWN_CITY_LONGITUDE = {
 
 DEFAULT_LONGITUDE = 10.4515  # 독일 중앙 부근 경도 (도시를 못 찾았을 때의 최종 대비값)
 
+# 심각한 버그 수정(2026-09-27): 아래 "시간대" 테이블이 추가되기 전까지는, 사용자가
+# 입력한 "현지 시계 시각"(예: 베를린 07:30)을 아무 변환 없이 그대로 한국표준시(KST)
+# 시각으로 취급한 뒤, 거기에 "한국 내부 지역차 보정" 공식((경도-135°)×4분)을 그대로
+# 적용하고 있었다. 이러면 베를린은 (13.4-135)×4 ≈ -8시간6분이라는 터무니없는
+# 보정이 걸려서, 실제로는 오전인데 자시(子時, 23~01시)로 계산되는 등 시주(時柱)가
+# 거의 항상 틀리고, 자정을 넘나드는 경우 일주(日柱)까지 틀어졌다(실측으로 확인,
+# 예: 1991-03-14 07:30 베를린 → 잘못된 결과 시주=壬子/일주=壬午, 서울로 바꾸면
+# 완전히 다른 일주=癸未가 나옴 — 도시만 바꿔도 "일간(본인 자신)" 자체가 바뀌는 건
+# 명백히 버그). 아직 실제 결제 고객에게 발송된 리포트가 없어(사업 오픈 전, Paddle
+# 샌드박스 테스트만 진행), 재발송 없이 지금 바로 근본 수정한다.
+#
+# 수정 방법: 사용자가 입력한 시각을 "출생지의 실제 시간대"(아래 표)로 정확히
+# 해석해서(역사적 서머타임까지 IANA tzdata가 자동 처리) 진짜 UTC 절대시각을 구한 뒤,
+# 그 절대시각의 "한국표준시(UTC+9) 환산 시각"을 계산해서 그걸 korean_saju 라이브러리에
+# 넘긴다. korean_saju 내부 로직(연주/월주 절기 비교, 진태양시 보정 공식 전부)은
+# "입력이 이미 정확한 KST"라는 전제로 설계돼 있으므로, 그 전제만 실제로 충족시켜주면
+# 라이브러리 자체는 수정할 필요가 없다 — (경도-135)×4 보정도 KST 환산 시각과
+# 결합하면 대수적으로 정확히 "UTC + 경도/15시간"(보편적 진태양시 공식)이 된다.
+KNOWN_CITY_TIMEZONE = {
+    # 독일
+    "berlin": "Europe/Berlin", "hamburg": "Europe/Berlin", "münchen": "Europe/Berlin",
+    "munich": "Europe/Berlin", "köln": "Europe/Berlin", "koeln": "Europe/Berlin",
+    "cologne": "Europe/Berlin", "frankfurt": "Europe/Berlin",
+    "frankfurt am main": "Europe/Berlin", "stuttgart": "Europe/Berlin",
+    "düsseldorf": "Europe/Berlin", "duesseldorf": "Europe/Berlin",
+    "leipzig": "Europe/Berlin", "dortmund": "Europe/Berlin", "essen": "Europe/Berlin",
+    "bremen": "Europe/Berlin", "dresden": "Europe/Berlin", "hannover": "Europe/Berlin",
+    "hanover": "Europe/Berlin", "nürnberg": "Europe/Berlin", "nuernberg": "Europe/Berlin",
+    "nuremberg": "Europe/Berlin", "duisburg": "Europe/Berlin", "bochum": "Europe/Berlin",
+    "wuppertal": "Europe/Berlin", "bielefeld": "Europe/Berlin", "bonn": "Europe/Berlin",
+    "münster": "Europe/Berlin", "muenster": "Europe/Berlin", "karlsruhe": "Europe/Berlin",
+    "mannheim": "Europe/Berlin", "augsburg": "Europe/Berlin", "wiesbaden": "Europe/Berlin",
+    "mönchengladbach": "Europe/Berlin", "gelsenkirchen": "Europe/Berlin",
+    "braunschweig": "Europe/Berlin", "chemnitz": "Europe/Berlin", "kiel": "Europe/Berlin",
+    "aachen": "Europe/Berlin",
+    # 오스트리아
+    "wien": "Europe/Vienna", "vienna": "Europe/Vienna", "salzburg": "Europe/Vienna",
+    "graz": "Europe/Vienna", "innsbruck": "Europe/Vienna",
+    # 스위스
+    "zürich": "Europe/Zurich", "zuerich": "Europe/Zurich", "zurich": "Europe/Zurich",
+    "bern": "Europe/Zurich", "basel": "Europe/Zurich", "genf": "Europe/Zurich",
+    "geneva": "Europe/Zurich",
+    # 한국
+    "서울": "Asia/Seoul", "seoul": "Asia/Seoul", "부산": "Asia/Seoul", "busan": "Asia/Seoul",
+    "인천": "Asia/Seoul", "incheon": "Asia/Seoul", "대구": "Asia/Seoul", "daegu": "Asia/Seoul",
+}
 
-def _lookup_longitude(city_name):
-    """도시 이름 -> 경도. 1) 내장 표 2) 무료 지오코딩 API 3) 기본값 순으로 시도."""
+DEFAULT_TIMEZONE = "Europe/Berlin"  # 독일 타겟 서비스이므로 도시를 못 찾았을 때의 기본값
+
+
+def _lookup_location(city_name):
+    """도시 이름 -> (경도, 시간대, 출처). 1) 내장 표 2) 무료 지오코딩 API 3) 기본값 순으로 시도.
+
+    시간대(IANA 이름, 예: "Europe/Berlin")가 있어야 사용자가 입력한 "현지 시계
+    시각"을 정확한 절대시각(UTC)으로 변환할 수 있다 — 경도만으로는 이게 불가능하다
+    (경도는 사주 계산 내부의 진태양시 보정에만 쓰이고, 실제 시간대 오프셋/서머타임
+    여부는 별도로 알아야 한다).
+    """
     key = city_name.strip().lower()
     if key in KNOWN_CITY_LONGITUDE:
-        return KNOWN_CITY_LONGITUDE[key], "known_city"
+        return KNOWN_CITY_LONGITUDE[key], KNOWN_CITY_TIMEZONE.get(key, DEFAULT_TIMEZONE), "known_city"
 
     try:
         import urllib.parse
@@ -114,11 +170,42 @@ def _lookup_longitude(city_name):
             data = _json.loads(resp.read().decode("utf-8"))
         results = data.get("results") or []
         if results:
-            return float(results[0]["longitude"]), "geocoded"
+            r = results[0]
+            # Open-Meteo 지오코딩 응답에는 "timezone" 필드(IANA 이름)가 같이 온다.
+            tz_name = r.get("timezone") or DEFAULT_TIMEZONE
+            return float(r["longitude"]), tz_name, "geocoded"
     except Exception:
         pass
 
-    return DEFAULT_LONGITUDE, "default_fallback"
+    return DEFAULT_LONGITUDE, DEFAULT_TIMEZONE, "default_fallback"
+
+
+def _to_kst_equivalent_moment(local_dt, timezone_name):
+    """출생지 "현지 시계" naive datetime -> korean_saju가 기대하는 "KST 환산" naive datetime.
+
+    korean_saju 내부(연주/월주 절기 비교, 진태양시 보정 공식)는 전달받은 datetime을
+    "이미 정확한 한국표준시(UTC+9)"라고 전제하고 동작한다. 그래서 사용자가 입력한
+    "베를린 현지시각 07:30" 같은 걸 그대로 넘기면 안 되고, 다음 과정을 거쳐야 한다:
+
+    1. `timezone_name`(예: "Europe/Berlin")으로 이 naive datetime을 실제 시간대가
+       적용된 aware datetime으로 해석 — 이 단계에서 역사적 서머타임까지 IANA tzdata가
+       자동으로 반영된다(예: 1990-07 베를린은 UTC+2, 1990-01 베를린은 UTC+1).
+    2. 그 절대 시각(UTC)을 구한다.
+    3. UTC + 9시간 = "이 순간을 한국에서는 몇 시로 부르는가"를 계산해서, tzinfo를
+       뗀 naive datetime으로 반환한다 — 이게 korean_saju가 기대하는 형태다.
+
+    `timezone_name`을 알 수 없는 경우(잘못된 문자열 등)는 DEFAULT_TIMEZONE으로
+    안전하게 대체한다(전체 계산이 예외로 죽는 것보다 낫다).
+    """
+    try:
+        zone = ZoneInfo(timezone_name)
+    except (ZoneInfoNotFoundError, ValueError, KeyError):
+        zone = ZoneInfo(DEFAULT_TIMEZONE)
+
+    aware_local = local_dt.replace(tzinfo=zone)
+    utc_instant = aware_local.astimezone(dt_timezone.utc)
+    kst_equivalent = utc_instant + timedelta(hours=9)
+    return kst_equivalent.replace(tzinfo=None)
 
 
 def _parse_flexible_date(s):
@@ -302,18 +389,24 @@ def _resolve_gender(gender_str):
     raise ValueError("gender 값은 'male' 또는 'female'(또는 '남'/'여')이어야 합니다.")
 
 
-def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8):
+def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8, birth_local_date=None):
     """프리미엄(대운) 리포트용: 10년 단위 대운 시퀀스 + 각 시기의 십성/축 계산.
 
     대운의 진행 방향(순행/역행)은 연간(年干)의 음양과 성별의 조합으로 정해지므로
     (양남·음녀=순행, 음남·양녀=역행), 대운 계산에는 성별이 반드시 필요하다.
     각 대운 시기의 십성은 이 사람의 일간(day_stem) 기준으로 계산해서
     재물운/관계운/직업운/총운 중 어느 축이 두드러지는 시기인지 매긴다.
+
+    birth_local_date: 나이 계산에 쓸 "출생지 현지 달력 날짜". saju.kst_moment는
+    시간대 버그 수정(2026-09-27) 이후로 "KST 환산 시각"이라 자정 근처 출생자는
+    현지 날짜와 하루 어긋날 수 있다 — 나이는 반드시 실제 현지 생일 기준으로 계산해야
+    하므로 이 값을 우선 사용한다. 생략 시(예: 과거 호출부 호환) saju.kst_moment.date()로
+    대체한다.
     """
     gender = _resolve_gender(gender_str)
     daewoon = Daewoon.compute(saju=saju, gender=gender, solar_terms=solar_terms, count=count)
 
-    birth_date = saju.kst_moment.date()
+    birth_date = birth_local_date if birth_local_date is not None else saju.kst_moment.date()
     today = date.today()
     current_age = today.year - birth_date.year - (
         (today.month, today.day) < (birth_date.month, birth_date.day)
@@ -433,6 +526,7 @@ def run_calculation(payload):
     name = payload.get("name")
     longitude = payload.get("longitude")
     birth_city = payload.get("birth_city")
+    timezone_override = payload.get("timezone")  # 선택: 명시적으로 IANA 시간대를 줄 수도 있음
     yaja_si_separated = payload.get("yaja_si_separated", True)
     target_year = payload.get("target_year")
 
@@ -445,17 +539,30 @@ def run_calculation(payload):
         raise CalcError(f"생년월일시를 해석할 수 없습니다: {e}") from e
 
     longitude_source = "provided"
+    timezone_name = timezone_override or DEFAULT_TIMEZONE
     if longitude is not None:
         try:
             longitude = float(longitude)
         except (TypeError, ValueError):
             raise CalcError("longitude 값은 숫자여야 합니다.") from None
+        if birth_city and not timezone_override:
+            # longitude를 직접 줬어도 birth_city가 같이 왔으면 시간대는 도시로 찾는다.
+            _, timezone_name, _ = _lookup_location(birth_city)
     else:
-        longitude, longitude_source = _lookup_longitude(birth_city)
+        longitude, timezone_name_from_city, longitude_source = _lookup_location(birth_city)
+        if not timezone_override:
+            timezone_name = timezone_name_from_city
+
+    # 버그 수정(2026-09-27): 사용자가 입력한 건 "출생지 현지 시계 시각"이지 한국표준시가
+    # 아니다. 이걸 그대로 korean_saju에 넘기면 시주/일주가 크게 틀어진다 — 위
+    # KNOWN_CITY_TIMEZONE 블록의 설명 참고. birth_dt(현지 시각 원본)는 나이 계산 등에
+    # 쓰기 위해 그대로 보존하고, 실제 사주 계산에는 KST 환산 시각만 사용한다.
+    birth_local_dt = birth_dt
+    kst_equivalent_moment = _to_kst_equivalent_moment(birth_local_dt, timezone_name)
 
     try:
         saju = Saju.from_birth(
-            kst_moment=birth_dt,
+            kst_moment=kst_equivalent_moment,
             solar_terms=_solar_terms,
             longitude=longitude,
             yaja_si_separated=bool(yaja_si_separated),
@@ -522,6 +629,7 @@ def run_calculation(payload):
                 gender_str=gender,
                 solar_terms=_solar_terms,
                 count=int(daewoon_count),
+                birth_local_date=birth_local_dt.date(),
             )
             daewoon_compact = _build_daewoon_compact(daewoon_out)
         except Exception as e:
@@ -531,10 +639,12 @@ def run_calculation(payload):
         "ok": True,
         "input": {
             "name": name,
-            "birth_datetime_parsed": birth_dt.isoformat(),
+            "birth_datetime_parsed": birth_local_dt.isoformat(),
             "birth_city": birth_city,
             "longitude": longitude,
             "longitude_source": longitude_source,
+            "timezone": timezone_name,
+            "kst_equivalent_moment": kst_equivalent_moment.isoformat(),
             "yaja_si_separated": bool(yaja_si_separated),
         },
         "pillars": {

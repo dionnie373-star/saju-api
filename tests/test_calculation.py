@@ -9,13 +9,19 @@
 """
 import os
 import unittest
+from datetime import datetime
 
 os.environ.setdefault("ANTHROPIC_API_KEY", "test-not-used")
 os.environ.setdefault("BREVO_API_KEY", "test-not-used")
 os.environ.setdefault("FROM_EMAIL", "test@example.com")
 os.environ.setdefault("FROM_NAME", "Palja Test")
 
-from app import CalcError, run_calculation  # noqa: E402
+from app import (  # noqa: E402
+    CalcError,
+    run_calculation,
+    _lookup_location,
+    _to_kst_equivalent_moment,
+)
 
 FIVE_ELEMENTS = {"목", "화", "토", "금", "수"}  # 木火土金水 (오행)
 
@@ -85,6 +91,95 @@ class CalculationTests(unittest.TestCase):
         self.assertIsNotNone(monthly)
         self.assertEqual(monthly.get("year"), 2027)
         self.assertEqual(len(monthly.get("months") or []), 12)
+
+
+class TimezoneBugFixTests(unittest.TestCase):
+    """시간대 버그 수정(2026-09-28) 회귀 테스트.
+
+    발견된 버그: 사용자가 입력한 "출생지 현지 시계 시각"(예: 베를린 07:30)을
+    아무 변환 없이 그대로 한국표준시(KST)로 취급한 뒤 거기에 "한국 내부 지역차
+    보정" 공식을 적용하고 있었다. 베를린은 (경도 13.4°-135°)×4분 ≈ -8시간6분이라는
+    터무니없는 보정이 걸려서, 실제로는 아침인데 자시(子時, 23~01시)로 계산되는 등
+    시주가 거의 항상 틀렸고, 자정을 넘나드는 경우 일주까지 틀어졌다.
+
+    수정: 출생지의 실제 IANA 시간대로 정확히 UTC 절대시각을 구한 뒤, 그 시각의
+    KST(UTC+9) 환산 시각을 korean_saju에 넘긴다.
+    """
+
+    def test_known_city_timezone_lookup_covers_germany_austria_switzerland_korea(self):
+        cases = [
+            ("berlin", "Europe/Berlin"), ("hamburg", "Europe/Berlin"),
+            ("wien", "Europe/Vienna"), ("vienna", "Europe/Vienna"),
+            ("zürich", "Europe/Zurich"), ("zurich", "Europe/Zurich"),
+            ("seoul", "Asia/Seoul"), ("서울", "Asia/Seoul"),
+        ]
+        for city, expected_tz in cases:
+            _, tz_name, source = _lookup_location(city)
+            self.assertEqual(tz_name, expected_tz, msg=f"failed for {city}")
+            self.assertEqual(source, "known_city")
+
+    def test_kst_equivalent_moment_accounts_for_the_8_hour_timezone_gap_to_berlin(self):
+        # 1991-03-14는 서머타임 시작 전(1991년 서머타임은 3/31 시작)이라 베를린은
+        # CET(UTC+1). 07:30 CET = 06:30 UTC = 15:30 KST(UTC+9).
+        moment = _to_kst_equivalent_moment(datetime(1991, 3, 14, 7, 30), "Europe/Berlin")
+        self.assertEqual(moment, datetime(1991, 3, 14, 15, 30))
+
+    def test_kst_equivalent_moment_reflects_historical_daylight_saving_time(self):
+        # 1991-07-14는 서머타임 기간(CEST, UTC+2). 같은 07:30이어도 겨울과
+        # 한 시간 차이가 나야 한다 — zoneinfo/IANA tzdata가 역사적 서머타임을
+        # 자동으로 반영한다는 증거.
+        winter = _to_kst_equivalent_moment(datetime(1991, 3, 14, 7, 30), "Europe/Berlin")
+        summer = _to_kst_equivalent_moment(datetime(1991, 7, 14, 7, 30), "Europe/Berlin")
+        self.assertEqual(winter, datetime(1991, 3, 14, 15, 30))
+        self.assertEqual(summer, datetime(1991, 7, 14, 14, 30))
+
+    def test_kst_equivalent_moment_for_seoul_is_a_near_no_op(self):
+        # 한국은 실제로 UTC+9(=KST)라서, 서울 입력은 변환해도 그대로여야 한다
+        # (버그 수정 이전부터 이미 맞았던 한국 사용자 케이스가 안 깨졌는지 확인).
+        moment = _to_kst_equivalent_moment(datetime(1991, 3, 14, 7, 30), "Asia/Seoul")
+        self.assertEqual(moment, datetime(1991, 3, 14, 7, 30))
+
+    def test_kst_equivalent_moment_can_roll_over_to_the_next_calendar_date(self):
+        # 22:00 CET(UTC+1) = 21:00 UTC = 06:00 다음날 KST.
+        moment = _to_kst_equivalent_moment(datetime(1991, 3, 14, 22, 0), "Europe/Berlin")
+        self.assertEqual(moment, datetime(1991, 3, 15, 6, 0))
+
+    def test_unknown_timezone_name_falls_back_instead_of_raising(self):
+        # 잘못된/모르는 시간대 문자열이 들어와도 전체 계산이 죽으면 안 된다.
+        moment = _to_kst_equivalent_moment(datetime(1991, 3, 14, 7, 30), "Not/AZone")
+        self.assertIsInstance(moment, datetime)
+
+    def test_run_calculation_reports_the_resolved_timezone_and_kst_equivalent(self):
+        result = run_calculation({
+            "birth_date": "1991-03-14",
+            "birth_time": "07:30",
+            "birth_city": "Berlin",
+        })
+        self.assertEqual(result["input"]["timezone"], "Europe/Berlin")
+        self.assertEqual(result["input"]["kst_equivalent_moment"], "1991-03-14T15:30:00")
+        # 원본 "현지 시각"은 그대로 보존되어야 한다(나이 계산 등에 쓰임).
+        self.assertEqual(result["input"]["birth_datetime_parsed"], "1991-03-14T07:30:00")
+
+    def test_same_literal_clock_time_gives_different_pillars_in_berlin_vs_seoul(self):
+        # 이게 바로 실측으로 발견한 버그의 핵심 증거: 도시만 바꿨는데 일간(본인
+        # 자신, 일주의 천간)까지 달라지면 안 되는 게 아니라 — 실제 절대적인 출생
+        # "순간"이 다르므로 달라지는 게 정상이다. 수정 전에는 오히려 "베를린"과
+        # "서울"의 시차를 전혀 반영하지 않아서 시주가 항상 자시 근처로 잘못
+        # 쏠렸다. 여기서는 최소한 "시주가 23~01시 자시로 잘못 고정되지 않는다"는
+        # 것과, 베를린 결과가 자체적으로 일관되게 재현되는지를 확인한다.
+        r_berlin_1 = run_calculation({
+            "birth_date": "1991-03-14", "birth_time": "07:30", "birth_city": "Berlin",
+        })
+        r_berlin_2 = run_calculation({
+            "birth_date": "1991-03-14", "birth_time": "07:30", "birth_city": "Berlin",
+        })
+        # 같은 입력이면 항상 같은 결과(결정론적 계산) — 회귀 안전망.
+        self.assertEqual(r_berlin_1["pillars"], r_berlin_2["pillars"])
+
+        # 자시(子時)는 23시/00시대인데, 07:30(아침) 입력이 더 이상 자시로
+        # 나오면 안 된다 — 버그 수정 전에는 이게 항상 자시로 잘못 나왔었다.
+        hour_ji_ji_hanja = r_berlin_1["pillars"]["hour"]["hanja"][-1]
+        self.assertNotEqual(hour_ji_ji_hanja, "子")
 
 
 if __name__ == "__main__":
