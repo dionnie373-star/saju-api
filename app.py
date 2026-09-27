@@ -611,6 +611,16 @@ def favicon():
     return send_from_directory(STATIC_SITE_DIR, "favicon.svg")
 
 
+@app.route("/robots.txt", methods=["GET"])
+def robots_txt():
+    return send_from_directory(STATIC_SITE_DIR, "robots.txt")
+
+
+@app.route("/sitemap.xml", methods=["GET"])
+def sitemap_xml():
+    return send_from_directory(STATIC_SITE_DIR, "sitemap.xml")
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "saju-api", "status": "running"})
