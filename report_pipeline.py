@@ -350,6 +350,18 @@ _COMPATIBILITY_PROMO_HTML = f"""\
   </p>
 """
 
+# 독일 소비자 대상 상거래 이메일에는 발신자(사업자) 신원이 본문에 바로 보여야
+# 신뢰할 수 있다고 판단해 추가한 최소 푸터 — impressum.html과 동일한 정보.
+# TODO: palja.de 도메인이 라이브되면 아래 링크를 https://palja.de 기준으로 갱신할 것.
+_EMAIL_FOOTER_HTML = f"""\
+  <p style="font-size: 12px; line-height: 1.6; color: #A79E93; border-top: 1px solid #E4DCD1; padding-top: 14px; margin-top: 24px;">
+    Daily Ground (Jiwon Han) · <a href="{SITE_BASE_URL}/impressum" style="color: #A79E93;">Impressum</a>
+    · <a href="{SITE_BASE_URL}/datenschutz" style="color: #A79E93;">Datenschutz</a>
+    · <a href="{SITE_BASE_URL}/widerruf" style="color: #A79E93;">Widerruf</a><br>
+    Fragen? Schreib uns an <a href="mailto:dionnie373@gmail.com" style="color: #A79E93;">dionnie373@gmail.com</a>.
+  </p>
+"""
+
 _FREE_EMAIL_SUBJECT = "Dein kostenloses Saju-Profil ist da ✨"
 
 _FREE_EMAIL_HTML_TEMPLATE = """\
@@ -365,6 +377,7 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
+""" + _EMAIL_FOOTER_HTML + """\
 </div>
 """
 
@@ -430,6 +443,7 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
+""" + _EMAIL_FOOTER_HTML + """\
 </div>
 """
 
@@ -483,6 +497,7 @@ _PREMIUM_EMAIL_HTML_TEMPLATE = """\
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
+""" + _EMAIL_FOOTER_HTML + """\
 </div>
 """
 
@@ -500,6 +515,7 @@ _COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
+""" + _EMAIL_FOOTER_HTML + """\
 </div>
 """
 
