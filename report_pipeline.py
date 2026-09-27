@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import functools
 import json
 import os
 import re
@@ -28,7 +29,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import requests
+from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
+from reportlab.graphics.shapes import Drawing, Line, Rect, String
 
 from report_facts import (
     compute_daewoon_facts,
@@ -38,9 +41,12 @@ from report_facts import (
 )
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     HRFlowable,
+    PageBreak,
     Paragraph,
     SimpleDocTemplate,
     Spacer,
@@ -200,6 +206,13 @@ def validate_report_consistency(report_text, source_data, *, api_key=None, timeo
 _BANNED_WORDS = ["Schicksal", "empirisch", "wissenschaftlich", "Studien zeigen", "signifikant", "validiert"]
 _HANJA_RE = re.compile(r"[⺀-鿿豈-﫿]")  # CJK 한자/한글 통합 영역
 _WRONG_ELEMENT_WORD_RE = re.compile(r"\bGold\b")
+# 프롬프트에 "반드시 du로 쓰고 Sie는 절대 쓰지 말 것"이라는 명시적 규칙이 이미
+# 있었는데도, 실제 API 재테스트에서 유료/프리미엄 리포트 둘 다 "Sie/Ihr" 격식체로
+# 통째로 나온 사례가 발견됨(외부 디자인 리뷰에서도 독립적으로 같은 문제를
+# 지적함 - 웹은 "du" 톤인데 PDF만 "Sie"라 브랜드 목소리가 끊긴다는 지적).
+# 프롬프트 지시만으로는 안 지켜지는 게 실측으로 확인됐으니, 이것도 코드로
+# 결정론적으로 잡는다.
+_FORMAL_ADDRESS_RE = re.compile(r"\bSie\b|\bIhr(e|er|es|em|en)?\b")
 
 
 def check_mechanical_rules(report_text, *, min_words):
@@ -221,6 +234,13 @@ def check_mechanical_rules(report_text, *, min_words):
     hanja_matches = _HANJA_RE.findall(report_text)
     if hanja_matches:
         issues.append(f"한자/CJK 문자 포함됨: {''.join(sorted(set(hanja_matches)))[:20]}")
+    formal_matches = _FORMAL_ADDRESS_RE.findall(report_text)
+    if formal_matches:
+        formal_count = len(_FORMAL_ADDRESS_RE.findall(report_text))
+        issues.append(
+            f"격식체(Sie/Ihr) {formal_count}회 사용됨 - 웹사이트와 동일하게 반드시 "
+            f"'du/dein/dich' 비격식체만 써야 함(Sie/Ihr/Ihnen 전부 금지)"
+        )
     word_count = len(report_text.split())
     if word_count < min_words:
         issues.append(f"분량 미달: {word_count}단어 (최소 {min_words}단어 요구)")
@@ -366,31 +386,62 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
 # PDF 생성
 # ---------------------------------------------------------------------------
 
-# 폰트: 사이트는 헤딩에 Fraunces(세리프)+본문에 Work Sans를 쓰는데, 커스텀 폰트
-# 임베딩 없이도 브랜드 톤에 가깝게 하려고 reportlab 코어 폰트 중 세리프 계열인
-# Times를 헤딩에 써서 "그냥 워드 문서" 같던 인상을 줄였다 (본문은 가독성 위해
-# Helvetica 유지 — 사이트에서도 세리프 헤딩 + 산세리프 본문 조합을 씀).
+# 폰트: 예전엔 커스텀 폰트 임베딩 없이 reportlab 코어 폰트(Times/Helvetica)만
+# 썼는데, 실제 웹사이트(Fraunces 세리프 헤딩 + Work Sans 산세리프 본문)와
+# PDF가 완전히 다른 폰트를 쓰다 보니 "결제 후 받는 PDF가 웹사이트와 다른
+# 브랜드처럼 보인다"는 게 챗지피티 디자인 리뷰에서 지적된 가장 큰 문제였음
+# (2026-09-27). fonts/ 아래에 실제 웹사이트와 같은 TTF(Fraunces/Work Sans,
+# 둘 다 OFL 라이선스로 재배포 가능)를 임베딩해서 웹↔PDF 폰트를 통일한다.
+_FONTS_DIR = os.path.join(os.path.dirname(__file__), "fonts")
+
+
+def _register_pdf_fonts():
+    """Fraunces/Work Sans TTF를 reportlab에 등록. 이미 등록됐으면 조용히 통과."""
+    if "WorkSans" in pdfmetrics.getRegisteredFontNames():
+        return
+    pdfmetrics.registerFont(TTFont("Fraunces", os.path.join(_FONTS_DIR, "Fraunces-SemiBold.ttf")))
+    pdfmetrics.registerFont(TTFont("WorkSans", os.path.join(_FONTS_DIR, "WorkSans-Regular.ttf")))
+    pdfmetrics.registerFont(TTFont("WorkSans-Bold", os.path.join(_FONTS_DIR, "WorkSans-Bold.ttf")))
+    pdfmetrics.registerFont(TTFont("WorkSans-Italic", os.path.join(_FONTS_DIR, "WorkSans-Italic.ttf")))
+    pdfmetrics.registerFont(TTFont("WorkSans-BoldItalic", os.path.join(_FONTS_DIR, "WorkSans-BoldItalic.ttf")))
+    # registerFontFamily가 있어야 Paragraph 안의 <b>/<i> 마크업이 자동으로
+    # Bold/Italic 변형 파일을 찾아 씀 (안 해주면 그냥 Regular로 굵게 흉내만 냄).
+    pdfmetrics.registerFontFamily(
+        "WorkSans", normal="WorkSans", bold="WorkSans-Bold",
+        italic="WorkSans-Italic", boldItalic="WorkSans-BoldItalic",
+    )
+
+
+_register_pdf_fonts()
+
 _PDF_STYLES = {
     "title": ParagraphStyle(
-        "PaljaTitle", fontName="Times-Bold", fontSize=24, leading=30,
+        "PaljaTitle", fontName="Fraunces", fontSize=25, leading=31,
         spaceAfter=2 * mm, textColor="#211D1A",
     ),
     "subtitle": ParagraphStyle(
-        "PaljaSubtitle", fontName="Times-Italic", fontSize=12, leading=16,
+        "PaljaSubtitle", fontName="WorkSans-Italic", fontSize=12, leading=16,
         spaceAfter=10 * mm, textColor="#8A6F5C",
     ),
     "h2": ParagraphStyle(
-        "PaljaH2", fontName="Times-Bold", fontSize=16, leading=21,
+        "PaljaH2", fontName="Fraunces", fontSize=17, leading=22,
         spaceBefore=7 * mm, spaceAfter=1 * mm, textColor="#211D1A",
     ),
     "body": ParagraphStyle(
-        "PaljaBody", fontName="Helvetica", fontSize=10.5, leading=16,
+        "PaljaBody", fontName="WorkSans", fontSize=10.5, leading=16,
         spaceAfter=3.5 * mm, textColor="#3B3630",
     ),
     "bullet": ParagraphStyle(
-        "PaljaBullet", fontName="Helvetica", fontSize=10.5, leading=16,
+        "PaljaBullet", fontName="WorkSans", fontSize=10.5, leading=16,
         spaceAfter=2 * mm, textColor="#3B3630",
-        leftIndent=4 * mm, bulletIndent=0, bulletFontName="Helvetica",
+        leftIndent=4 * mm, bulletIndent=0, bulletFontName="WorkSans",
+    ),
+    # 챗지피티 디자인 리뷰 제안(Pull Quote): 인용문 한 줄(">"로 시작하는 마크다운
+    # 블록쿼트)을 본문에 묻히지 않게 큼직한 세리프 이탤릭으로 뽑아서 보여준다.
+    "pullquote": ParagraphStyle(
+        "PaljaPullQuote", fontName="Fraunces", fontSize=15, leading=21,
+        spaceBefore=5 * mm, spaceAfter=5 * mm, textColor="#8A6F5C",
+        leftIndent=6 * mm, rightIndent=6 * mm,
     ),
 }
 
@@ -451,33 +502,139 @@ def _report_text_to_flowables(report_text):
         if _SECTION_DIVIDER_RE.match(line):
             flowables.append(_SECTION_DIVIDER_RULE)
             continue
-        # PDF 인코딩은 Helvetica 코어 폰트(Latin-1/WinAnsi)라 독일어 움라우트(äöüß)나
-        # 줄표(–/—) 등은 문제없지만, '<', '&' 등은 escape 해줘야 reportlab의
-        # 미니 마크업 파서가 안 깨진다. 이스케이프 후에 **굵게** -> <b> 변환.
-        safe = line.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-        safe = _markdown_bold_to_reportlab(safe)
+
+        # 줄 종류에 따라 태그 접두사를 떼어낸 "본문 텍스트"만 먼저 뽑아낸다.
+        # (예전엔 이스케이프를 줄 전체에 먼저 하고 나서 접두사를 잘라서, ">"로
+        # 시작하는 인용구를 감지하려면 이미 "&gt;"로 바뀐 뒤라 감지가 안 됐음.)
         if line.startswith("## "):
-            flowables.append(Paragraph(safe[3:].strip(), _PDF_STYLES["h2"]))
-            flowables.append(_H2_RULE)
+            kind, content = "h2", line[3:].strip()
         elif line.startswith("### "):
-            flowables.append(Paragraph(safe[4:].strip(), _PDF_STYLES["h2"]))
-            flowables.append(_H2_RULE)
+            kind, content = "h2", line[4:].strip()
         elif line.startswith("# "):
-            flowables.append(Paragraph(safe[2:].strip(), _PDF_STYLES["h2"]))
-            flowables.append(_H2_RULE)
+            kind, content = "h2", line[2:].strip()
         elif line.startswith("- ") or line.startswith("* ") or line.startswith("• "):
+            kind, content = "bullet", line[2:].strip()
+        elif line.startswith("> "):
+            # 챗지피티 디자인 리뷰 제안(Pull Quote): Claude가 마크다운 블록쿼트로
+            # 표시한 한 문장을 본문에 묻히지 않게 큼직한 세리프 인용구로 뽑아낸다.
+            kind, content = "pullquote", line[2:].strip().strip('"').strip('„').strip('"')
+        else:
+            kind, content = "body", line
+
+        # PDF 인코딩은 core/TTF 폰트라 독일어 움라우트(äöüß)나 줄표(–/—) 등은
+        # 문제없지만, '<', '&' 등은 escape 해줘야 reportlab의 미니 마크업
+        # 파서가 안 깨진다. 이스케이프 후에 **굵게**/*기울임* -> <b>/<i> 변환.
+        safe = content.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        safe = _markdown_bold_to_reportlab(safe)
+
+        if kind == "h2":
+            flowables.append(Paragraph(safe, _PDF_STYLES["h2"]))
+            flowables.append(_H2_RULE)
+        elif kind == "bullet":
             # 예전엔 이 줄들이 그냥 "- 텍스트"로 그대로 찍혀서 제대로 된 글머리
             # 기호처럼 안 보였음 — reportlab의 bulletText로 실제 불릿을 그린다.
-            flowables.append(
-                Paragraph(safe[2:].strip(), _PDF_STYLES["bullet"], bulletText="•")
-            )
+            flowables.append(Paragraph(safe, _PDF_STYLES["bullet"], bulletText="•"))
+        elif kind == "pullquote":
+            flowables.append(Paragraph(f"„{safe}“", _PDF_STYLES["pullquote"]))
         else:
             flowables.append(Paragraph(safe, _PDF_STYLES["body"]))
     return flowables
 
 
-def build_pdf(out_path, *, title, subtitle, report_text):
-    """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장."""
+# 축(재물운/관계운/직업운/총운)별 색 — 사이트 하단의 오방색(단청) 줄무늬
+# (초록/빨강/노랑/크림/다크)에서 그대로 가져와서 웹과 PDF의 색 언어를 통일한다.
+_AXIS_COLORS = {
+    "재물운": "#C1442E",  # 테라코타
+    "관계운": "#2F6F4E",  # 녹색
+    "직업운": "#D4A017",  # 골드
+    "총운": "#8A6F5C",    # 뉴트럴 브라운
+}
+_AXIS_LABELS_DE = {
+    "재물운": "Ressourcen",
+    "관계운": "Beziehung",
+    "직업운": "Talent & Werk",
+    "총운": "Stabilität",
+}
+
+
+def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166):
+    """80년 대운을 가로 타임라인 그래픽 하나로 요약해서 보여주는 Drawing.
+
+    챗지피티 디자인 리뷰 제안("Lebenslinie"): 24.90유로 리포트를 열자마자
+    전체 구조(몇 개 시기, 어떤 축이 언제 바뀌는지, "지금 여기")가 한눈에
+    보여야 "콘텐츠 양"이 시각적으로 증명된다고 지적함. LLM 문장이 아니라
+    report_facts.py가 계산한 정확한 데이터로 코드가 직접 그리므로 사실
+    오류가 날 수 없다.
+    """
+    entries = daewoon_facts["entries"]
+    n = len(entries)
+    width = width_mm * mm
+    height = 30 * mm
+    bar_y = 14 * mm
+    bar_h = 6 * mm
+    seg_w = width / n
+
+    d = Drawing(width, height)
+
+    current_index = daewoon_facts.get("current_index")
+
+    for i, entry in enumerate(entries):
+        x = i * seg_w
+        color = _AXIS_COLORS.get(entry["axis"], "#8A6F5C")
+        d.add(Rect(x, bar_y, seg_w - 1, bar_h, fillColor=HexColor(color), strokeColor=None))
+
+        # 시작 나이 라벨 (각 구간 왼쪽 경계)
+        d.add(String(x, bar_y - 8, f"{entry['start_age']}", fontName="WorkSans", fontSize=7, fillColor=HexColor("#8A8074")))
+
+        if i == current_index:
+            cx = x + (seg_w - 1) / 2
+            d.add(String(cx, bar_y + bar_h + 10, "DU BIST HIER", fontName="WorkSans-Bold", fontSize=6.5,
+                         fillColor=HexColor("#211D1A"), textAnchor="middle"))
+            d.add(Line(cx, bar_y + bar_h + 8, cx, bar_y + bar_h + 1, strokeColor=HexColor("#211D1A"), strokeWidth=1))
+
+    # 맨 끝 나이 라벨
+    last = entries[-1]
+    d.add(String(width - 6, bar_y - 8, f"{last['end_age']}", fontName="WorkSans", fontSize=7, fillColor=HexColor("#8A8074")))
+
+    # 범례: 실제로 등장하는 축만, 순서대로
+    seen_axes = list(dict.fromkeys(e["axis"] for e in entries))
+    legend_y = height - 8
+    lx = 0
+    for axis in seen_axes:
+        color = _AXIS_COLORS.get(axis, "#8A6F5C")
+        d.add(Rect(lx, legend_y, 8, 8, fillColor=HexColor(color), strokeColor=None))
+        label = _AXIS_LABELS_DE.get(axis, axis)
+        d.add(String(lx + 12, legend_y + 1, label, fontName="WorkSans", fontSize=7.5, fillColor=HexColor("#3B3630")))
+        lx += 12 + stringWidth(label, "WorkSans", 7.5) + 16
+
+    return d
+
+
+def _draw_branded_footer(canvas, doc, *, title):
+    """모든 페이지 하단에 "PALJA · <제목>"과 페이지 번호를 작게 찍는다.
+
+    챗지피티 디자인 리뷰 제안: 이런 작은 브랜드 요소가 있어야 PDF가 "그냥
+    문서"가 아니라 "상품"처럼 보인다고 지적함(2026-09-27). 표지(1페이지)에는
+    이미 큰 제목이 있으니 찍지 않는다.
+    """
+    if doc.page == 1:
+        return
+    canvas.saveState()
+    canvas.setFont("WorkSans", 8)
+    canvas.setFillColor("#A79E93")
+    y = 12 * mm
+    canvas.drawString(22 * mm, y, f"PALJA · {title}")
+    canvas.drawRightString(A4[0] - 22 * mm, y, str(doc.page))
+    canvas.restoreState()
+
+
+def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None):
+    """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
+
+    intro_flowables: 표지(제목/부제) 바로 다음, 본문 텍스트 전에 끼워 넣을
+    추가 flowable 목록(예: 프리미엄 리포트의 인생 타임라인 그래픽). 코드로
+    직접 그리는 그래픽이라 LLM이 만드는 게 아니라 항상 정확하다.
+    """
     doc = SimpleDocTemplate(
         out_path, pagesize=A4,
         leftMargin=22 * mm, rightMargin=22 * mm,
@@ -488,8 +645,12 @@ def build_pdf(out_path, *, title, subtitle, report_text):
         Paragraph(title, _PDF_STYLES["title"]),
         Paragraph(subtitle, _PDF_STYLES["subtitle"]),
     ]
+    if intro_flowables:
+        story.extend(intro_flowables)
     story.extend(_report_text_to_flowables(report_text))
-    doc.build(story)
+
+    footer = functools.partial(_draw_branded_footer, title=title.upper())
+    doc.build(story, onFirstPage=footer, onLaterPages=footer)
     return out_path
 
 
@@ -663,12 +824,15 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
 """
 
 
-def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename):
+def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None):
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pdf_path = os.path.join(tmpdir, pdf_filename)
-        build_pdf(pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text)
+        build_pdf(
+            pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
+            intro_flowables=pdf_intro_flowables,
+        )
 
         name_suffix = f" {name}" if name else ""
         html_body = email_html_template.format(name_suffix=name_suffix)
@@ -879,6 +1043,7 @@ def run_premium_signup(*, payload, calc_result):
         )
 
     computed_facts_kr = ""
+    daewoon_facts = None
     daewoon_struct = calc_result.get("daewoon")
     if daewoon_struct and daewoon_struct.get("entries"):
         try:
@@ -886,6 +1051,7 @@ def run_premium_signup(*, payload, calc_result):
             computed_facts_kr = render_daewoon_facts_kr(daewoon_facts)
         except Exception as e:  # noqa: BLE001 - 계산된 사실은 부가 QA 장치이지 필수 전제조건이 아님
             print(f"[report_pipeline] 경고: compute_daewoon_facts 실패, computed_facts 없이 진행: {e}")
+            daewoon_facts = None
 
     report_text, _validation = generate_verified_report(
         "premium_report_prompt.json",
@@ -903,6 +1069,19 @@ def run_premium_signup(*, payload, calc_result):
         min_words=3200,
     )
 
+    intro_flowables = None
+    if daewoon_facts:
+        try:
+            intro_flowables = [
+                Paragraph("Deine Lebenskarte auf einen Blick", _PDF_STYLES["h2"]),
+                _H2_RULE,
+                _build_daewoon_timeline_drawing(daewoon_facts),
+                Spacer(1, 6 * mm),
+            ]
+        except Exception as e:  # noqa: BLE001 - 타임라인 그래픽은 부가 요소, 실패해도 리포트 발송은 막지 않음
+            print(f"[report_pipeline] 경고: 타임라인 그래픽 생성 실패, 없이 진행: {e}")
+            intro_flowables = None
+
     return _send_report(
         email=email,
         name=name,
@@ -912,4 +1091,5 @@ def run_premium_signup(*, payload, calc_result):
         email_subject=_PREMIUM_EMAIL_SUBJECT,
         email_html_template=_PREMIUM_EMAIL_HTML_TEMPLATE,
         pdf_filename="Palja-Lebenskarte.pdf",
+        pdf_intro_flowables=intro_flowables,
     )
