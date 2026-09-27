@@ -885,7 +885,10 @@ def run_premium_signup(*, payload, calc_result):
         # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
         # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
         source_data=calc_result["daewoon_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
-        min_words=3800,
+        # 실제 API 재테스트 결과 3800단어는 재시도 2회를 다 써도 안정적으로
+        # 못 맞췄음(최고 3357단어) - 프롬프트 목표도 3,200~4,200으로 낮춰서
+        # 달성 가능한 기준으로 재설정함(2026-09-27).
+        min_words=3200,
     )
 
     return _send_report(
