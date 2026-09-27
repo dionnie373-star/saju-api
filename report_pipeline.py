@@ -401,6 +401,15 @@ _H2_RULE = HRFlowable(
     hAlign="LEFT", lineCap="round",
 )
 
+# Claude가 챕터/섹션 구분용으로 마크다운 구분선("---")을 종종 씀 — 예전엔 이걸
+# 그냥 플레인 텍스트 "---"로 그대로 출력해서 PDF에 마크다운 문법이 그대로 노출되는
+# 버그가 있었음(실제 샘플에서 발견, 2026-09-27). 옅은 회색 가로선으로 렌더링한다.
+_SECTION_DIVIDER_RE = re.compile(r"^(-{3,}|\*{3,}|_{3,})$")
+_SECTION_DIVIDER_RULE = HRFlowable(
+    width="100%", thickness=0.6, color="#E4DCD1", spaceBefore=3 * mm, spaceAfter=3 * mm,
+    hAlign="CENTER",
+)
+
 
 _BOLD_MARKDOWN_RE = re.compile(r"\*\*(.+?)\*\*")
 
@@ -439,6 +448,9 @@ def _report_text_to_flowables(report_text):
             flowables.append(Spacer(1, 2 * mm))
             continue
         line = _strip_unsupported_glyphs(line)
+        if _SECTION_DIVIDER_RE.match(line):
+            flowables.append(_SECTION_DIVIDER_RULE)
+            continue
         # PDF 인코딩은 Helvetica 코어 폰트(Latin-1/WinAnsi)라 독일어 움라우트(äöüß)나
         # 줄표(–/—) 등은 문제없지만, '<', '&' 등은 escape 해줘야 reportlab의
         # 미니 마크업 파서가 안 깨진다. 이스케이프 후에 **굵게** -> <b> 변환.
