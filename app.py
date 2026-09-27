@@ -29,6 +29,7 @@ import os
 import re
 import sys
 import threading
+import time
 from datetime import datetime, date, time as dtime
 
 from flask import Flask, request, jsonify, send_from_directory
@@ -658,6 +659,38 @@ def calculate():
     return jsonify(result)
 
 
+# /signup은 인증도 결제도 없는 완전 공개 엔드포인트라서, 별도 방어가 없으면
+# 스크립트로 반복 호출해서 (1) Anthropic API 비용을 계속 발생시키거나
+# (2) 임의의 제3자 이메일 주소로 원치 않는 메일을 계속 보내는 스팸 도구로
+# 악용될 수 있다. 메모리 기반의 아주 단순한 슬라이딩 윈도우 레이트리밋으로
+# 최소한의 방어선을 둔다 (Paddle 트랜잭션 중복방지 세트와 같은 방식 —
+# gunicorn 워커 1개 구성이라 프로세스 내 메모리로 충분하다).
+_RATE_LIMIT_LOCK = threading.Lock()
+_RATE_LIMIT_HISTORY = {}
+
+
+def _rate_limited(bucket: str, key: str, *, max_count: int, window_seconds: float) -> bool:
+    """(bucket, key) 조합이 window_seconds 동안 max_count번을 넘게 요청했으면
+    True. 넘지 않았으면 이번 요청을 기록하고 False를 반환한다."""
+    now = time.time()
+    cutoff = now - window_seconds
+    with _RATE_LIMIT_LOCK:
+        history = _RATE_LIMIT_HISTORY.setdefault((bucket, key), [])
+        while history and history[0] < cutoff:
+            history.pop(0)
+        if len(history) >= max_count:
+            return True
+        history.append(now)
+        return False
+
+
+def _client_ip() -> str:
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.remote_addr or "unknown"
+
+
 @app.route("/signup", methods=["POST", "OPTIONS"])
 def signup():
     """무료 리포트 신청 엔드포인트 (랜딩페이지 폼에서 호출).
@@ -677,6 +710,18 @@ def signup():
     email = (payload.get("email") or "").strip()
     if not email or "@" not in email:
         return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
+
+    # 같은 이메일로는 10분에 1번, 같은 IP로는 1시간에 5번까지만 허용.
+    if _rate_limited("signup_email", email.lower(), max_count=1, window_seconds=600):
+        return jsonify({
+            "ok": False,
+            "error": "Für diese E-Mail-Adresse wurde bereits vor Kurzem ein kostenloses Profil angefordert. Bitte schau in deinem Postfach nach oder versuche es in ein paar Minuten erneut.",
+        }), 429
+    if _rate_limited("signup_ip", _client_ip(), max_count=5, window_seconds=3600):
+        return jsonify({
+            "ok": False,
+            "error": "Zu viele Anfragen. Bitte versuche es später erneut.",
+        }), 429
 
     try:
         calc_result = run_calculation(payload)
