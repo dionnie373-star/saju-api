@@ -119,6 +119,142 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90):
     return text.strip()
 
 
+_VALIDATION_PROMPT_TEMPLATE = """아래 [원본 데이터]와 [리포트 텍스트]를 비교해서, 리포트가 원본 데이터와 \
+모순되는 숫자나 사실 주장이 있으면 찾아내세요.
+
+특히 다음을 중점적으로 확인하세요:
+- 오행/축이 몇 번 등장한다는 주장(예: "화는 두 번만 등장")이 실제 데이터의 등장 횟수와 정확히 일치하는지
+- 나이·연도 계산(예: "N개 시기 = N0년")이 실제 데이터와 일치하는지
+- 특정 달/시기를 다른 곳에서 다시 언급할 때(요약·나침반·패턴 섹션 등) 그 달/시기의 본문 챕터에서 말한 오행·축과 \
+일치하는지
+- 소제목에 "마지막"/"처음"/"유일한" 같은 서수 표현이 실제 등장 횟수와 맞는지
+
+사소한 문체 문제나 창작적 해석의 차이는 무시하고, 명확히 숫자·사실이 틀린 경우만 지적하세요.
+
+[원본 데이터]
+{source_data}
+
+[리포트 텍스트]
+{report_text}
+
+JSON으로만 답하세요. 다른 텍스트는 절대 포함하지 마세요:
+{{"consistent": true 또는 false, "issues": [{{"claim": "리포트에서 틀린 주장을 그대로 인용", "problem": "왜 틀렸는지, 실제로는 어떤지"}}]}}
+"""
+
+
+def validate_report_consistency(report_text, source_data, *, api_key=None, timeout=60):
+    """생성된 리포트 텍스트가 원본 계산 데이터(monthly_compact/daewoon_compact 등)와
+
+    모순되지 않는지 두 번째(저렴한) Claude 호출로 자동 검증한다. 사람이 검수하는 게
+    아니라 AI가 AI 출력을 검증하는 자동화 단계 — 사람이 승인하지 않아도 파이프라인
+    안에서 완결된다.
+
+    반환값: {"consistent": bool, "issues": [...]}
+    검증 호출 자체가 실패하면(네트워크 오류 등) 예외를 삼키고
+    {"consistent": True, "issues": [], "error": "..."}를 반환해서, 검증 인프라 문제로
+    정상 발송이 막히지 않게 한다(발송 자체가 더 중요한 실패 모드이기 때문).
+    """
+    api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+    if not api_key:
+        return {"consistent": True, "issues": [], "error": "ANTHROPIC_API_KEY 없음 - 검증 생략"}
+
+    prompt = _VALIDATION_PROMPT_TEMPLATE.format(source_data=source_data, report_text=report_text)
+    try:
+        resp = requests.post(
+            ANTHROPIC_API_URL,
+            headers={
+                "x-api-key": api_key,
+                "anthropic-version": ANTHROPIC_VERSION,
+                "content-type": "application/json",
+            },
+            json={
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 1500,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=timeout,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        text = "".join(p.get("text", "") for p in data.get("content", []) if p.get("type") == "text")
+        # Claude가 ```json ... ``` 코드펜스로 감쌀 수 있어서 벗겨낸다.
+        text = text.strip()
+        if text.startswith("```"):
+            text = re.sub(r"^```(?:json)?\s*", "", text)
+            text = re.sub(r"\s*```$", "", text)
+        result = json.loads(text)
+        result.setdefault("consistent", True)
+        result.setdefault("issues", [])
+        return result
+    except Exception as e:  # noqa: BLE001 - 검증은 부가 기능, 실패해도 발송은 진행
+        return {"consistent": True, "issues": [], "error": f"검증 호출 실패: {e}"}
+
+
+def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None):
+    """call_claude로 리포트를 생성하고, 자동 검증 후 문제가 있으면 한 번만 자동으로
+
+    재생성을 시도한다(사람 검수 없이 AI가 AI 출력을 스스로 고치는 자동화 루프).
+    두 번째 시도에서도 문제가 남으면, 발송을 막지 않고 그대로 진행하되 로그에
+    검증 결과를 남긴다(관리자가 나중에 모니터링할 수 있도록).
+
+    반환값: (report_text, validation_result)
+    """
+    report_text = call_claude(prompt_template_name, variables, api_key=api_key)
+    validation = validate_report_consistency(report_text, source_data, api_key=api_key)
+
+    if not validation.get("consistent", True) and validation.get("issues"):
+        issues_text = "\n".join(
+            f"- 문제 있는 문장: \"{issue.get('claim', '')}\"\n  실제로는: {issue.get('problem', '')}"
+            for issue in validation["issues"]
+        )
+        correction_note = (
+            "\n\n[자동 검증 결과 - 반드시 수정] 방금 작성한 초안에서 아래와 같은 데이터 불일치가 "
+            "발견되었습니다. 이 문제들을 고쳐서 리포트 전체를 처음부터 다시 작성하세요. "
+            "특히 오행/축 등장 횟수와 관련된 숫자는 [사주 계산 결과]/[월별 데이터]/[대운 데이터]를 "
+            "다시 세어서 정확히 맞추세요:\n" + issues_text
+        )
+        template = _load_prompt_template(prompt_template_name)
+        messages = []
+        for i, m in enumerate(template["messages"]):
+            content = _fill_placeholders(m["content"], variables)
+            if i == len(template["messages"]) - 1:
+                content += correction_note
+            messages.append({"role": m["role"], "content": content})
+
+        body = {
+            "model": template.get("model", "claude-haiku-4-5-20251001"),
+            "max_tokens": template.get("max_tokens", 8192),
+            "messages": messages,
+        }
+        _api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+        resp = requests.post(
+            ANTHROPIC_API_URL,
+            headers={
+                "x-api-key": _api_key,
+                "anthropic-version": ANTHROPIC_VERSION,
+                "content-type": "application/json",
+            },
+            json=body,
+            timeout=90,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            retried_text = "".join(
+                p.get("text", "") for p in data.get("content", []) if p.get("type") == "text"
+            ).strip()
+            if retried_text:
+                report_text = retried_text
+                validation = validate_report_consistency(report_text, source_data, api_key=api_key)
+
+    if not validation.get("consistent", True):
+        print(
+            f"[report_pipeline] 경고: {prompt_template_name} 자동 재생성 후에도 "
+            f"검증 실패 - issues={validation.get('issues')}"
+        )
+
+    return report_text, validation
+
+
 # ---------------------------------------------------------------------------
 # PDF 생성
 # ---------------------------------------------------------------------------
@@ -491,9 +627,10 @@ def run_paid_signup(*, payload, calc_result):
             status=500,
         )
 
-    report_text = call_claude(
+    report_text, _validation = generate_verified_report(
         "paid_report_prompt.json",
         {"compact": calc_result["compact"], "monthly_compact": calc_result["monthly_compact"]},
+        source_data=calc_result["monthly_compact"],
     )
 
     return _send_report(
@@ -606,9 +743,10 @@ def run_premium_signup(*, payload, calc_result):
             status=500,
         )
 
-    report_text = call_claude(
+    report_text, _validation = generate_verified_report(
         "premium_report_prompt.json",
         {"compact": calc_result["compact"], "daewoon_compact": calc_result["daewoon_compact"]},
+        source_data=calc_result["daewoon_compact"],
     )
 
     return _send_report(
