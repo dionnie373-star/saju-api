@@ -597,6 +597,15 @@ def legal_page(page):
     return send_from_directory(STATIC_SITE_DIR, filename)
 
 
+IMAGES_DIR = os.path.join(STATIC_SITE_DIR, "images")
+
+
+@app.route("/images/<path:filename>", methods=["GET"])
+def static_image(filename):
+    """랜딩페이지에 쓰이는 실사 이미지 서빙 (static_site/images/)."""
+    return send_from_directory(IMAGES_DIR, filename)
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "saju-api", "status": "running"})
