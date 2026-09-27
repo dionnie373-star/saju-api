@@ -247,6 +247,67 @@ def check_mechanical_rules(report_text, *, min_words):
     return issues
 
 
+# "Schicksal" 최종 방어선(2026-09-27): check_mechanical_rules + 자동 재생성
+# 루프(최대 2회)로도, 모델이 "Dies ist kein Schicksal, das über dich verhängt
+# wird" 같은 부정문으로 금지 단어를 계속 재도입하는 사례가 실제 API 테스트로
+# 확인됨(2회 재시도 후에도 잔존). 프롬프트를 더 강하게 쓰는 시도를 반복하는
+# 대신, 최종 텍스트에 대해 결정론적으로 제거하는 후처리 단계를 둔다 - 이 정규식은
+# "Schicksal"/"Schicksals"/"Schicksale"/"schicksalhaft" 등 대소문자·활용형·
+# "kein Schicksal"/"nicht Schicksal" 같은 부정 표현을 전부 잡는다(단어 자체를
+# 잡으므로 앞에 어떤 부정어가 붙어도 걸린다).
+_SCHICKSAL_WORD_RE = re.compile(r"schicksal\w*", re.IGNORECASE)
+
+
+def _strip_schicksal_sentences(text):
+    """최종 리포트 텍스트에서 'Schicksal' 계열 단어가 들어간 문장을 통째로 제거.
+
+    check_mechanical_rules/자동 재생성 루프는 그대로 유지한 채(1차 방어선),
+    이 함수는 그 루프를 다 쓰고도 문제가 남을 경우를 위한 마지막 방어선이다.
+    문장 단위로 지우는 이유: 단어만 빼면 "Dies ist kein , das ..." 처럼 문법이
+    깨지므로, 그 문장이 속한 문장 전체를 자연스럽게 들어낸다(같은 줄의 다른
+    문장이나 마크다운 접두사(#, -, >)는 그대로 보존).
+    """
+    if not _SCHICKSAL_WORD_RE.search(text):
+        return text
+
+    prefix_re = re.compile(r"^(\s*(?:#{1,3}\s+|[-*•]\s+|>\s+)?)")
+    cleaned_lines = []
+    for raw_line in text.split("\n"):
+        if not _SCHICKSAL_WORD_RE.search(raw_line):
+            cleaned_lines.append(raw_line)
+            continue
+
+        prefix_match = prefix_re.match(raw_line)
+        prefix = prefix_match.group(1) if prefix_match else ""
+        body = raw_line[len(prefix):]
+
+        # 문장 분리: 마침표/느낌표/물음표 뒤 공백 기준. 리포트 문체가 대부분
+        # 평서문이라 독일어 약어(z.B. 등) 오분리 위험은 낮고, 설령 한 문장이
+        # 둘로 잘못 나뉘어도 "Schicksal" 없는 조각은 그대로 유지되므로 안전하다.
+        sentences = re.split(r"(?<=[.!?])\s+", body)
+        kept = [s for s in sentences if not _SCHICKSAL_WORD_RE.search(s)]
+        new_body = " ".join(s for s in kept if s.strip()).strip()
+
+        if new_body:
+            cleaned_lines.append(prefix + new_body)
+        elif prefix.strip():
+            # 헤딩/불릿 줄인데 본문 전체가 날아갔으면, 빈 헤딩을 남기지 않도록
+            # 줄 자체를 스킵한다.
+            continue
+        else:
+            # 일반 본문 줄이 통째로 사라진 경우도 빈 줄로 만들지 않고 스킵한다
+            # (문단 사이 빈 줄은 원문에 이미 별도로 존재함).
+            continue
+
+    result = "\n".join(cleaned_lines)
+    # 혹시라도 남는 경우(예: 코드가 못 잡는 특수 줄바꿈 등)를 대비해 마지막으로
+    # 한 번 더 전체 텍스트 기준으로 확인 - 그래도 남으면 최소한 단어 자체는
+    # 제거해 "Schicksal" 문자열이 최종 출력에 남지 않게 한다.
+    if _SCHICKSAL_WORD_RE.search(result):
+        result = _SCHICKSAL_WORD_RE.sub("", result)
+    return result
+
+
 def _regenerate_with_correction(prompt_template_name, variables, correction_note, *, api_key=None):
     """같은 프롬프트를 다시 채우되, 마지막 사용자 메시지 끝에 교정 지시를 덧붙여
 
@@ -372,6 +433,18 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
             break
         report_text = retried_text
         validation = _full_validation(report_text)
+
+    # 최종 방어선: 재시도를 다 쓰고도 "Schicksal"이 (부정문 등으로) 남아있으면
+    # 여기서 결정론적으로 제거한다. 이후 mechanical 이슈 목록에서도 이제는
+    # 해소된 "Schicksal" 관련 항목을 걷어내서, 아래 경고 로그가 실제로 남은
+    # 문제만 정확히 보여주게 한다.
+    if _SCHICKSAL_WORD_RE.search(report_text):
+        report_text = _strip_schicksal_sentences(report_text)
+        validation["issues"] = [
+            issue for issue in validation["issues"]
+            if "Schicksal" not in issue.get("problem", "")
+        ]
+        validation["consistent"] = not validation["issues"]
 
     if not validation["consistent"]:
         print(

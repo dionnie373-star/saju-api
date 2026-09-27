@@ -122,6 +122,75 @@ class GenerateVerifiedReportTests(unittest.TestCase):
         self.assertTrue(validation["consistent"])
         self.assertEqual(len(validate_calls), 2)
 
+    def test_schicksal_surviving_all_retries_is_scrubbed_from_final_text(self):
+        # 실제로 발견된 사례(2026-09-27): 자동 재생성 2회를 다 써도 모델이
+        # "Dies ist kein Schicksal, das über dich verhängt wird." 같은 부정문으로
+        # 금지 단어를 계속 재도입했다. 이 테스트는 그 상황을 그대로 재현해서,
+        # 최종 리포트에는 "Schicksal"이 남아있으면 안 된다는 걸 보장한다.
+        draft_with_schicksal = (
+            "Der Sommer bringt neue Energie. Dies ist kein Schicksal, das über "
+            "dich verhängt wird, sondern ein Muster, das du erkennen kannst."
+        )
+        rp.call_claude = lambda *a, **kw: draft_with_schicksal
+        # 재시도해도 똑같이 "Schicksal"이 다시 나오는 최악의 경우를 시뮬레이션.
+        rp.validate_report_consistency = lambda *a, **kw: {"consistent": True, "issues": []}
+
+        with patch("report_pipeline.requests.post") as mock_post:
+            mock_post.return_value = _fake_messages_response(draft_with_schicksal)
+            text, validation = rp.generate_verified_report(
+                "paid_report_prompt.json",
+                {"compact": "x", "monthly_compact": "y"},
+                source_data="y",
+                min_words=0,
+                max_retries=2,
+            )
+
+        # 재시도(mechanical 검사가 매번 "Schicksal" 감지 -> 재생성 호출)는
+        # max_retries(2)번 소진됐어야 한다.
+        self.assertEqual(mock_post.call_count, 2)
+        # 그래도 남아있던 "Schicksal"은 최종 방어선에서 제거되어야 한다.
+        self.assertNotIn("Schicksal", text)
+        self.assertNotIn("schicksal", text.lower())
+        # 나머지 문장(관련 없는 내용)은 그대로 남아있어야 한다.
+        self.assertIn("Der Sommer bringt neue Energie.", text)
+        # 스크럽 이후에는 (다른 문제가 없었으므로) consistent==True가 되어야 한다.
+        self.assertTrue(validation["consistent"])
+        self.assertFalse(
+            any("Schicksal" in issue.get("problem", "") for issue in validation["issues"])
+        )
+
+
+class StripSchicksalSentencesTests(unittest.TestCase):
+    """_strip_schicksal_sentences 단위 테스트 - 문장 단위 제거 로직 자체를 확인."""
+
+    def test_removes_negated_schicksal_sentence_but_keeps_rest_of_paragraph(self):
+        text = (
+            "Der Sommer bringt neue Energie. Dies ist kein Schicksal, das über "
+            "dich verhängt wird. Du kannst diese Energie aktiv nutzen."
+        )
+        result = rp._strip_schicksal_sentences(text)
+        self.assertNotIn("Schicksal", result)
+        self.assertIn("Der Sommer bringt neue Energie.", result)
+        self.assertIn("Du kannst diese Energie aktiv nutzen.", result)
+
+    def test_catches_inflected_and_lowercase_forms(self):
+        for word in ("Schicksal", "Schicksals", "Schicksale", "schicksalhaft", "SCHICKSAL"):
+            text = f"Ein Satz. Etwas {word} hier. Ein weiterer Satz."
+            result = rp._strip_schicksal_sentences(text)
+            self.assertNotIn("Schicksal", result, msg=f"failed for {word}")
+            self.assertNotIn("schicksal", result.lower(), msg=f"failed for {word}")
+
+    def test_heading_line_that_becomes_empty_is_dropped_not_left_blank(self):
+        text = "## Schicksal und Wandel\n\nText danach."
+        result = rp._strip_schicksal_sentences(text)
+        self.assertNotIn("Schicksal", result)
+        self.assertNotIn("##", result)
+        self.assertIn("Text danach.", result)
+
+    def test_text_without_schicksal_is_returned_unchanged(self):
+        text = "Ein ganz normaler Satz ohne das verbotene Wort."
+        self.assertEqual(rp._strip_schicksal_sentences(text), text)
+
 
 if __name__ == "__main__":
     unittest.main()
