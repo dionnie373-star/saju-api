@@ -92,8 +92,13 @@
     되돌리면 AI 리포트 생성(30~90초 걸림) 도중 30초 기본 타임아웃에 워커가
     죽어서 결제 웹훅이 500 에러남 — 절대 --timeout 빼지 말 것)
   - 환경변수: `ANTHROPIC_API_KEY`, `BREVO_API_KEY`, `FROM_EMAIL`, `FROM_NAME`,
-    `WEBHOOK_SECRET`, `PADDLE_WEBHOOK_SECRET`, `COMPATIBILITY_PADDLE_PRICE_ID`
+    `PADDLE_WEBHOOK_SECRET`, `COMPATIBILITY_PADDLE_PRICE_ID`
     (**설정 완료** — `pri_01m3g7k8hqa7dggxxj8x5vnh1n`, 샌드박스) 등 (`.env.example` 참고)
+    — (`WEBHOOK_SECRET`는 예전 Paddle 연동 전 임시 엔드포인트용이었는데, 그
+    엔드포인트(`/internal/send-report`)가 아무데서도 안 쓰이는 죽은 코드인데다
+    시크릿이 비어있으면 인증 없이 무료로 유료/프리미엄 리포트를 발송시킬 수
+    있는 보안 구멍이라 2026-09-27에 통째로 삭제함 — Render에 이 값이 남아있어도
+    무해하지만 정리해도 됨)
 - **이메일**: Brevo (transactional API 사용, SMTP 아님)
 - **결제**: Paddle Billing — **샌드박스 연동 완료. 사용자가 라이브 계정 신청
   시작함 (아래 "라이브 전환" 항목 참고), 아직 진행 중.**
