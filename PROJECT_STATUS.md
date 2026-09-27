@@ -1,4 +1,4 @@
-# Palja 프로젝트 진행 상황 (최신 업데이트: 2026-09-27, 3일차)
+# Palja 프로젝트 진행 상황 (최신 업데이트: 2026-09-27, 3일차 — 저녁 갱신)
 
 > 다음 세션에서 이어서 작업할 때 이 파일부터 읽을 것. 사용자는 "이제 너가 나를
 > 리드해줘"라고 지시했으므로, 질문으로 막히지 말고 아래 "다음 할 일"부터 스스로
@@ -8,11 +8,28 @@
 
 한국 사주(BaZi) 스타일 리포트를 독일 소비자에게 이메일/PDF로 파는 서비스.
 무료(가입만) → 유료 9.90€(Jahresreport) → 프리미엄 24.90€(Lebenskarte) 구조.
-+ 신규: 궁합(Kompatibilität) 4.90€ 애드온 (2인 비교, 코드는 배포됐지만 Paddle
-가격 미생성으로 아직 비활성).
++ 궁합(Kompatibilität) 4.90€ 애드온 (2인 비교) — **샌드박스 가격 생성 완료,
+실제 결제로 end-to-end 검증 완료, 라이브 서비스 중.**
 백엔드는 `saju-api` (Flask, Render 배포), 결제는 Paddle Billing.
 사업자: Daily Ground (Einzelunternehmen, 대표 한지원, 사업자등록번호
 385-09-03139, 간이과세자).
+
+**이 세션(3일차 저녁)에서 사용자가 5시간 정도 외근하는 동안 혼자 진행한 작업**
+(사용자 승인 없이도 되는 비금융/비가역적 작업 위주로 스스로 판단해서 진행함):
+1. 사용자가 보내준 실사 이미지 3장(궁궐 노을 히어로, 남/여 인물 사진)을
+   실제 랜딩페이지에 적용 — 배포 완료, 브라우저로 확인 완료.
+2. 위 변경 직후 발견한 버그 수정: 모바일에서 히어로 문구가 사진의 밝은
+   하늘 부분과 겹쳐 대비가 부족했던 것 — 모바일 전용 오버레이 + text-shadow로
+   해결, 배포 후 모바일 뷰포트로 재확인 완료.
+3. SEO 메타 태그(description, Open Graph, Twitter Card) + 파비콘(SVG) 추가 —
+   이전엔 전혀 없었음.
+4. 회귀 테스트 스위트 신규 작성 (`tests/`, 표준 라이브러리 unittest만 사용,
+   pytest는 이 환경에서 pip 설치가 안 돼서 못 씀) — 웹훅 서명 검증, 동의
+   누락 거부, 중복 결제 방지, 실패 시 재시도 가능 여부, 궁합 애드온 2인
+   데이터 검증 등 17개 테스트, 전부 실제 코드로 검증 통과.
+5. `https://seoulsaju.com/en` (다국어 사주 서비스) 조사 후 우리 사업과
+   비교 분석 제공 (대화로만 전달, 파일로 저장 안 함) — 가격 포지셔닝은
+   그대로 가도 된다는 결론, 결정론적 언어 사용은 우리가 더 안전한 편.
 
 ## 배포/인프라
 
@@ -23,8 +40,8 @@
     되돌리면 AI 리포트 생성(30~90초 걸림) 도중 30초 기본 타임아웃에 워커가
     죽어서 결제 웹훅이 500 에러남 — 절대 --timeout 빼지 말 것)
   - 환경변수: `ANTHROPIC_API_KEY`, `BREVO_API_KEY`, `FROM_EMAIL`, `FROM_NAME`,
-    `WEBHOOK_SECRET`, `PADDLE_WEBHOOK_SECRET`, (신규) `COMPATIBILITY_PADDLE_PRICE_ID`
-    (아직 미설정 — Paddle에서 궁합 상품 가격 생성 후 채울 것) 등 (`.env.example` 참고)
+    `WEBHOOK_SECRET`, `PADDLE_WEBHOOK_SECRET`, `COMPATIBILITY_PADDLE_PRICE_ID`
+    (**설정 완료** — `pri_01m3g7k8hqa7dggxxj8x5vnh1n`, 샌드박스) 등 (`.env.example` 참고)
 - **이메일**: Brevo (transactional API 사용, SMTP 아님)
 - **결제**: Paddle Billing — **샌드박스 연동 완료. 사용자가 라이브 계정 신청
   시작함 (아래 "라이브 전환" 항목 참고), 아직 진행 중.**
@@ -34,9 +51,8 @@
 1. Paddle 샌드박스 대시보드에서 상품 3개(코드 기준):
    - Jahresreport (paid) — `pri_01m3f98f0s27hjx0xy4bc9em4d` — EUR 9.90
    - Lebenskarte (premium) — `pri_01m3f9bjxx7sgpr1wvm5g8k61r` — EUR 24.90
-   - Kompatibilität (compatibility, 신규) — 가격 ID 없음, `COMPATIBILITY_PADDLE_PRICE_ID`
-     env var가 비어있는 동안 프론트 버튼이 "Bald verfügbar" 에러를 냄
-     (사용자가 Paddle 대시보드에서 직접 생성해야 함 — Claude가 로그인 못 함)
+   - Kompatibilität (compatibility) — `pri_01m3g7k8hqa7dggxxj8x5vnh1n` — EUR 4.90
+     (생성 완료, 실제 결제로 검증 완료 — 아래 "궁합 애드온" 섹션 참고)
 2. Paddle 웹훅 destination 생성, `transaction.completed` 이벤트 구독,
    URL: `https://palja-api.onrender.com/webhooks/paddle`
    시크릿 키는 Render 환경변수 `PADDLE_WEBHOOK_SECRET`에 저장됨.
@@ -98,7 +114,7 @@ Transactions" 사유)에 의해 종종 자동 차단됨 — 상품 이름 입력
 되지만 라이브 가격 숫자 입력은 막히는 경우가 있어, 그 부분만 사용자가 직접
 타이핑해야 했음. 다음에 라이브 관련 입력을 할 때도 이 제약을 예상할 것.
 
-## 궁합(Kompatibilität) 애드온 — 코드 완료, 배포됨, Paddle 가격만 없어서 비활성
+## 궁합(Kompatibilität) 애드온 — 완료, 배포됨, 실제 결제로 검증 완료, 라이브 서비스 중
 
 - 배경: 사용자가 "다른 사람과의 궁합을 저렴하게, 반복 결제 유도" 컨셉 요청.
   4.90€ 1회성 구매, 계정 불필요, 몇 명이든 반복 구매 가능.
@@ -106,8 +122,6 @@ Transactions" 사유)에 의해 종종 자동 차단됨 — 상품 이름 입력
   - `static_site/index.html`: 가격표 바로 아래 `#kompatibilitaet` 섹션 —
     두 사람(Du / Die andere Person) 생년월일시+출생지 입력, 공통 이메일,
     자체 철회권 동의 체크박스, "Kompatibilität berechnen — 4,90 €" 버튼.
-    `PADDLE_PRICE_IDS.compatibility`가 빈 문자열이라 지금 누르면
-    "Der Kompatibilitäts-Check ist in Kürze verfügbar" 안내만 뜸.
   - `app.py`: `tier == "compatibility"` 웹훅 분기 — 두 사람 각각
     `run_calculation()` 호출 후 `run_compatibility_signup()`으로 전달.
     `COMPATIBILITY_PADDLE_PRICE_ID` env var로 tier map 등록 (설정 전엔
@@ -118,13 +132,21 @@ Transactions" 사유)에 의해 종종 자동 차단됨 — 상품 이름 입력
   - `prompts/compatibility_report_prompt.json`: 두 사람의 오행 분포 비교 +
     일간(day master) 상생/상극/동일오행 관계를 성찰 질문 형태로 풀어주는
     프롬프트. 독일어 자연스러움/한자 금지/비결정론적 톤 등 기존 규칙 재사용.
-  - 로컬 검증: JSON/Python 문법 체크 통과, mocked Flask 웹훅 테스트
-    (필드 누락/동의 누락/정상 처리/중복 방지) 전부 통과.
-- **남은 일**: 사용자가 Paddle 대시보드에서 4.90€ 상품(샌드박스 먼저, 나중에
-  라이브)을 직접 생성하고 그 `pri_...` ID를 알려주면 → Render env var
-  `COMPATIBILITY_PADDLE_PRICE_ID`와 `index.html`의
-  `PADDLE_PRICE_IDS.compatibility`에 채우고 → 실제 샌드박스 결제로
-  end-to-end 테스트 (유료/프리미엄 때와 동일한 방식).
+    도입부는 일반 인사말이 아니라 두 사람의 실제 오행 데이터에서 가장
+    대비되는 지점을 훅으로 여는 방식으로 개선함 (예: "한 사람에게는 특정
+    오행이 전혀 없고, 다른 사람은 바로 그 오행을 넉넉히 갖고 있다").
+- **샌드박스 가격 생성 완료**: `pri_01m3g7k8hqa7dggxxj8x5vnh1n` (4.90€),
+  Render env var `COMPATIBILITY_PADDLE_PRICE_ID`와 `index.html`의
+  `PADDLE_PRICE_IDS.compatibility`에 반영 완료 (커밋 `4401485`).
+- **실제 샌드박스 결제로 end-to-end 검증 완료** (2026-09-27): 결제 성공 →
+  웹훅 200 → 두 사람 사주 계산 + 리포트 생성 + 이메일 발송 파이프라인 전체
+  에러 없이 완료.
+- **회귀 테스트 커버리지**: `tests/test_paddle_webhook.py`에 2인 데이터
+  누락 검증 + 정상 처리 케이스 포함 (커밋 `3d70ed9`).
+- **남은 일**: 라이브 전환 시 Paddle 라이브 대시보드에도 동일하게 4.90€
+  상품을 만들고 그 price ID로 env var/코드를 갱신할 것 (아래 "Paddle 라이브
+  계정 전환" 항목 참고 — 이미 라이브 price ID `pri_01m3g950r9ynzeqhd1htkszmwb`
+  생성까지는 돼 있음, KYC 끝나면 한 번에 반영).
 
 ## 지금까지 고친 버그 요약
 
@@ -180,27 +202,37 @@ Transactions" 사유)에 의해 종종 자동 차단됨 — 상품 이름 입력
 1. **Paddle 샌드박스 → 라이브 모드 전환** — **진행 중** (위 "Paddle 라이브
    계정 전환" 항목 참고). KYC(사업자계좌)만 사용자 액션 대기, 나머지는
    병렬 진행 가능.
-2. **전체 비주얼 디자인 리뉴얼** — 보류 중, 사용자 액션 대기
-   - 배경: 현재 베이지/크림 톤이 너무 많다는 피드백. 히어로 섹션(밤하늘/한옥/
-     선비 실루엣 SVG)만 동양적이고 나머지 섹션은 단조로운 베이지라 톤이 깨짐.
-   - Claude가 SVG 일러스트 기반 시안 3개(A: 먹과 한지 / B: 단청 궁궐 / C: 여백의
-     미)를 만들어 아티팩트로 보여줬지만, 사용자가 마음에 안 든다고 함 — ChatGPT로
-     만든 것 같은 **사실적인(포토리얼) AI 생성 이미지** 스타일(안개 낀 한국 밤,
-     한옥, 달빛, 갓 쓴 선비 등)을 원함.
-   - **이 세션엔 이미지 생성 도구가 없음** (검색해봤지만 연결된 커넥터도 없음).
-     사용자가 직접 그런 이미지를 생성해서 파일로 보내주면, 그 이미지를 히어로
-     배경으로 넣고 전체 색상/타이포를 그 톤에 맞춰 재작업하기로 함.
-   - 사용자가 "내일 하자"고 명시적으로 보류함 — 이미지 받기 전엔 먼저 시작하지 말 것.
+2. **전체 비주얼 디자인 리뉴얼 (실사 이미지 적용)** — **완료** (2026-09-27
+   저녁, 커밋 `85572e0`, `561f199`). 사용자가 보내준 실사 이미지 3장 적용함:
+   - 히어로: 밤하늘/한옥/선비 실루엣 SVG → 궁궐 노을 실사 사진
+     (`static_site/images/hero-palace-sunset.jpg`)으로 교체.
+   - "Ein Blick hinein" 예시 발췌 섹션의 두 카드에 인물 사진(갓 쓴 남성/한복
+     여성, 부채) 삽입.
+   - `app.py`에 `/images/<filename>` 정적 서빙 라우트 신규 추가 (전엔 없었음).
+   - **모바일 대비 버그 발견 후 즉시 수정** (커밋 `561f199`): 히어로가 1컬럼으로
+     쌓이면서 문구가 사진의 밝은 하늘 부분과 겹쳐 가독성이 떨어졌던 것을,
+     모바일 전용 균일 오버레이 + text-shadow로 해결. 브라우저로 데스크탑/모바일
+     둘 다 재확인 완료.
+   - 부수적으로 SEO 메타 태그(description, OG, Twitter Card) + SVG 파비콘도
+     같이 추가함 (이전엔 전혀 없었음).
+   - 전체 색상 팔레트(크림 배경 `#FAF7F1`, 테라코타 `#C1442E`, 다크 `#211D1A`)는
+     새 사진의 따뜻한 골드톤과 잘 어울려서 별도 조정 안 함.
 3. **palja.de 도메인** — united-domains.de에서 확인함, **아직 구매 가능**
    (5€/1년차 할인가, 등록비 없음). 구매는 결제가 필요해서 Claude가 대신 못 함,
    사용자가 직접 해야 함. 구매 완료되면: Render 커스텀 도메인 연결 + Brevo
    발신 도메인 인증(SPF/DKIM) 필요 + `report_pipeline.py`의 `SITE_BASE_URL`
-   상수를 `https://palja.de`로 갱신할 것 (궁합 애드온 홍보 링크가 이 값을 씀).
+   상수, `static_site/index.html`의 og:url/og:image를 `https://palja.de`
+   기준으로 갱신할 것 (둘 다 코드에 TODO 주석으로 표시해둠).
 4. **랜딩페이지 독일어 문구 자연스럽게 다듬기** — 완료 (커밋 `3acb2cb`).
-5. **모바일 반응형**: 가격 비교표 모바일 패딩 축소로 개선함 (`0fea5b5`).
-6. **궁합(Kompatibilität) 애드온** — 코드 완료·배포됨, Paddle 가격 생성만 남음
-   (위 항목 참고).
-7. **업종 추가**: 사용자가 기존 사업자등록에 디지털 콘텐츠에 맞는 업종
+5. **모바일 반응형**: 가격 비교표 모바일 패딩 축소로 개선함 (`0fea5b5`),
+   히어로 대비 문제도 위 2번 항목에서 같이 해결.
+6. **궁합(Kompatibilität) 애드온** — **완료**. 샌드박스 가격 생성 완료
+   (`pri_01m3g7k8hqa7dggxxj8x5vnh1n`), 실제 샌드박스 결제로 end-to-end
+   검증 완료 (웹훅 200, 이메일 파이프라인 정상 동작). 현재 라이브 서비스 중.
+7. **회귀 테스트 스위트** — **신규 완료** (커밋 `3d70ed9`). `tests/` 아래
+   `python3 -m unittest discover tests -v`로 실행. 웹훅 서명/동의/중복방지/
+   실패시재시도 + 계산 로직 스모크 테스트, 총 17개, 외부 API 호출 없음.
+8. **업종 추가**: 사용자가 기존 사업자등록에 디지털 콘텐츠에 맞는 업종
    (서비스업/정보통신업 또는 정보서비스업/콘텐츠 제공업 등)을 추가할 계획.
    정확한 코드는 세무사 확인 권장 — 전적으로 사용자의 행정 작업, Claude
    액션 없음.
