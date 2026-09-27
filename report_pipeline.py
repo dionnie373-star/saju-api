@@ -29,6 +29,13 @@ from email.mime.text import MIMEText
 
 import requests
 from reportlab.lib.pagesizes import A4
+
+from report_facts import (
+    compute_daewoon_facts,
+    compute_monthly_facts,
+    render_daewoon_facts_kr,
+    render_monthly_facts_kr,
+)
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase.pdfmetrics import stringWidth
@@ -190,43 +197,56 @@ def validate_report_consistency(report_text, source_data, *, api_key=None, timeo
         return {"consistent": True, "issues": [], "error": f"검증 호출 실패: {e}"}
 
 
-def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None):
-    """call_claude로 리포트를 생성하고, 자동 검증 후 문제가 있으면 한 번만 자동으로
+_BANNED_WORDS = ["Schicksal", "empirisch", "wissenschaftlich", "Studien zeigen", "signifikant", "validiert"]
+_HANJA_RE = re.compile(r"[⺀-鿿豈-﫿]")  # CJK 한자/한글 통합 영역
+_WRONG_ELEMENT_WORD_RE = re.compile(r"\bGold\b")
 
-    재생성을 시도한다(사람 검수 없이 AI가 AI 출력을 스스로 고치는 자동화 루프).
-    두 번째 시도에서도 문제가 남으면, 발송을 막지 않고 그대로 진행하되 로그에
-    검증 결과를 남긴다(관리자가 나중에 모니터링할 수 있도록).
 
-    반환값: (report_text, validation_result)
+def check_mechanical_rules(report_text, *, min_words):
+    """LLM 판단이 필요 없는, 코드로 100% 정확하게 확인 가능한 규칙들을 검사한다.
+
+    2차 LLM 검증(validate_report_consistency)은 확률적이라 스스로 오탐/누락을
+    낼 수 있다는 게 실제 테스트로 확인됐다(연도 계산을 잘못 검증한 사례). 반면
+    금지 단어, 한자 포함 여부, 분량 미달처럼 정규식/카운트로 결정론적으로 확인
+    가능한 것들은 LLM에 맡길 이유가 없다 — 여기서 코드로 정확하게 잡는다.
+
+    반환값: 문제 문자열 리스트(비어있으면 통과).
     """
-    report_text = call_claude(prompt_template_name, variables, api_key=api_key)
-    validation = validate_report_consistency(report_text, source_data, api_key=api_key)
+    issues = []
+    for word in _BANNED_WORDS:
+        if word in report_text:
+            issues.append(f"금지 단어 '{word}' 포함됨")
+    if _WRONG_ELEMENT_WORD_RE.search(report_text):
+        issues.append("'Gold'라는 단어 사용됨 - 금(金)은 반드시 'Metall'로 써야 함")
+    hanja_matches = _HANJA_RE.findall(report_text)
+    if hanja_matches:
+        issues.append(f"한자/CJK 문자 포함됨: {''.join(sorted(set(hanja_matches)))[:20]}")
+    word_count = len(report_text.split())
+    if word_count < min_words:
+        issues.append(f"분량 미달: {word_count}단어 (최소 {min_words}단어 요구)")
+    return issues
 
-    if not validation.get("consistent", True) and validation.get("issues"):
-        issues_text = "\n".join(
-            f"- 문제 있는 문장: \"{issue.get('claim', '')}\"\n  실제로는: {issue.get('problem', '')}"
-            for issue in validation["issues"]
-        )
-        correction_note = (
-            "\n\n[자동 검증 결과 - 반드시 수정] 방금 작성한 초안에서 아래와 같은 데이터 불일치가 "
-            "발견되었습니다. 이 문제들을 고쳐서 리포트 전체를 처음부터 다시 작성하세요. "
-            "특히 오행/축 등장 횟수와 관련된 숫자는 [사주 계산 결과]/[월별 데이터]/[대운 데이터]를 "
-            "다시 세어서 정확히 맞추세요:\n" + issues_text
-        )
-        template = _load_prompt_template(prompt_template_name)
-        messages = []
-        for i, m in enumerate(template["messages"]):
-            content = _fill_placeholders(m["content"], variables)
-            if i == len(template["messages"]) - 1:
-                content += correction_note
-            messages.append({"role": m["role"], "content": content})
 
-        body = {
-            "model": template.get("model", "claude-haiku-4-5-20251001"),
-            "max_tokens": template.get("max_tokens", 8192),
-            "messages": messages,
-        }
-        _api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+def _regenerate_with_correction(prompt_template_name, variables, correction_note, *, api_key=None):
+    """같은 프롬프트를 다시 채우되, 마지막 사용자 메시지 끝에 교정 지시를 덧붙여
+
+    한 번 더 호출한다. 실패하면(네트워크 오류 등) None을 반환한다.
+    """
+    template = _load_prompt_template(prompt_template_name)
+    messages = []
+    for i, m in enumerate(template["messages"]):
+        content = _fill_placeholders(m["content"], variables)
+        if i == len(template["messages"]) - 1:
+            content += correction_note
+        messages.append({"role": m["role"], "content": content})
+
+    body = {
+        "model": template.get("model", "claude-haiku-4-5-20251001"),
+        "max_tokens": template.get("max_tokens", 8192),
+        "messages": messages,
+    }
+    _api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
+    try:
         resp = requests.post(
             ANTHROPIC_API_URL,
             headers={
@@ -237,16 +257,70 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
             json=body,
             timeout=90,
         )
-        if resp.status_code == 200:
-            data = resp.json()
-            retried_text = "".join(
-                p.get("text", "") for p in data.get("content", []) if p.get("type") == "text"
-            ).strip()
-            if retried_text:
-                report_text = retried_text
-                validation = validate_report_consistency(report_text, source_data, api_key=api_key)
+        if resp.status_code != 200:
+            return None
+        data = resp.json()
+        text = "".join(p.get("text", "") for p in data.get("content", []) if p.get("type") == "text").strip()
+        return text or None
+    except requests.RequestException:
+        return None
 
-    if not validation.get("consistent", True):
+
+def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None, min_words=0):
+    """call_claude로 리포트를 생성하고, 두 종류의 자동 검증을 거친 뒤 문제가 있으면
+
+    한 번만 자동으로 재생성을 시도한다(사람 검수 없이 AI가 AI 출력을 스스로 고치는
+    자동화 루프). 두 번째 시도에서도 문제가 남으면, 발송을 막지 않고 그대로
+    진행하되 로그에 검증 결과를 남긴다(관리자가 나중에 모니터링할 수 있도록).
+
+    검증은 두 단계다:
+    1. check_mechanical_rules - 금지 단어/한자/분량처럼 코드로 100% 정확하게 확인
+       가능한 규칙. LLM에 맡기지 않는다(LLM 검증 자체가 오탐할 수 있다는 게
+       실제로 확인됐기 때문).
+    2. validate_report_consistency - 오행/축 등장 횟수 같은, 원본 데이터와의
+       사실 일치 여부를 2차(저렴한) Claude 호출로 확인. computed_facts를 이미
+       프롬프트에 줬기 때문에 대부분의 숫자 오류는 애초에 나오지 않아야 하지만,
+       안전망으로 유지한다.
+
+    반환값: (report_text, validation_result) - validation_result에는 "consistent"와
+    "issues"가 들어있고, mechanical 문제는 issues 안에 {"claim": "...", "problem": "..."}
+    형태로 같이 담긴다.
+    """
+    report_text = call_claude(prompt_template_name, variables, api_key=api_key)
+
+    def _full_validation(text):
+        mechanical_issues = check_mechanical_rules(text, min_words=min_words)
+        llm_result = validate_report_consistency(text, source_data, api_key=api_key)
+        issues = [{"claim": "(기계적 검사)", "problem": m} for m in mechanical_issues]
+        issues.extend(llm_result.get("issues", []))
+        return {
+            "consistent": not issues,
+            "issues": issues,
+            "llm_error": llm_result.get("error"),
+        }
+
+    validation = _full_validation(report_text)
+
+    if not validation["consistent"]:
+        issues_text = "\n".join(
+            f"- 문제: \"{issue.get('claim', '')}\"\n  {issue.get('problem', '')}"
+            for issue in validation["issues"]
+        )
+        correction_note = (
+            "\n\n[자동 검증 결과 - 반드시 수정] 방금 작성한 초안에서 아래와 같은 문제가 "
+            "발견되었습니다. 이 문제들을 고쳐서 리포트 전체를 처음부터 다시 작성하세요. "
+            "특히 오행/축 등장 횟수와 관련된 숫자는 [계산된 사실]에 이미 정확히 계산되어 "
+            "있으니 그 숫자를 그대로 사용하고, 분량이 부족하다면 각 섹션 설명을 충분히 "
+            "늘려서 다시 쓰세요:\n" + issues_text
+        )
+        retried_text = _regenerate_with_correction(
+            prompt_template_name, variables, correction_note, api_key=api_key
+        )
+        if retried_text:
+            report_text = retried_text
+            validation = _full_validation(report_text)
+
+    if not validation["consistent"]:
         print(
             f"[report_pipeline] 경고: {prompt_template_name} 자동 재생성 후에도 "
             f"검증 실패 - issues={validation.get('issues')}"
@@ -627,10 +701,26 @@ def run_paid_signup(*, payload, calc_result):
             status=500,
         )
 
+    computed_facts_kr = ""
+    monthly_struct = calc_result.get("monthly")
+    if monthly_struct and monthly_struct.get("months"):
+        try:
+            monthly_facts = compute_monthly_facts(monthly_struct, calc_result.get("element_counts"))
+            computed_facts_kr = render_monthly_facts_kr(monthly_facts)
+        except Exception as e:  # noqa: BLE001 - 계산된 사실은 부가 QA 장치이지 필수 전제조건이 아님
+            print(f"[report_pipeline] 경고: compute_monthly_facts 실패, computed_facts 없이 진행: {e}")
+
     report_text, _validation = generate_verified_report(
         "paid_report_prompt.json",
-        {"compact": calc_result["compact"], "monthly_compact": calc_result["monthly_compact"]},
-        source_data=calc_result["monthly_compact"],
+        {
+            "compact": calc_result["compact"],
+            "monthly_compact": calc_result["monthly_compact"],
+            "computed_facts": computed_facts_kr,
+        },
+        # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
+        # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
+        source_data=calc_result["monthly_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
+        min_words=2500,
     )
 
     return _send_report(
@@ -743,10 +833,26 @@ def run_premium_signup(*, payload, calc_result):
             status=500,
         )
 
+    computed_facts_kr = ""
+    daewoon_struct = calc_result.get("daewoon")
+    if daewoon_struct and daewoon_struct.get("entries"):
+        try:
+            daewoon_facts = compute_daewoon_facts(daewoon_struct)
+            computed_facts_kr = render_daewoon_facts_kr(daewoon_facts)
+        except Exception as e:  # noqa: BLE001 - 계산된 사실은 부가 QA 장치이지 필수 전제조건이 아님
+            print(f"[report_pipeline] 경고: compute_daewoon_facts 실패, computed_facts 없이 진행: {e}")
+
     report_text, _validation = generate_verified_report(
         "premium_report_prompt.json",
-        {"compact": calc_result["compact"], "daewoon_compact": calc_result["daewoon_compact"]},
-        source_data=calc_result["daewoon_compact"],
+        {
+            "compact": calc_result["compact"],
+            "daewoon_compact": calc_result["daewoon_compact"],
+            "computed_facts": computed_facts_kr,
+        },
+        # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
+        # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
+        source_data=calc_result["daewoon_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
+        min_words=3800,
     )
 
     return _send_report(
