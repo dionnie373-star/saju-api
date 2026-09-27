@@ -367,6 +367,15 @@
               <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
               <input id="compatCity_a" type="text" placeholder="z. B. Berlin" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
             </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(optional, für die Anrede im Text)</span></label>
+              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Keine Angabe</option>
+                <option value="female">Weiblich</option>
+                <option value="male">Männlich</option>
+                <option value="divers">Divers</option>
+              </select>
+            </div>
           </div>
 
           <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
@@ -386,6 +395,15 @@
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
               <input id="compatCity_b" type="text" placeholder="z. B. Hamburg" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(optional, für die Anrede im Text)</span></label>
+              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Keine Angabe</option>
+                <option value="female">Weiblich</option>
+                <option value="male">Männlich</option>
+                <option value="divers">Divers</option>
+              </select>
             </div>
           </div>
         </div>
@@ -504,10 +522,12 @@
     var dateA = document.getElementById('compatDate_a').value.trim();
     var timeA = document.getElementById('compatTime_a').value.trim();
     var cityA = document.getElementById('compatCity_a').value.trim();
+    var genderA = document.getElementById('compatGender_a').value.trim();
     var nameB = document.getElementById('compatName_b').value.trim();
     var dateB = document.getElementById('compatDate_b').value.trim();
     var timeB = document.getElementById('compatTime_b').value.trim();
     var cityB = document.getElementById('compatCity_b').value.trim();
+    var genderB = document.getElementById('compatGender_b').value.trim();
     var email = document.getElementById('compatEmail').value.trim();
     var consent = document.getElementById('compatConsent').checked;
 
@@ -520,8 +540,8 @@
 
     var customData = {
       email: email,
-      name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA,
-      name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB,
+      name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA, gender_a: genderA,
+      name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB, gender_b: genderB,
       withdrawal_consent: true,
       withdrawal_consent_at: new Date().toISOString(),
     };

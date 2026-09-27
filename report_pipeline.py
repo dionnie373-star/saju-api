@@ -516,11 +516,21 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     name_b = (payload.get("name_b") or "Person B").strip()
     email = payload["email"].strip()
 
+    # 성별은 선택 입력이다 (Saju 계산 자체에는 쓰이지 않음 — daewoon 계산에만 필요하고
+    # 궁합 리포트에는 daewoon이 없음). 명시적으로 "female"/"male"을 골랐을 때만 프롬프트가
+    # 그 사람에게 자연스러운 독일어 대명사(sie/er)를 쓰도록 허용하고, 그 외(선택 안 함/
+    # "divers"/모름)에는 프롬프트가 이름 반복 등 성별 중립적인 표현으로 안전하게 대체한다.
+    _GENDER_LABELS = {"female": "weiblich", "male": "männlich"}
+    gender_a = _GENDER_LABELS.get((payload.get("gender_a") or "").strip().lower(), "keine Angabe")
+    gender_b = _GENDER_LABELS.get((payload.get("gender_b") or "").strip().lower(), "keine Angabe")
+
     report_text = call_claude(
         "compatibility_report_prompt.json",
         {
             "name_a": name_a,
             "name_b": name_b,
+            "gender_a": gender_a,
+            "gender_b": gender_b,
             "compact_a": calc_result_a["compact"],
             "compact_b": calc_result_b["compact"],
         },
