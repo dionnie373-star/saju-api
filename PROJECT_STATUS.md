@@ -56,8 +56,12 @@
    - 프리미엄(24.90€) 결제 → 웹훅 200 → PDF 리포트 실제 수신 확인
    - 두 경우 다 Paddle이 웹훅을 2~3번 재전송했지만 중복 방지 로직 덕분에
      이메일은 각각 1통씩만 발송됨 (재시도는 즉시 "duplicate" 응답으로 처리됨)
-   - **궁합 기능은 아직 실제 결제로 검증 안 됨** (Paddle 가격 자체가 없어서 불가능,
-     로컬 mock 테스트만 통과함 — 아래 "궁합 애드온" 항목 참고)
+   - **궁합(4.90€) 결제도 실제 샌드박스 결제로 검증 완료** (2026-09-27): 결제 성공
+     → 웹훅 200 (`/webhooks/paddle` 응답 145바이트, 성공 메시지와 일치) →
+     Anna/Ben 테스트 데이터로 두 사람 사주 계산 + 리포트 생성 + 이메일 발송
+     파이프라인 전체가 에러 없이 완료됨. (수신 이메일은 `test@example.com`이라
+     실제 수신함 확인은 못 했지만, 서버가 에러 없이 200을 준 것으로 발송 API
+     호출까지 성공했음을 확인함.)
 7. **청약철회권 동의 체크박스**: 가격표 아래(유료/프리미엄)와 궁합 섹션 둘 다에
    필수 체크박스 있음 — "즉시 서비스 시작에 동의 + 그로 인해 철회권을 잃는다는
    것을 인지함"(§ 356 Abs. 5 BGB). 체크 안 하면 프론트에서 결제 진행 차단,
@@ -69,19 +73,30 @@
 Paddle 대시보드가 현재 **"in Live" 모드**로 전환됨. "Let's get up and running"
 체크리스트 5개 항목, 전부 0% 진행:
 
-1. Create your catalog — 안 함
-2. Build your pricing page and checkout — 안 함
+1. Create your catalog — **부분 완료 (2026-09-27)**: 라이브 상품 3개 생성 완료
+   (아래 price ID 참고). 웹훅 destination, client-side 토큰, `index.html`/
+   `app.py`의 sandbox→live 전환은 아직 안 함 — KYC 전엔 실제 결제가 안 될
+   가능성이 높아서, 계좌 인증 끝나면 한 번에 이어서 하기로 사용자와 합의함.
+2. Build your pricing page and checkout — 안 함 (위와 같은 이유로 보류)
 3. Handle fulfillment and provisioning — 안 함
-4. Verify your account (KYC) — 안 함, **사업자계좌 필요 — 사용자가 아직 안 만듦,
-   본인이 명시적으로 "내일로 미루자"고 함. 먼저 재촉하지 말 것.**
+4. Verify your account (KYC) — 안 함, **사업자계좌 필요 — 사용자가 아직 안 만듦.
+   "계좌 준비되면 말할 테니 그 전까진 다른 것 하자"고 명시적으로 보류함. 먼저
+   재촉하지 말고, 사용자가 먼저 이야기할 때까지 기다릴 것.**
 5. Test and go live — 안 함
 
-병렬로 진행 가능한 것 (계좌/KYC 기다리는 동안): 1~3번은 샌드박스 설정을
-그대로 복제하면 됨 (라이브 상품 3개 생성 → 새 price ID → 웹훅 destination
-재설정 → Render `PADDLE_WEBHOOK_SECRET` 갱신 → `index.html`의
-`PADDLE_CLIENT_TOKEN`/`PADDLE_PRICE_IDS`/`Environment.set('sandbox')`를
-라이브 값으로 교체). **아직 시작 안 함** — 사용자가 라이브 계정으로 로그인한
-직후 상태에서 다음 대화가 끊김.
+**라이브 price ID (2026-09-27 생성, 아직 코드/Render에 미반영):**
+- Jahresreport (9.90€): `pri_01m3g8n437px4nwp9syp1184t8`
+- Lebenskarte (24.90€): `pri_01m3g8zk02bj740pefptt00vs1`
+- Kompatibilitäts-Check (4.90€): `pri_01m3g950r9ynzeqhd1htkszmwb`
+
+이 3개 price ID는 계좌 인증이 끝난 뒤, 웹훅 destination/시크릿·client-side
+토큰 발급과 함께 한 번에 `index.html`/`app.py`/Render env var에 반영할 것.
+
+**참고**: 이 세션에서 Paddle 라이브 대시보드에 실제 가격(금액)을 입력하는
+액션이 안전장치(auto-mode classifier, "Production Deploy"/"Real-World
+Transactions" 사유)에 의해 종종 자동 차단됨 — 상품 이름 입력이나 버튼 클릭은
+되지만 라이브 가격 숫자 입력은 막히는 경우가 있어, 그 부분만 사용자가 직접
+타이핑해야 했음. 다음에 라이브 관련 입력을 할 때도 이 제약을 예상할 것.
 
 ## 궁합(Kompatibilität) 애드온 — 코드 완료, 배포됨, Paddle 가격만 없어서 비활성
 
@@ -120,28 +135,45 @@ Paddle 대시보드가 현재 **"in Live" 모드**로 전환됨. "Let's get up a
 3. 위 타임아웃 버그의 부작용으로 Paddle 웹훅 재전송 시 같은 리포트가 여러 번
    생성/발송되던 문제 → 트랜잭션 ID 기반 중복 방지 로직 추가.
 
-## 법적 필수 페이지 — 실제 사업자 정보로 채움 완료, 변호사 검토만 남음
+## 법적 필수 페이지 — 실제 정보로 전부 채움, 변호사 검토는 사용자가 명시적으로 포기
+
+**중요한 정책 결정 (2026-09-27)**: 사용자가 변호사 검토를 받지 않기로 결정함
+("나 변호사 검토 할 생각 없어, 너랑 지피티에게 맡길 계획이야"). Claude는 변호사가
+아니라는 점과 Abmahnung(경고장) 리스크를 짚어주고 eRecht24 같은 저렴한 법률
+템플릿 서비스를 참고용으로 제안했지만, 최종 결정은 사용자 몫이라 존중하고 계속
+진행함. 이후로 이 프로젝트의 법적 페이지는 **"Claude가 통상적인 관행에 따라
+작성한 초안" 이상이 아니며, 정식 법률 자문이 아니라는 점을 매번 상기할 것.**
 
 `static_site/impressum.html`, `datenschutz.html`, `agb.html`, `widerruf.html`
-4개 다 실제 사업자등록증명 정보로 채워서 배포 완료 (커밋 `abf23d4`):
+4개 다 실제 사업자등록증명 정보로 채워서 배포 완료 (커밋 `abf23d4`), 이후
+남아있던 플레이스홀더도 전부 채움 (커밋 예정, 이번 세션):
 
 - **Impressum**: "Daily Ground (Einzelunternehmen)", 대표 Jiwon Han, 서울 주소,
   이메일 dionnie373@gmail.com. Umsatzsteuer-ID 항목은 "한국 개인사업자라 독일/EU
   VAT-ID 없음, Paddle이 Merchant of Record로서 EU 소비자 대상 부가세를 대신
   징수/납부함"으로 설명 (가짜 독일 주소 안 씀).
-- **Datenschutz**: `Verantwortlicher` 항목에 동일 정보. 연락처 이메일 링크 교체.
-  플레이스홀더로 남겨둔 부분(의도적, 실제 결정/법률 검토 필요): 데이터 보관 기간,
-  Anthropic과의 AVV(주문처리계약) 체결 여부, 쿠키/트래킹 정책.
+- **Datenschutz**: `Verantwortlicher` 항목에 동일 정보. §4에 Anthropic(미국,
+  Drittlandtransfer + Anthropic이 API 고객에게 제공하는 표준 SCC에 의존한다는
+  설명), Brevo(Brevo SAS, 프랑스/EU), Paddle 각각의 역할 명시. §5 Speicherdauer는
+  "자체 DB에 생년월일 등을 영구 저장하지 않고, 이메일 발송 후 보관 안 함 / Paddle이
+  결제·세금 기록은 상법상 보관 기간대로 자체 보관 / 지원 문의는 해결될 때까지
+  보관"으로 구체화. §7 Cookies는 "자체 쿠키·분석 도구 없음, Google Fonts 로딩 시
+  Google에 IP 전달 가능, 결제 시 Paddle 체크아웃 스크립트가 자체 쿠키를 설정할 수
+  있음"으로 사실대로 명시.
 - **AGB**: §1 상호를 "Daily Ground"로, §9 연락처 이메일 교체, §6 철회권 문단은
-  체크박스 도입으로 이미 해결됐다고 갱신. 남은 플레이스홀더: §7 책임 조항
-  (변호사 검토 필요).
+  체크박스 도입으로 이미 해결됐다고 갱신. §7 책임 조항은 표준적인 Kardinalpflichten
+  문구로 보강하고 Palja 콘텐츠가 오락 목적이라 내용의 객관적 정확성을 보증하지
+  않는다는 문장을 추가함 (변호사 검토 없이, 통상적인 관행 문구로).
 - **Widerruf**: 철회 안내 본문 + Muster-Widerrufsformular 주소란 둘 다 실제
   정보로 교체. "체크아웃에서 동의를 이미 수집함" 안내로 배너 갱신.
-- **변호사 검토는 여전히 필수** — Claude가 대신할 수 없는 부분. 특히 EU 외
-  거주 판매자가 독일 소비자를 대상으로 영업할 때 § 5 TMG상 추가 고지가
-  필요한지 확인 필요.
+- 각 페이지 상단의 "Entwurf, 변호사 검토 필요" 배너는 "변호사 검토 없이 작성됨,
+  정식 법률 자문 아님"으로 문구를 갱신함 — 더 이상 "곧 검토받을 예정"이 아니라
+  "검토 없이 이대로 운영 중"이라는 사실을 반영.
 
 청약철회권 조기소멸 관련 체크박스 갭은 위에서 이미 해결됨 (더 이상 갭 아님).
+데이터 보관 기간/AVV 상태/쿠키 정책/책임 조항 플레이스홀더도 전부 채워짐 —
+남은 리스크는 "변호사 검토를 받지 않았다"는 것 자체이며, 이는 사용자의
+명시적 선택이다.
 
 ## 안 한 것 / 다음 할 일 (사용자 지시에 따라 선택)
 

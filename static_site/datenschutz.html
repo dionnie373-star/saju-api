@@ -28,10 +28,11 @@
   <h1 class="display">Datenschutzerklärung</h1>
 
   <div class="draft-notice">
-    ⚠️ <strong>Entwurf, kein fertiges Datenschutzdokument.</strong> Die Platzhalter und
-    Drittanbieter-Angaben unten müssen vor dem Live-Betrieb geprüft und vervollständigt
-    werden (u. a. Verantwortlicher, evtl. Auftragsverarbeitungsverträge mit Anthropic/
-    Brevo/Paddle, Cookie-/Analytics-Einsatz). Anwaltliche Prüfung empfohlen (DSGVO).
+    ⚠️ <strong>Diese Erklärung wurde ohne anwaltliche Prüfung erstellt</strong> und
+    orientiert sich an den Standardangaben der eingesetzten Dienstleister (Anthropic,
+    Brevo, Paddle). Sie ersetzt keine individuelle Rechtsberatung. Bei Änderungen an
+    den eingesetzten Diensten (z. B. neue Analytics-Tools) muss dieser Text angepasst
+    werden.
   </div>
 
   <h2>1. Verantwortlicher</h2>
@@ -61,21 +62,46 @@
   <h2>4. Empfänger / Auftragsverarbeiter</h2>
   <p>Zur Erbringung unseres Dienstes setzen wir folgende Dienstleister ein:</p>
   <ul>
-    <li><strong>Anthropic</strong> (Claude API) — verarbeitet die berechneten Saju-Daten, um die Report-Texte zu generieren. <span class="placeholder">[Serverstandort/Drittlandtransfer prüfen, ggf. Standardvertragsklauseln]</span></li>
-    <li><strong>Brevo</strong> — versendet die E-Mails mit deinem Profil/Report als PDF-Anhang.</li>
-    <li><strong>Paddle</strong> — wickelt Zahlungen für kostenpflichtige Reports ab und agiert dabei als Merchant of Record.</li>
+    <li>
+      <strong>Anthropic PBC</strong> (USA) — verarbeitet die berechneten Saju-Daten
+      (Geburtsdatum/-zeit/-ort in aufbereiteter Form, keine Namen soweit nicht
+      freiwillig angegeben), um daraus die Report-Texte zu generieren. Da Anthropic
+      seinen Sitz außerhalb der EU hat, erfolgt hierbei eine Datenübermittlung in ein
+      Drittland. Diese stützt sich auf die von Anthropic im Rahmen seiner
+      kommerziellen API-Nutzungsbedingungen bereitgestellten
+      EU-Standardvertragsklauseln (Art. 46 DSGVO). Wir haben dies nicht gesondert
+      anwaltlich prüfen lassen, sondern verlassen uns auf die von Anthropic für
+      API-Kund:innen bereitgestellten Standardbedingungen.
+    </li>
+    <li><strong>Brevo</strong> (Brevo SAS, Frankreich/EU) — versendet die E-Mails mit deinem Profil/Report als PDF-Anhang, auf Basis von Brevos Standard-Auftragsverarbeitungsvertrag.</li>
+    <li><strong>Paddle.com Market Ltd.</strong> (UK) — wickelt Zahlungen für kostenpflichtige Reports ab und agiert dabei als Merchant of Record; verarbeitet dabei auch die zur Zahlungsabwicklung nötigen Daten (E-Mail, Land, Zahlungsdaten) auf eigener Verantwortung gemäß seiner eigenen Datenschutzerklärung.</li>
   </ul>
-  <p>Mit allen genannten Dienstleistern sollten, soweit erforderlich, Auftragsverarbeitungsverträge (Art. 28 DSGVO) bestehen. <span class="placeholder">[Status prüfen]</span></p>
+  <p>
+    Mit Anthropic und Brevo bestehen Auftragsverarbeitungsverträge auf Basis der von
+    diesen Anbietern für ihre Geschäftskund:innen bereitgestellten Standardverträge.
+    Eine individuelle anwaltliche Prüfung dieser Verträge hat nicht stattgefunden.
+  </p>
 
   <h2>5. Speicherdauer</h2>
   <p>
-    <span class="placeholder">
-      [Hier festlegen: z. B. "Wir speichern deine Geburtsdaten nur so lange, wie zur
-      Erstellung und zum Versand deines Reports nötig, und löschen sie anschließend"
-      — oder, falls Daten länger aufbewahrt werden (z. B. für Support-Anfragen oder
-      steuerliche Aufbewahrungspflichten bei Rechnungen), das hier konkret angeben.]
-    </span>
+    Deine Geburtsdaten (Datum, Uhrzeit, Ort) sowie dein Name und deine E-Mail-Adresse
+    werden ausschließlich zur Erstellung und Zustellung deines Profils bzw. Reports
+    verwendet. Wir speichern diese Angaben nicht dauerhaft in einer eigenen Datenbank
+    — sie werden im Rahmen der Anfrage verarbeitet und nach erfolgreichem Versand
+    nicht weiter aufbewahrt, mit folgenden Ausnahmen:
   </p>
+  <ul>
+    <li>E-Mails mit deiner Anfrage bzw. dem versendeten Report können in den
+      Postfächern unseres E-Mail-Dienstleisters (Brevo) und unseres
+      E-Mail-Versand-Kontos für eine begrenzte Zeit nachvollziehbar bleiben, u. a.
+      um Zustellprobleme zu klären.</li>
+    <li>Zahlungs- und Rechnungsdaten für kostenpflichtige Reports werden von Paddle
+      als Merchant of Record im Rahmen der dort geltenden handels- und
+      steuerrechtlichen Aufbewahrungspflichten gespeichert (in der Regel mehrere
+      Jahre) — hierfür ist Paddle eigenständig verantwortlich.</li>
+    <li>Bei Support-Anfragen per E-Mail speichern wir den E-Mail-Verlauf, bis dein
+      Anliegen abschließend geklärt ist.</li>
+  </ul>
 
   <h2>6. Deine Rechte</h2>
   <p>Du hast nach der DSGVO insbesondere folgende Rechte:</p>
@@ -92,12 +118,15 @@
 
   <h2>7. Cookies und Tracking</h2>
   <p>
-    <span class="placeholder">
-      [Aktuell setzt die Seite, Stand dieses Entwurfs, keine eigenen Cookies oder
-      Analytics-Tools ein. Falls das eingebundene Paddle-Checkout-Skript (paddle.js)
-      eigene Cookies setzt, muss das hier ergänzt werden — Paddles eigene
-      Datenschutzhinweise verlinken.]
-    </span>
+    Wir setzen selbst keine Cookies und kein Analytics- oder Tracking-Tool ein.
+    Beim Aufruf unserer Seite werden lediglich Schriftarten von Google Fonts
+    nachgeladen, wodurch dein Browser eine Verbindung zu Google-Servern aufbaut
+    (dabei kann deine IP-Adresse an Google übermittelt werden). Beim Bestellvorgang
+    für kostenpflichtige Reports wird zusätzlich das Checkout-Skript unseres
+    Zahlungsdienstleisters Paddle (paddle.js) geladen; Paddle kann dabei eigene
+    Cookies setzen, die für die Zahlungsabwicklung und Betrugsprävention nötig sind.
+    Näheres dazu findest du in der
+    <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener">Datenschutzerklärung von Paddle</a>.
   </p>
 
   <h2>8. Kontakt bei Fragen zum Datenschutz</h2>
