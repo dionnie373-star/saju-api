@@ -40,15 +40,19 @@
 3. **Render 환경변수 교체** (live 값으로):
    - `PADDLE_WEBHOOK_SECRET` → 라이브 웹훅 시크릿
    - `COMPATIBILITY_PADDLE_PRICE_ID` → 라이브 price ID
-4. **`static_site/index.html`의 Paddle 클라이언트 스크립트 수정** (지금 TODO
+4. **Render 환경변수 `ALLOWED_ORIGIN`을 실제 도메인으로 좁히기** — 지금은
+   `*`(전체 허용)로 열려있음(app.py 주석에 이미 "실사용자 결제 전에 좁히는 걸
+   권장"이라고 적어둠). palja.de가 붙기 전이면 `https://palja-api.onrender.com`으로,
+   붙은 뒤엔 `https://palja.de`로 설정.
+5. **`static_site/index.html`의 Paddle 클라이언트 스크립트 수정** (지금 TODO
    주석 표시돼 있음):
    - `PADDLE_CLIENT_TOKEN` → 라이브 토큰
    - `PADDLE_PRICE_IDS` (paid/premium/compatibility) → 라이브 price ID 3개
    - `Paddle.Environment.set('sandbox')` → 이 줄 제거 (라이브가 기본값)
-5. **실제 라이브 결제 1건 직접 테스트** (사용자 본인 카드로 최소 금액,
+6. **실제 라이브 결제 1건 직접 테스트** (사용자 본인 카드로 최소 금액,
    예: Kompatibilitäts-Check 4.90€) — 웹훅 200 확인 + 실제 이메일/PDF 수신
    확인까지 완료해야 "라이브 전환 완료"로 간주.
-6. `PROJECT_STATUS.md`의 "Paddle 라이브 계정 전환" 섹션을 완료로 갱신.
+7. `PROJECT_STATUS.md`의 "Paddle 라이브 계정 전환" 섹션을 완료로 갱신.
 
 ## 3. palja.de 도메인 구매 후 Claude가 처리할 것 (KYC와 무관, 병행 가능)
 
