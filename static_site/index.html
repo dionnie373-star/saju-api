@@ -29,6 +29,14 @@
   input:focus { outline: 2px solid #C1442E; outline-offset: 2px; }
   button:focus-visible { outline: 2px solid #211D1A; outline-offset: 2px; }
   ::placeholder { color: #A79E93; }
+  /* 히어로 배경 사진(object-fit: cover)은 컨테이너 높이가 콘텐츠(문구+가입폼 카드)에
+     따라 결정되는데, 노트북 폭(예: 1440px)처럼 폼 카드가 문구 옆에 나란히 붙어
+     컨테이너가 매우 낮고 넓어지는 경우 사진이 극단적으로 세로 크롭되어 인물이
+     통째로 잘려나가는 문제가 있었다. 최소 높이를 줘서 항상 인물/궁궐이 보이게 한다. */
+  .hero-pad { min-height: 560px; }
+  @media (max-width: 900px) {
+    .hero-pad { min-height: 480px; }
+  }
   @media (max-width: 640px) {
     .hero-content-pad { padding-top: 20px !important; padding-bottom: 56px !important; }
     .hero-gap { gap: 32px !important; }
@@ -48,7 +56,7 @@
   <!-- Hero: 노을 진 궁궐을 내려다보는 갓 쓴 인물 (실사 이미지) -->
   <div class="hero-pad" style="position: relative; width: 100%; box-sizing: border-box; overflow: hidden; background: #1A1006;">
 
-    <img src="/images/hero-palace-sunset.jpg" alt="" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; display: block;">
+    <img src="/images/hero-palace-sunset.jpg" alt="" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 68% 42%; display: block;">
 
     <div class="hero-overlay-diag" style="position: absolute; inset: 0; background: linear-gradient(100deg, rgba(20,12,4,0.88) 0%, rgba(24,15,6,0.62) 32%, rgba(24,15,6,0.18) 56%, rgba(24,15,6,0.05) 72%); pointer-events: none;"></div>
     <div style="position: absolute; inset: 0; background: linear-gradient(0deg, rgba(15,9,3,0.55) 0%, rgba(15,9,3,0) 30%); pointer-events: none;"></div>
