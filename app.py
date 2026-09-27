@@ -850,6 +850,13 @@ def paddle_webhook():
         _unmark_transaction()
         return jsonify({"ok": False, "error": "customData에 유효한 email이 없습니다."}), 400
 
+    # 디지털 콘텐츠 청약철회권 조기 소멸(§ 356 Abs. 5 BGB)에 필요한 동의는
+    # 프론트엔드 체크박스에서 이미 강제하지만, 체크아웃을 우회해서 직접 호출하는
+    # 경우를 막기 위해 서버에서도 다시 한번 확인한다.
+    if not custom_data.get("withdrawal_consent"):
+        _unmark_transaction()
+        return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
+
     payload = dict(custom_data)
     payload["email"] = email
     payload["tier"] = tier
