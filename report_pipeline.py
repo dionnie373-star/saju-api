@@ -338,6 +338,18 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
 # 오케스트레이션
 # ---------------------------------------------------------------------------
 
+# TODO: palja.de 도메인이 라이브되면 이 값을 "https://palja.de"로 업데이트할 것.
+# (다른 곳에도 SITE_BASE_URL 같은 공용 상수가 없어서, 우선 이 파일 안에서만 쓰는
+# 로컬 상수로 둔다.)
+SITE_BASE_URL = "https://palja-api.onrender.com"
+
+_COMPATIBILITY_PROMO_HTML = f"""\
+  <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; padding: 14px 16px; border-radius: 8px;">
+    Neugierig, wie gut du mit jemand anderem zusammenpasst?
+    <a href="{SITE_BASE_URL}/#kompatibilitaet" style="color: #A9784F;">→ Saju-Kompatibilitäts-Check (4,90 €)</a>
+  </p>
+"""
+
 _FREE_EMAIL_SUBJECT = "Dein kostenloses Saju-Profil ist da ✨"
 
 _FREE_EMAIL_HTML_TEMPLATE = """\
@@ -348,6 +360,7 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
     dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Tradition ist fertig —
     du findest es als PDF im Anhang dieser E-Mail.
   </p>
+""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -412,6 +425,7 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
     vielen Dank für deinen Kauf. Dein persönlicher Jahresreport nach der koreanischen Saju-Tradition —
     mit allen 12 Monaten im Detail — liegt dieser E-Mail als PDF bei.
   </p>
+""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -464,12 +478,64 @@ _PREMIUM_EMAIL_HTML_TEMPLATE = """\
     vielen Dank für deinen Kauf. Deine persönliche Lebenskarte nach der koreanischen Saju-Tradition —
     mit deinen 10-Jahres-Lebensphasen — liegt dieser E-Mail als PDF bei.
   </p>
+""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
 </div>
 """
+
+
+_COMPATIBILITY_EMAIL_SUBJECT = "Eure Saju-Kompatibilität ist da 💫"
+
+_COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
+<div style="font-family: 'Work Sans', Arial, sans-serif; color: #211D1A; max-width: 560px; margin: 0 auto;">
+  <h1 style="font-family: Georgia, serif; font-size: 22px; font-weight: 500;">PALJA</h1>
+  <p style="font-size: 15px; line-height: 1.6; color: #3B3630;">
+    Hallo{name_suffix},<br><br>
+    vielen Dank für deinen Kauf. Eure Saju-Kompatibilitätsanalyse liegt dieser E-Mail als PDF bei.
+  </p>
+  <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
+    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    medizinische oder psychologische Beratung.
+  </p>
+</div>
+"""
+
+
+def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
+    """궁합(Kompatibilität) 리포트 파이프라인: 두 사람의 사주를 비교.
+
+    payload: 웹훅 customData (email, name_a/name_b 등 포함)
+    calc_result_a / calc_result_b: 각각 app.run_calculation()으로 계산된 결과
+    (Person A = 결제한 본인, Person B = 궁합을 보고 싶은 상대방인 게 보통이지만
+    파이프라인 입장에서는 순서가 대칭적이다).
+    """
+    name_a = (payload.get("name_a") or "Person A").strip()
+    name_b = (payload.get("name_b") or "Person B").strip()
+    email = payload["email"].strip()
+
+    report_text = call_claude(
+        "compatibility_report_prompt.json",
+        {
+            "name_a": name_a,
+            "name_b": name_b,
+            "compact_a": calc_result_a["compact"],
+            "compact_b": calc_result_b["compact"],
+        },
+    )
+
+    return _send_report(
+        email=email,
+        name=None,
+        pdf_title="Eure Saju-Kompatibilität",
+        pdf_subtitle=f"{name_a} & {name_b}",
+        report_text=report_text,
+        email_subject=_COMPATIBILITY_EMAIL_SUBJECT,
+        email_html_template=_COMPATIBILITY_EMAIL_HTML_TEMPLATE,
+        pdf_filename="Palja-Kompatibilitaet.pdf",
+    )
 
 
 def run_premium_signup(*, payload, calc_result):

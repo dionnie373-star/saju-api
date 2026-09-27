@@ -740,6 +740,14 @@ PADDLE_PRICE_TIER_MAP = {
     "pri_01m3f9bjxx7sgpr1wvm5g8k61r": "premium",   # Palja Lebenskarte (Premium) - EUR 24.90
 }
 
+# 궁합(Kompatibilität) 상품의 price_id는 아직 Paddle 대시보드에서 만들어지지
+# 않았으므로(사업자 계좌 등 라이브 준비와 별개로, 사용자가 Paddle에서 4,90€
+# 짜리 상품/가격을 만든 뒤 알려주면 이 환경변수로 등록한다) 코드에 하드코딩하지
+# 않고 환경변수로 주입한다. 값이 없으면 이 티어는 그냥 비활성 상태로 남는다.
+_compatibility_price_id = os.environ.get("COMPATIBILITY_PADDLE_PRICE_ID")
+if _compatibility_price_id:
+    PADDLE_PRICE_TIER_MAP[_compatibility_price_id] = "compatibility"
+
 # Paddle은 우리 서버의 응답이 늦으면(리포트 생성에 수십 초가 걸림) 같은
 # transaction.completed 이벤트를 여러 번 재전송한다. 트랜잭션 ID(data.id)
 # 기준으로 "이미 처리 완료된" 결제를 기록해두고, 재전송이 들어오면 리포트를
@@ -856,6 +864,56 @@ def paddle_webhook():
     if not custom_data.get("withdrawal_consent"):
         _unmark_transaction()
         return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
+
+    if tier == "compatibility":
+        # 궁합 리포트는 사람 두 명의 생년월일시가 필요하다 (본인 + 상대방).
+        # customData 필드명은 랜딩페이지 폼과 맞춰서 _a/_b 접미사로 구분한다.
+        required = ("birth_date_a", "birth_city_a", "birth_date_b", "birth_city_b")
+        missing = [k for k in required if not custom_data.get(k)]
+        if missing:
+            _unmark_transaction()
+            return jsonify({
+                "ok": False,
+                "error": f"Kompatibilität benötigt Geburtsdaten für beide Personen (fehlt: {', '.join(missing)})",
+            }), 400
+
+        payload_a = {
+            "name": custom_data.get("name_a"),
+            "birth_date": custom_data.get("birth_date_a"),
+            "birth_time": custom_data.get("birth_time_a"),
+            "birth_city": custom_data.get("birth_city_a"),
+        }
+        payload_b = {
+            "name": custom_data.get("name_b"),
+            "birth_date": custom_data.get("birth_date_b"),
+            "birth_time": custom_data.get("birth_time_b"),
+            "birth_city": custom_data.get("birth_city_b"),
+        }
+
+        try:
+            calc_result_a = run_calculation(payload_a)
+            calc_result_b = run_calculation(payload_b)
+        except CalcError as e:
+            _unmark_transaction()
+            return jsonify({"ok": False, "error": str(e)}), e.status
+
+        from report_pipeline import PipelineError, run_compatibility_signup
+
+        compat_payload = dict(custom_data)
+        compat_payload["email"] = email
+
+        try:
+            run_compatibility_signup(
+                payload=compat_payload, calc_result_a=calc_result_a, calc_result_b=calc_result_b
+            )
+        except PipelineError as e:
+            _unmark_transaction()
+            return jsonify({"ok": False, "error": str(e)}), e.status
+        except Exception:
+            _unmark_transaction()
+            raise
+
+        return jsonify({"ok": True, "message": "Kompatibilitätsreport를 생성해서 이메일로 발송했습니다."})
 
     payload = dict(custom_data)
     payload["email"] = email

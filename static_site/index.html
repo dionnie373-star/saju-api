@@ -353,6 +353,83 @@
     </div>
   </div>
 
+  <!-- Kompatibilitäts-Check -->
+  <div id="kompatibilitaet" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
+      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A79E93;">Extra</span>
+      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Wie gut passt du mit jemand anderem zusammen?</h2>
+      <p style="margin: 0 0 20px; font-size: 15px; color: #6B625A; max-width: 480px;">
+        Gib eure beiden Geburtsdaten ein und erhalte eine Saju-Kompatibilitätsanalyse per E-Mail —
+        für so viele Personen, wie du möchtest.
+      </p>
+
+      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Du</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Name (optional)</label>
+              <input id="compatName_a" type="text" placeholder="Dein Name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
+              <input id="compatDate_a" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
+              <input id="compatTime_a" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_a" type="text" placeholder="z. B. Berlin" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+          </div>
+
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Die andere Person</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Name (optional)</label>
+              <input id="compatName_b" type="text" placeholder="Ihr/Sein Name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
+              <input id="compatDate_b" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
+              <input id="compatTime_b" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_b" type="text" placeholder="z. B. Hamburg" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">E-Mail-Adresse (für den Versand)</label>
+          <input id="compatEmail" type="email" placeholder="du@beispiel.de" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <label for="compatConsent" style="display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.6; color: #4A4239; cursor: pointer;">
+          <input type="checkbox" id="compatConsent" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #C1442E;">
+          <span>
+            Ich stimme ausdrücklich zu, dass mit der Erstellung meines Reports vor Ablauf der gesetzlichen
+            Widerrufsfrist begonnen wird, und nehme zur Kenntnis, dass ich dadurch mein Widerrufsrecht verliere,
+            sobald der Report versendet wurde (§ 356 Abs. 5 BGB, siehe <a href="/widerruf" target="_blank" style="color: inherit; text-decoration: underline;">Widerrufsbelehrung</a>).
+          </span>
+        </label>
+
+        <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Kompatibilität berechnen — 4,90 €
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <div style="width: 100%; box-sizing: border-box; padding: 40px 6vw; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
     <div class="display" style="font-size: 16px; font-weight: 600; letter-spacing: 0.04em;">PALJA</div>
@@ -378,6 +455,7 @@
   var PADDLE_PRICE_IDS = {
     paid: 'pri_01m3f98f0s27hjx0xy4bc9em4d',       // Palja Jahresreport - EUR 9.90
     premium: 'pri_01m3f9bjxx7sgpr1wvm5g8k61r',    // Palja Lebenskarte (Premium) - EUR 24.90
+    compatibility: '',                             // Palja Kompatibilitäts-Check - EUR 4.90 (Paddle에서 상품 만든 뒤 채울 것)
   };
 
   if (window.Paddle) {
@@ -428,6 +506,51 @@
 
   document.getElementById('buyPaidBtn').addEventListener('click', function () { openCheckout('paid'); });
   document.getElementById('buyPremiumBtn').addEventListener('click', function () { openCheckout('premium'); });
+
+  var compatErrorEl = document.getElementById('compatError');
+
+  function showCompatError(msg) {
+    compatErrorEl.textContent = msg;
+    compatErrorEl.style.display = 'block';
+  }
+
+  function openCompatCheckout() {
+    compatErrorEl.style.display = 'none';
+
+    var nameA = document.getElementById('compatName_a').value.trim();
+    var dateA = document.getElementById('compatDate_a').value.trim();
+    var timeA = document.getElementById('compatTime_a').value.trim();
+    var cityA = document.getElementById('compatCity_a').value.trim();
+    var nameB = document.getElementById('compatName_b').value.trim();
+    var dateB = document.getElementById('compatDate_b').value.trim();
+    var timeB = document.getElementById('compatTime_b').value.trim();
+    var cityB = document.getElementById('compatCity_b').value.trim();
+    var email = document.getElementById('compatEmail').value.trim();
+    var consent = document.getElementById('compatConsent').checked;
+
+    if (!dateA || !cityA) { showCompatError('Bitte gib zuerst dein Geburtsdatum und deinen Geburtsort an.'); return; }
+    if (!dateB || !cityB) { showCompatError('Bitte gib zuerst Geburtsdatum und Geburtsort der anderen Person an.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCompatError('Bitte gib eine gültige E-Mail-Adresse an.'); return; }
+    if (!consent) { showCompatError('Bitte bestätige zuerst die Zustimmung zum vorzeitigen Beginn der Ausführung (Checkbox oben).'); return; }
+    if (!PADDLE_PRICE_IDS.compatibility) { showCompatError('Der Kompatibilitäts-Check ist in Kürze verfügbar. Bitte schau bald wieder vorbei.'); return; }
+    if (!window.Paddle) { showCompatError('Zahlungsanbieter konnte nicht geladen werden. Bitte versuch es später erneut.'); return; }
+
+    var customData = {
+      email: email,
+      name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA,
+      name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB,
+      withdrawal_consent: true,
+      withdrawal_consent_at: new Date().toISOString(),
+    };
+
+    Paddle.Checkout.open({
+      items: [{ priceId: PADDLE_PRICE_IDS.compatibility, quantity: 1 }],
+      customer: { email: email },
+      customData: customData,
+    });
+  }
+
+  document.getElementById('buyCompatBtn').addEventListener('click', openCompatCheckout);
 })();
 
 (function () {
