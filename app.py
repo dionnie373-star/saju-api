@@ -606,6 +606,11 @@ def static_image(filename):
     return send_from_directory(IMAGES_DIR, filename)
 
 
+@app.route("/favicon.svg", methods=["GET"])
+def favicon():
+    return send_from_directory(STATIC_SITE_DIR, "favicon.svg")
+
+
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"ok": True, "service": "saju-api", "status": "running"})

@@ -4,6 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Palja — Koreanische Saju-Selbstreflexion</title>
+<meta name="description" content="Dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Lehre — kostenlos, in wenigen Minuten, direkt in deinem Postfach. Plus Jahresreport, Premium-Lebenskarte und Kompatibilitäts-Check.">
+<!-- TODO: palja.de 도메인이 라이브되면 og:url과 og:image를 https://palja.de 기준으로 갱신할 것
+     (report_pipeline.py의 SITE_BASE_URL 상수와 동일한 시점에 같이 바꿀 것). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Palja">
+<meta property="og:title" content="Palja — Koreanische Saju-Selbstreflexion">
+<meta property="og:description" content="Dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Lehre — kostenlos, in wenigen Minuten, direkt in deinem Postfach.">
+<meta property="og:image" content="https://palja-api.onrender.com/images/hero-palace-sunset.jpg">
+<meta property="og:url" content="https://palja-api.onrender.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Palja — Koreanische Saju-Selbstreflexion">
+<meta name="twitter:description" content="Dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Lehre — kostenlos, in wenigen Minuten, direkt in deinem Postfach.">
+<meta name="twitter:image" content="https://palja-api.onrender.com/images/hero-palace-sunset.jpg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
@@ -20,6 +34,10 @@
     .hero-gap { gap: 32px !important; }
     .cmpTable th, .cmpTable td { padding: 10px 8px !important; font-size: 12.5px !important; }
     .cmpTable th:not(:first-child) { width: auto !important; }
+    /* 모바일에서는 한 컬럼으로 쌓이면서 히어로 사진의 밝은 부분(하늘) 위에
+       텍스트가 걸치는 경우가 생겨, 데스크탑용 대각선 그라데이션 대신
+       전체를 고르게 어둡게 덮는 오버레이로 교체해 대비를 확보한다. */
+    .hero-overlay-diag { background: linear-gradient(180deg, rgba(18,11,4,0.62) 0%, rgba(18,11,4,0.72) 100%) !important; }
   }
 </style>
 </head>
@@ -32,7 +50,7 @@
 
     <img src="/images/hero-palace-sunset.jpg" alt="" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% 50%; display: block;">
 
-    <div style="position: absolute; inset: 0; background: linear-gradient(100deg, rgba(20,12,4,0.88) 0%, rgba(24,15,6,0.62) 32%, rgba(24,15,6,0.18) 56%, rgba(24,15,6,0.05) 72%); pointer-events: none;"></div>
+    <div class="hero-overlay-diag" style="position: absolute; inset: 0; background: linear-gradient(100deg, rgba(20,12,4,0.88) 0%, rgba(24,15,6,0.62) 32%, rgba(24,15,6,0.18) 56%, rgba(24,15,6,0.05) 72%); pointer-events: none;"></div>
     <div style="position: absolute; inset: 0; background: linear-gradient(0deg, rgba(15,9,3,0.55) 0%, rgba(15,9,3,0) 30%); pointer-events: none;"></div>
 
     <div style="position: relative; z-index: 1; display: flex; flex-direction: column;">
@@ -46,16 +64,16 @@
         <div class="hero-gap" style="width: 100%; max-width: 1100px; display: flex; gap: 64px; flex-wrap: wrap; align-items: flex-start;">
 
           <div style="flex: 1 1 420px; min-width: 320px; display: flex; flex-direction: column; gap: 24px; padding-top: 12px;">
-            <h1 class="display" style="margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 500; line-height: 1.15; color: #F8F4E9; text-wrap: balance;">
+            <h1 class="display" style="margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 500; line-height: 1.15; color: #F8F4E9; text-wrap: balance; text-shadow: 0 2px 10px rgba(0,0,0,0.45);">
               Entdecke die koreanische Kunst der Selbstreflexion.
             </h1>
-            <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #D8D2C2; max-width: 480px;">
+            <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #D8D2C2; max-width: 480px; text-shadow: 0 1px 6px rgba(0,0,0,0.4);">
               Dein persönliches Fünf-Elemente-Profil nach der jahrhundertealten koreanischen Saju-Lehre —
               kostenlos, in wenigen Minuten, direkt in deinem Postfach.
             </p>
             <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
-              <div style="width: 8px; height: 8px; border-radius: 50%; background: #C1442E;"></div>
-              <span style="font-size: 14px; color: #ADA694;">Berechnet aus deinem genauen Geburtszeitpunkt — keine Ergebnisse von der Stange.</span>
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: #C1442E; flex-shrink: 0;"></div>
+              <span style="font-size: 14px; color: #C9C3B4; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">Berechnet aus deinem genauen Geburtszeitpunkt — keine Ergebnisse von der Stange.</span>
             </div>
           </div>
 
@@ -156,7 +174,7 @@
       <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Ein Blick hinein</h2>
 
       <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-left: 4px solid #C1442E; border-radius: 4px; padding: 24px; box-sizing: border-box; text-align: left; display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap;">
-        <img src="/images/hero-fans-man.jpg" alt="" aria-hidden="true" style="width: 96px; height: 128px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
+        <img src="/images/hero-fans-man.jpg" alt="" aria-hidden="true" loading="lazy" width="96" height="128" style="width: 96px; height: 128px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
         <div style="flex: 1 1 260px;">
           <p style="margin: 0 0 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #A79E93;">Beispielauszug aus dem kostenlosen Profil</p>
           <p style="margin: 0; font-size: 16.5px; line-height: 1.75; color: #3B3630; font-style: italic;">
@@ -167,7 +185,7 @@
       </div>
 
       <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-left: 4px solid #211D1A; border-radius: 4px; padding: 24px; box-sizing: border-box; text-align: left; display: flex; gap: 24px; align-items: stretch; flex-wrap: wrap;">
-        <img src="/images/hero-fan-woman.jpg" alt="" aria-hidden="true" style="width: 96px; height: 128px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
+        <img src="/images/hero-fan-woman.jpg" alt="" aria-hidden="true" loading="lazy" width="96" height="128" style="width: 96px; height: 128px; object-fit: cover; border-radius: 4px; flex-shrink: 0;">
         <div style="flex: 1 1 260px;">
           <p style="margin: 0 0 14px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #A79E93;">Beispielauszug aus dem Jahresreport — September</p>
           <p style="margin: 0; font-size: 16.5px; line-height: 1.75; color: #3B3630; font-style: italic;">
