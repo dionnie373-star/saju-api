@@ -53,6 +53,23 @@
    뭉뚱그리지 않고 별도 옵션으로 명시한 것은, 2018년부터 독일에서 법적으로
    인정된 제3의 성별 범주를 고려한 선택. 새 테스트 6개(`tests/test_compatibility_gender.py`)로
    라벨 매핑 검증 완료 (특히 divers가 남/여로 잘못 매핑되지 않는지).
+9. **독일 소비자 신뢰/컴플리언스 문구 전수 검토** (사용자 요청: "독일어+독일문화에
+   맞게 잘 조절해주고"): index.html 전체를 위에서 아래로 다시 읽으며 점검.
+   - VAT 표시 누락 발견·수정: 가격은 AGB에만 "inkl. USt" 문구가 있었고, 정작
+     가격표/구매 버튼 근처엔 안 보였음 (Preisangabenverordnung 상 가격 옆에서
+     바로 보여야 함) → 3개 구매 버튼(Jahresreport/Lebenskarte/Kompatibilität)
+     아래에 각각 "Preis(e) inkl. der jeweils gültigen gesetzlichen Umsatzsteuer"
+     문구 추가.
+   - 결제 신뢰 신호 추가: 독일 소비자는 결제수단(특히 PayPal 지원 여부)을
+     구매 버튼 근처에서 바로 확인하고 싶어함 — Paddle 체크아웃이 카드+PayPal을
+     지원하므로, 3개 구매 버튼 모두에 "🔒 Sichere Zahlung per Kreditkarte,
+     PayPal & mehr" 한 줄 추가 (체크아웃 모달 안에서만 보이던 걸 버튼 바로
+     아래로 끌어올림).
+   - 나머지 섹션("So funktioniert's" 3단계, "Ein Blick hinein" 인용 카드,
+     궁합 섹션 인트로 문구, 푸터 면책조항)은 자연스러운 독일어이고 앵글리시즘
+     없음을 확인, 추가 수정 불필요 판단.
+   - 배포 후 브라우저로 라이브 확인 완료 (VAT 문구·신뢰 문구·궁합 성별
+     필드 전부 정상 렌더링).
 
 ## 배포/인프라
 
