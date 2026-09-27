@@ -60,10 +60,12 @@
    레코드 값을 사용자에게 전달 → 사용자가 도메인 등록업체 DNS 설정에 입력)
 2. Brevo 발신 도메인 인증 (SPF/DKIM 레코드도 같은 방식으로 DNS에 추가)
    — 이거 안 하면 이메일이 스팸함으로 갈 확률이 높아짐, 라이브 전환만큼 중요
-3. 코드 내 TODO 3곳을 palja.de 기준으로 일괄 갱신:
-   - `report_pipeline.py`의 `SITE_BASE_URL` 상수
-   - `static_site/index.html`의 `og:url`/`og:image`
-   - `static_site/robots.txt`, `static_site/sitemap.xml`의 URL
+3. 코드 내 `onrender.com` 하드코딩 5곳(전부 TODO 주석 표시돼 있음, `grep -rn TODO`로
+   찾을 수 있음)을 palja.de 기준으로 일괄 갱신:
+   - `report_pipeline.py`의 `SITE_BASE_URL` 상수 (이메일 푸터 링크에도 쓰임)
+   - `static_site/index.html`의 `og:url`/`og:image`/`twitter:image`
+   - `static_site/robots.txt`의 `Sitemap:` 줄
+   - `static_site/sitemap.xml`의 `<loc>` 5개
 4. DNS 전파 대기(수 시간~하루) 후 https://palja.de 로 브라우저 재검증
 
 ## 4. 2주 데드라인 관점 타임라인 제안
