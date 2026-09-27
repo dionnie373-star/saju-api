@@ -443,6 +443,20 @@ _PDF_STYLES = {
         spaceBefore=5 * mm, spaceAfter=5 * mm, textColor="#8A6F5C",
         leftIndent=6 * mm, rightIndent=6 * mm,
     ),
+    # 목차("## " 챕터 항목) — 챗지피티 디자인 리뷰 2차 피드백 제안: 챕터
+    # 오프너/리플렉션 카드 같은 화려한 요소는 보류하고, 목차 하나만 있어도
+    # "AI가 대충 몇 페이지 쓴 PDF"가 아니라 "구조가 있는 리포트"라는 인상을
+    # 준다고 판단(2026-09-27). 페이지 번호는 넣지 않음(정확한 페이지 번호를
+    # 얻으려면 2-pass 렌더링이 필요해 지금 범위에서는 과함 - 구조를 보여주는
+    # 것만으로 충분하다는 게 리뷰의 결론이었음).
+    "toc_top": ParagraphStyle(
+        "PaljaTocTop", fontName="WorkSans-Bold", fontSize=11.5, leading=20,
+        textColor="#211D1A", spaceBefore=2 * mm,
+    ),
+    "toc_sub": ParagraphStyle(
+        "PaljaTocSub", fontName="WorkSans", fontSize=10, leading=16,
+        textColor="#786F67", leftIndent=6 * mm,
+    ),
 }
 
 # h2 제목 바로 아래 그리는 얇은 테라코타 밑줄 — 사이트의 브랜드 액센트 컬러(#C1442E)를
@@ -488,6 +502,46 @@ def _markdown_bold_to_reportlab(text):
     text = _BOLD_MARKDOWN_RE.sub(r"<b>\1</b>", text)
     text = _ITALIC_MARKDOWN_RE.sub(r"<i>\1</i>", text)
     return text
+
+
+def _extract_toc_entries(report_text):
+    """리포트 본문에서 "## "(대챕터)/"### "(소챕터) 제목만 뽑아 목차 항목 리스트로.
+
+    "# "(리포트 자체 제목, 표지와 중복)는 목차에서 제외한다. 실제 숫자 매김
+    ("1. Einführung", "3.1 Die Jahre ...")은 Claude가 이미 본문에 쓰고 있으므로
+    그대로 재사용 - 별도로 번호를 다시 매기지 않는다.
+    """
+    entries = []
+    for raw_line in report_text.split("\n"):
+        line = raw_line.strip()
+        if line.startswith("## "):
+            entries.append(("top", line[3:].strip()))
+        elif line.startswith("### "):
+            entries.append(("sub", line[4:].strip()))
+    return entries
+
+
+def _build_toc_flowables(report_text, *, heading="Inhalt"):
+    """목차 페이지를 flowable 리스트로 만든다. 항목이 없으면 빈 리스트 반환.
+
+    정확한 페이지 번호는 2-pass 렌더링이 필요해 이번 범위에서는 넣지 않음 -
+    "이게 몇 페이지짜리 대충 쓴 글이 아니라 구조가 있는 리포트"라는 인상을
+    주는 게 목적이라, 페이지 번호 없이 구조만 보여줘도 충분하다는 게 디자인
+    리뷰의 결론이었다.
+    """
+    entries = _extract_toc_entries(report_text)
+    if not entries:
+        return []
+    flowables = [
+        Paragraph(heading, _PDF_STYLES["h2"]),
+        _H2_RULE,
+    ]
+    for kind, text in entries:
+        safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        style = "toc_top" if kind == "top" else "toc_sub"
+        flowables.append(Paragraph(safe, _PDF_STYLES[style]))
+    flowables.append(PageBreak())
+    return flowables
 
 
 def _report_text_to_flowables(report_text):
@@ -647,6 +701,7 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None):
     ]
     if intro_flowables:
         story.extend(intro_flowables)
+    story.extend(_build_toc_flowables(report_text))
     story.extend(_report_text_to_flowables(report_text))
 
     footer = functools.partial(_draw_branded_footer, title=title.upper())

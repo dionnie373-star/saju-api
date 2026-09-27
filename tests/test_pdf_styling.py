@@ -76,6 +76,45 @@ class PdfStylingTests(unittest.TestCase):
         self.assertNotIn(">", flowables[0].text)
 
 
+class TableOfContentsTests(unittest.TestCase):
+    """목차(Inhalt) 추출/렌더링 — 챗지피티 디자인 리뷰 2차 피드백으로 추가됨
+    (2026-09-27): 챕터 오프너/5원소 다이어그램/리플렉션 카드는 보류하고,
+    목차 하나만 우선 넣기로 함.
+    """
+
+    _SAMPLE = (
+        "# Saju-Lebenskarte: Dein Weg\n\n"
+        "## 1. Einführung\n\nText.\n\n"
+        "## 3. Dein Leben in acht Phasen\n\nText.\n\n"
+        "### 3.1  Die Jahre 3–12: Wurzeln in Bewegung\n\nText.\n\n"
+        "### 3.2  Die Jahre 13–22: Das Fundament prüfen\n\nText.\n"
+    )
+
+    def test_extracts_top_and_sub_headings_but_not_the_document_title(self):
+        entries = rp._extract_toc_entries(self._SAMPLE)
+        self.assertEqual(
+            entries,
+            [
+                ("top", "1. Einführung"),
+                ("top", "3. Dein Leben in acht Phasen"),
+                ("sub", "3.1  Die Jahre 3–12: Wurzeln in Bewegung"),
+                ("sub", "3.2  Die Jahre 13–22: Das Fundament prüfen"),
+            ],
+        )
+
+    def test_toc_flowables_have_no_page_numbers_and_end_with_page_break(self):
+        flowables = rp._build_toc_flowables(self._SAMPLE)
+        # 정확한 페이지 번호는 2-pass 렌더링이 필요해 이번 범위에 넣지 않기로
+        # 했으므로, 항목 텍스트에 숫자로만 된 페이지 번호가 붙어있으면 안 된다.
+        for f in flowables:
+            if hasattr(f, "text"):
+                self.assertNotRegex(f.text, r"\.{2,}\s*\d+\s*$")
+        self.assertEqual(type(flowables[-1]).__name__, "PageBreak")
+
+    def test_empty_report_produces_no_toc(self):
+        self.assertEqual(rp._build_toc_flowables("Nur ein Absatz ohne Überschriften."), [])
+
+
 class DaewoonTimelineDrawingTests(unittest.TestCase):
     """report_facts 기반 "Lebenslinie" 타임라인 그래픽이 죽지 않고 그려지는지 확인.
 
