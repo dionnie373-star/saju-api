@@ -33,7 +33,7 @@ import time
 from datetime import datetime, date, time as dtime, timedelta, timezone as dt_timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
@@ -688,6 +688,16 @@ def landing_page():
     되어 이 제한이 사라진다.
     """
     return send_from_directory(STATIC_SITE_DIR, "index.html")
+
+
+@app.route("/pricing", methods=["GET"])
+def pricing_page():
+    """Paddle 계정 인증(웹사이트 검증)용 별도 가격 페이지 경로.
+
+    별도 페이지를 새로 만들지 않고, 가격표가 있는 랜딩페이지 섹션
+    (id="pricing")으로 바로 스크롤되도록 프래그먼트로 리다이렉트한다.
+    """
+    return redirect("/#pricing")
 
 
 # 법적 필수 페이지 (초안 — 실 오픈 전 실제 정보로 채우고 법률 검토 필요.
