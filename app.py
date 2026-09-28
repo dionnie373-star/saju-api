@@ -849,17 +849,27 @@ def signup():
 
 
 # Paddle 상품 가격(price) ID -> 우리 시스템의 리포트 등급(tier) 매핑.
-# Paddle 대시보드에서 상품/가격을 만들 때 생긴 pri_... ID를 여기 등록해두면,
-# 결제 완료 웹훅이 어떤 리포트를 보내야 할지 알 수 있다.
-PADDLE_PRICE_TIER_MAP = {
-    "pri_01m3f98f0s27hjx0xy4bc9em4d": "paid",      # Palja Jahresreport (Paid) - EUR 9.90
-    "pri_01m3f9bjxx7sgpr1wvm5g8k61r": "premium",   # Palja Lebenskarte (Premium) - EUR 24.90
-}
+# 샌드박스/라이브 가격 ID가 서로 다르므로(같은 상품이라도 환경마다 pri_...
+# ID가 별개로 발급됨), 하드코딩 대신 전부 환경변수로 주입한다. 이렇게 하면
+# 샌드박스<->라이브 전환이 코드 수정/재배포 없이 Render 환경변수만 바꾸면
+# 끝난다 (2026-09-28: 라이브 카탈로그 3개 생성 완료, 아래 기본값은 지금까지
+# 써온 샌드박스 ID — 아직 Paddle 라이브 계정 KYC/도메인 승인 전이라 Render는
+# 계속 샌드박스 값으로 두고, 승인 나면 이 세 환경변수를 라이브 ID로 교체할 것).
+#   PADDLE_PRICE_ID_PAID          -> Palja Jahresreport (Paid), EUR 9.90
+#   PADDLE_PRICE_ID_PREMIUM       -> Palja Lebenskarte (Premium), EUR 24.90
+#   COMPATIBILITY_PADDLE_PRICE_ID -> Palja Kompatibilitäts-Check, EUR 4.90
+PADDLE_PRICE_TIER_MAP = {}
 
-# 궁합(Kompatibilität) 상품의 price_id는 아직 Paddle 대시보드에서 만들어지지
-# 않았으므로(사업자 계좌 등 라이브 준비와 별개로, 사용자가 Paddle에서 4,90€
-# 짜리 상품/가격을 만든 뒤 알려주면 이 환경변수로 등록한다) 코드에 하드코딩하지
-# 않고 환경변수로 주입한다. 값이 없으면 이 티어는 그냥 비활성 상태로 남는다.
+_paid_price_id = os.environ.get("PADDLE_PRICE_ID_PAID", "pri_01m3f98f0s27hjx0xy4bc9em4d")
+if _paid_price_id:
+    PADDLE_PRICE_TIER_MAP[_paid_price_id] = "paid"
+
+_premium_price_id = os.environ.get("PADDLE_PRICE_ID_PREMIUM", "pri_01m3f9bjxx7sgpr1wvm5g8k61r")
+if _premium_price_id:
+    PADDLE_PRICE_TIER_MAP[_premium_price_id] = "premium"
+
+# 궁합(Kompatibilität) 상품은 처음부터 환경변수로만 주입해왔다 (값이 없으면
+# 이 티어는 그냥 비활성 상태로 남는다).
 _compatibility_price_id = os.environ.get("COMPATIBILITY_PADDLE_PRICE_ID")
 if _compatibility_price_id:
     PADDLE_PRICE_TIER_MAP[_compatibility_price_id] = "compatibility"
