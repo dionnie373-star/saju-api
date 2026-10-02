@@ -455,20 +455,31 @@
 
 </div>
 
-<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
 (function () {
-  // Paddle 샌드박스 테스트 환경. 실서비스 오픈 전에 live 토큰/environment로 교체할 것.
-  var PADDLE_CLIENT_TOKEN = 'test_13d5f1ab829b75084a15dc9341e';
-  var PADDLE_PRICE_IDS = {
-    paid: 'pri_01m3f98f0s27hjx0xy4bc9em4d',       // Palja Jahresreport - EUR 9.90
-    premium: 'pri_01m3f9bjxx7sgpr1wvm5g8k61r',    // Palja Lebenskarte (Premium) - EUR 24.90
-    compatibility: 'pri_01m3g7k8hqa7dggxxj8x5vnh1n', // Palja Kompatibilitäts-Check - EUR 4.90 (샌드박스)
+  // Paddle은 "업종 승인 거부"로 라이브 전환이 막혀서 포기하고(2026-10-03),
+  // Digistore24로 교체 중 — 테스트용으로 Jahresreport 상품(740708)만 먼저
+  // 등록해서 업종 승인 여부를 확인하는 단계다. 아직 premium/compatibility는
+  // Digistore24 상품이 없어서 빈 값으로 둔다(기존 Paddle 궁합 애드온과 같은
+  // "값 없으면 비활성" 패턴).
+  //
+  // Digistore24는 Paddle.js 같은 임베드 모달이 없고, 자체 호스팅 주문서
+  // (checkout-ds24.com)로 리다이렉트하는 방식이다. 생년월일시 등은 "custom"
+  // GET 파라미터 하나에 JSON으로 인코딩해서 주문서 링크에 실어 보내고,
+  // 결제가 끝나면 그 custom 값이 그대로 /webhooks/digistore24 IPN으로
+  // 돌아온다 (app.py의 DIGISTORE24_PRODUCT_TIER_MAP 참고).
+  var DIGISTORE24_PRODUCT_IDS = {
+    paid: '740708',       // Palja Jahresreport - EUR 9.90 (테스트 등록, 승인 대기중)
+    premium: '',          // 아직 Digistore24에 미등록
+    compatibility: '',    // 아직 Digistore24에 미등록
   };
+  var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
 
-  if (window.Paddle) {
-    Paddle.Environment.set('sandbox');
-    Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN });
+  function buildDigistore24Url(productId, email, customData) {
+    var params = new URLSearchParams();
+    params.set('email', email);
+    params.set('custom', JSON.stringify(customData));
+    return DIGISTORE24_ORDER_FORM_BASE + productId + '?' + params.toString();
   }
 
   var checkoutErrorEl = document.getElementById('checkoutError');
@@ -493,7 +504,8 @@
     if (!email || email.indexOf('@') === -1) { showCheckoutError('Bitte gib oben zuerst eine gültige E-Mail-Adresse an.'); return; }
     if (tier === 'premium' && !gender) { showCheckoutError('Für die Premium-Lebenskarte wähle bitte oben dein Geschlecht aus.'); return; }
     if (!withdrawalConsent) { showCheckoutError('Bitte bestätige zuerst die Zustimmung zum vorzeitigen Beginn der Ausführung (Checkbox oben).'); return; }
-    if (!window.Paddle) { showCheckoutError('Zahlungsanbieter konnte nicht geladen werden. Bitte versuch es später erneut.'); return; }
+    var productId = DIGISTORE24_PRODUCT_IDS[tier];
+    if (!productId) { showCheckoutError('Dieser Report ist gerade nicht bestellbar. Bitte schau bald wieder vorbei.'); return; }
 
     var customData = {
       email: email,
@@ -505,11 +517,7 @@
     };
     if (gender) { customData.gender = gender; }
 
-    Paddle.Checkout.open({
-      items: [{ priceId: PADDLE_PRICE_IDS[tier], quantity: 1 }],
-      customer: { email: email },
-      customData: customData,
-    });
+    window.location.href = buildDigistore24Url(productId, email, customData);
   }
 
   document.getElementById('buyPaidBtn').addEventListener('click', function () { openCheckout('paid'); });
@@ -542,8 +550,8 @@
     if (!dateB || !cityB) { showCompatError('Bitte gib zuerst Geburtsdatum und Geburtsort der anderen Person an.'); return; }
     if (!email || email.indexOf('@') === -1) { showCompatError('Bitte gib eine gültige E-Mail-Adresse an.'); return; }
     if (!consent) { showCompatError('Bitte bestätige zuerst die Zustimmung zum vorzeitigen Beginn der Ausführung (Checkbox oben).'); return; }
-    if (!PADDLE_PRICE_IDS.compatibility) { showCompatError('Der Kompatibilitäts-Check ist in Kürze verfügbar. Bitte schau bald wieder vorbei.'); return; }
-    if (!window.Paddle) { showCompatError('Zahlungsanbieter konnte nicht geladen werden. Bitte versuch es später erneut.'); return; }
+    var productId = DIGISTORE24_PRODUCT_IDS.compatibility;
+    if (!productId) { showCompatError('Der Kompatibilitäts-Check ist in Kürze verfügbar. Bitte schau bald wieder vorbei.'); return; }
 
     var customData = {
       email: email,
@@ -553,11 +561,7 @@
       withdrawal_consent_at: new Date().toISOString(),
     };
 
-    Paddle.Checkout.open({
-      items: [{ priceId: PADDLE_PRICE_IDS.compatibility, quantity: 1 }],
-      customer: { email: email },
-      customData: customData,
-    });
+    window.location.href = buildDigistore24Url(productId, email, customData);
   }
 
   document.getElementById('buyCompatBtn').addEventListener('click', openCompatCheckout);
@@ -628,6 +632,9 @@
   });
 })();
 </script>
+
+<!-- Digistore24 승인 요건: 세일즈 페이지 Trust-Badge (Settings > Conversion tools > Trust-Badges, ID 48337) -->
+<script type="text/javascript" src="https://www.digistore24.com/trusted-badge/48337/Wn3MHTTrgJ2telF/salespage"></script>
 
 </body>
 </html>

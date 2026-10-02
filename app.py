@@ -707,6 +707,7 @@ _LEGAL_PAGES = {
     "datenschutz": "datenschutz.html",
     "agb": "agb.html",
     "widerruf": "widerruf.html",
+    "danke": "danke.html",  # Digistore24 Thank-you 페이지 (승인 요건: 필수 고지문구 + trust badge)
 }
 
 
@@ -895,6 +896,73 @@ _PROCESSED_PADDLE_TRANSACTIONS = set()
 _PROCESSED_PADDLE_LOCK = threading.Lock()
 
 
+def _fulfill_report_order(tier, custom_data, email):
+    """결제 완료 후 리포트 생성+발송 공통 로직 (Paddle/Digistore24 웹훅이 공유).
+
+    성공하면 (response_dict, 200)을 돌려준다. 실패하면 CalcError 또는
+    report_pipeline.PipelineError를 그대로 던진다 — 호출부(각 웹훅)가 이걸
+    잡아서 멱등성 마킹을 롤백하고 (.status에 맞는 코드로) 응답을 만든다.
+    """
+    from report_pipeline import (
+        PipelineError,
+        run_compatibility_signup,
+        run_paid_signup,
+        run_premium_signup,
+    )
+
+    if tier == "compatibility":
+        # 궁합 리포트는 사람 두 명의 생년월일시가 필요하다 (본인 + 상대방).
+        # customData 필드명은 랜딩페이지 폼과 맞춰서 _a/_b 접미사로 구분한다.
+        required = ("birth_date_a", "birth_city_a", "birth_date_b", "birth_city_b")
+        missing = [k for k in required if not custom_data.get(k)]
+        if missing:
+            raise PipelineError(
+                f"Kompatibilität benötigt Geburtsdaten für beide Personen (fehlt: {', '.join(missing)})",
+                400,
+            )
+
+        payload_a = {
+            "name": custom_data.get("name_a"),
+            "birth_date": custom_data.get("birth_date_a"),
+            "birth_time": custom_data.get("birth_time_a"),
+            "birth_city": custom_data.get("birth_city_a"),
+        }
+        payload_b = {
+            "name": custom_data.get("name_b"),
+            "birth_date": custom_data.get("birth_date_b"),
+            "birth_time": custom_data.get("birth_time_b"),
+            "birth_city": custom_data.get("birth_city_b"),
+        }
+
+        calc_result_a = run_calculation(payload_a)
+        calc_result_b = run_calculation(payload_b)
+
+        compat_payload = dict(custom_data)
+        compat_payload["email"] = email
+
+        run_compatibility_signup(
+            payload=compat_payload, calc_result_a=calc_result_a, calc_result_b=calc_result_b
+        )
+        return {"ok": True, "message": "Kompatibilitätsreport를 생성해서 이메일로 발송했습니다."}, 200
+
+    payload = dict(custom_data)
+    payload["email"] = email
+    payload["tier"] = tier
+    if tier == "paid":
+        payload.setdefault("monthly_year", date.today().year + 1)
+    elif tier == "premium" and not payload.get("gender"):
+        raise PipelineError("premium 리포트에는 gender가 필요합니다.", 400)
+
+    calc_result = run_calculation(payload)
+
+    if tier == "paid":
+        run_paid_signup(payload=payload, calc_result=calc_result)
+    else:
+        run_premium_signup(payload=payload, calc_result=calc_result)
+
+    return {"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."}, 200
+
+
 def _verify_paddle_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
     """Paddle 웹훅 서명(Paddle-Signature 헤더)을 검증한다.
 
@@ -1001,86 +1069,152 @@ def paddle_webhook():
         _unmark_transaction()
         return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
 
-    if tier == "compatibility":
-        # 궁합 리포트는 사람 두 명의 생년월일시가 필요하다 (본인 + 상대방).
-        # customData 필드명은 랜딩페이지 폼과 맞춰서 _a/_b 접미사로 구분한다.
-        required = ("birth_date_a", "birth_city_a", "birth_date_b", "birth_city_b")
-        missing = [k for k in required if not custom_data.get(k)]
-        if missing:
-            _unmark_transaction()
-            return jsonify({
-                "ok": False,
-                "error": f"Kompatibilität benötigt Geburtsdaten für beide Personen (fehlt: {', '.join(missing)})",
-            }), 400
-
-        payload_a = {
-            "name": custom_data.get("name_a"),
-            "birth_date": custom_data.get("birth_date_a"),
-            "birth_time": custom_data.get("birth_time_a"),
-            "birth_city": custom_data.get("birth_city_a"),
-        }
-        payload_b = {
-            "name": custom_data.get("name_b"),
-            "birth_date": custom_data.get("birth_date_b"),
-            "birth_time": custom_data.get("birth_time_b"),
-            "birth_city": custom_data.get("birth_city_b"),
-        }
-
-        try:
-            calc_result_a = run_calculation(payload_a)
-            calc_result_b = run_calculation(payload_b)
-        except CalcError as e:
-            _unmark_transaction()
-            return jsonify({"ok": False, "error": str(e)}), e.status
-
-        from report_pipeline import PipelineError, run_compatibility_signup
-
-        compat_payload = dict(custom_data)
-        compat_payload["email"] = email
-
-        try:
-            run_compatibility_signup(
-                payload=compat_payload, calc_result_a=calc_result_a, calc_result_b=calc_result_b
-            )
-        except PipelineError as e:
-            _unmark_transaction()
-            return jsonify({"ok": False, "error": str(e)}), e.status
-        except Exception:
-            _unmark_transaction()
-            raise
-
-        return jsonify({"ok": True, "message": "Kompatibilitätsreport를 생성해서 이메일로 발송했습니다."})
-
-    payload = dict(custom_data)
-    payload["email"] = email
-    payload["tier"] = tier
-    if tier == "paid":
-        payload.setdefault("monthly_year", date.today().year + 1)
-    elif tier == "premium" and not payload.get("gender"):
-        _unmark_transaction()
-        return jsonify({"ok": False, "error": "premium 리포트에는 gender가 필요합니다."}), 400
+    from report_pipeline import PipelineError
 
     try:
-        calc_result = run_calculation(payload)
-    except CalcError as e:
-        _unmark_transaction()
-        return jsonify({"ok": False, "error": str(e)}), e.status
-
-    from report_pipeline import PipelineError, run_paid_signup, run_premium_signup
-
-    try:
-        if tier == "paid":
-            run_paid_signup(payload=payload, calc_result=calc_result)
-        else:
-            run_premium_signup(payload=payload, calc_result=calc_result)
-    except PipelineError as e:
+        response_dict, status = _fulfill_report_order(tier, custom_data, email)
+    except (CalcError, PipelineError) as e:
         _unmark_transaction()
         return jsonify({"ok": False, "error": str(e)}), e.status
     except Exception:
         _unmark_transaction()
         raise
 
-    return jsonify({"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."})
+    return jsonify(response_dict), status
+
+
+# --- Digistore24 연동 (2026-10-03 시작, 테스트 중) ---------------------------
+# Paddle이 "업종 승인 거부"로 라이브 전환이 막혀서, 대안으로 Digistore24를
+# 검토 중이다 (독일 코칭/에소테릭 셀러들이 전통적으로 많이 쓰는 플랫폼이고,
+# 금지 상품 목록에 점성술/운세 관련 조항이 없음을 확인함). Paddle과 달리
+# Digistore24는 자체 호스팅 주문서(checkout-ds24.com)로 리다이렉트하는
+# 방식이라 프론트엔드 체크아웃 흐름이 근본적으로 다르다 — 생년월일시 등은
+# "custom" GET 파라미터 하나에 JSON으로 인코딩해서 주문서 링크에 실어 보내고,
+# 결제가 끝나면 그 custom 값이 IPN(웹훅) POST에 그대로 되돌아온다.
+#
+# 아직 Digistore24 쪽 상품 승인이 안 끝났고(2026-10-03 기준 "Request
+# approval" 체크리스트만 열어봄, 제출 전), 그래서 아래 매핑은 전부 비어있을
+# 수 있다 — 값이 없는 tier는 그냥 비활성 상태로 남는다 (Paddle의 궁합
+# 애드온과 같은 패턴).
+#   DIGISTORE24_PRODUCT_ID_PAID          -> Palja Jahresreport, EUR 9.90 (상품ID 740708, 테스트 등록 완료)
+#   DIGISTORE24_PRODUCT_ID_PREMIUM       -> Palja Lebenskarte, EUR 24.90 (아직 미등록)
+#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 4.90 (아직 미등록)
+DIGISTORE24_PRODUCT_TIER_MAP = {}
+
+_ds24_paid_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PAID", "740708")
+if _ds24_paid_id:
+    DIGISTORE24_PRODUCT_TIER_MAP[_ds24_paid_id] = "paid"
+
+_ds24_premium_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PREMIUM")
+if _ds24_premium_id:
+    DIGISTORE24_PRODUCT_TIER_MAP[_ds24_premium_id] = "premium"
+
+_ds24_compat_id = os.environ.get("DIGISTORE24_PRODUCT_ID_COMPATIBILITY")
+if _ds24_compat_id:
+    DIGISTORE24_PRODUCT_TIER_MAP[_ds24_compat_id] = "compatibility"
+
+_PROCESSED_DIGISTORE24_ORDERS = set()
+_PROCESSED_DIGISTORE24_LOCK = threading.Lock()
+
+
+def _verify_digistore24_signature(form, passphrase: str) -> bool:
+    """Digistore24 IPN의 sha_sign을 검증한다.
+
+    알고리즘 (공식 IPN 가이드, digistore24.com/download/ipn/examples/ipn/digistore_ipn.pdf):
+    sha_sign을 제외한 모든 POST 파라미터를 이름(대소문자 무시) 기준으로
+    정렬한 뒤 "name=value"를 줄바꿈 없이 "xxxxx"로 이어붙이고, 맨 끝에
+    "xxxxx" + sha_passphrase를 붙여서 SHA512 hex digest를 구한다.
+    """
+    if not passphrase:
+        return False
+
+    received = (form.get("sha_sign") or "").strip()
+    if not received:
+        return False
+
+    parts = [f"{k}={v}" for k, v in form.items(multi=False) if k != "sha_sign"]
+    parts.sort(key=lambda p: p.split("=", 1)[0].lower())
+    signing_string = "xxxxx".join(parts) + "xxxxx" + passphrase
+
+    computed = hashlib.sha512(signing_string.encode("utf-8")).hexdigest()
+    return hmac.compare_digest(computed.lower(), received.lower())
+
+
+@app.route("/webhooks/digistore24", methods=["POST"])
+def digistore24_webhook():
+    """Digistore24 IPN(Instant Payment Notification) 웹훅.
+
+    palja.de의 주문 버튼이 Digistore24 주문서 링크로 이동할 때
+    "custom" GET 파라미터에 생년월일시/이메일/동의 여부 등을 JSON으로 실어
+    보내고, 결제가 끝나면 Digistore24가 그 custom 값을 그대로 담아 이
+    엔드포인트를 호출한다. 처리 흐름은 Paddle 웹훅과 동일 — 서명 검증 →
+    상품ID로 등급(tier) 판별 → custom에 담긴 생년월일시로 리포트 생성/발송.
+    """
+    passphrase = os.environ.get("DIGISTORE24_SHA_PASSPHRASE")
+
+    if not _verify_digistore24_signature(request.form, passphrase):
+        return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
+
+    event = request.form.get("event", "")
+    if event != "on_payment":
+        # 환불/차지백 등 우리가 아직 처리하지 않는 이벤트는 조용히 무시한다
+        # (Digistore24는 200을 못 받으면 같은 IPN을 재전송하므로, 관심 없는
+        # 이벤트도 200을 줘야 재전송 스팸을 피할 수 있다).
+        return jsonify({"ok": True, "ignored": event})
+
+    order_id = request.form.get("order_id", "")
+    if order_id:
+        with _PROCESSED_DIGISTORE24_LOCK:
+            if order_id in _PROCESSED_DIGISTORE24_ORDERS:
+                return jsonify({"ok": True, "duplicate": True, "message": "이미 처리된 주문입니다."})
+            _PROCESSED_DIGISTORE24_ORDERS.add(order_id)
+            if len(_PROCESSED_DIGISTORE24_ORDERS) > 2000:
+                _PROCESSED_DIGISTORE24_ORDERS.clear()
+                _PROCESSED_DIGISTORE24_ORDERS.add(order_id)
+
+    def _unmark_order():
+        if order_id:
+            with _PROCESSED_DIGISTORE24_LOCK:
+                _PROCESSED_DIGISTORE24_ORDERS.discard(order_id)
+
+    product_id = request.form.get("product_id", "")
+    tier = DIGISTORE24_PRODUCT_TIER_MAP.get(product_id)
+    if not tier:
+        _unmark_order()
+        return jsonify({"ok": False, "error": f"등록되지 않은 product_id: {product_id}"}), 400
+
+    import json as _json
+
+    try:
+        custom_data = _json.loads(request.form.get("custom") or "{}")
+        if not isinstance(custom_data, dict):
+            raise ValueError("custom은 JSON 객체여야 합니다.")
+    except (ValueError, TypeError):
+        _unmark_order()
+        return jsonify({"ok": False, "error": "custom 파라미터가 올바른 JSON이 아닙니다."}), 400
+
+    email = (request.form.get("email") or custom_data.get("email") or "").strip()
+    if not email or "@" not in email:
+        _unmark_order()
+        return jsonify({"ok": False, "error": "유효한 email이 없습니다."}), 400
+
+    # Paddle과 동일하게, 체크아웃 우회 호출을 막기 위해 서버에서도 재확인.
+    if not custom_data.get("withdrawal_consent"):
+        _unmark_order()
+        return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
+
+    from report_pipeline import PipelineError
+
+    try:
+        response_dict, status = _fulfill_report_order(tier, custom_data, email)
+    except (CalcError, PipelineError) as e:
+        _unmark_order()
+        return jsonify({"ok": False, "error": str(e)}), e.status
+    except Exception:
+        _unmark_order()
+        raise
+
+    return jsonify(response_dict), status
 
 
 if __name__ == "__main__":
