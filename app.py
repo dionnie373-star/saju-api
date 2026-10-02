@@ -1230,14 +1230,24 @@ def digistore24_webhook():
 
     from report_pipeline import PipelineError
 
+    # 실제 테스트 구매로 확인된 버그: gunicorn 워커 타임아웃(--timeout)이 리포트
+    # 생성 도중(Claude API 호출 중) 터지면, 워커가 SIGALRM 핸들러에서
+    # sys.exit(1)로 SystemExit을 던진다. SystemExit은 BaseException만 상속하고
+    # Exception은 상속하지 않기 때문에 아래 "except Exception"으로는 절대 못
+    # 잡혀서 _unmark_order()가 호출되지 않았었다 — 그 결과 고객은 리포트를 못
+    # 받았는데 order_id는 "처리 완료"로 영원히 남아, Digistore24가 재전송하는
+    # IPN도 전부 "이미 처리된 주문"으로 무시되는 치명적인 버그였다. finally로
+    # 바꿔서 성공(success=True)한 경우만 제외하고 어떤 예외(SystemExit 포함)가
+    # 나도 반드시 unmark되게 한다.
+    success = False
     try:
         response_dict, status = _fulfill_report_order(tier, custom_data, email)
+        success = True
     except (CalcError, PipelineError) as e:
-        _unmark_order()
         return jsonify({"ok": False, "error": str(e)}), e.status
-    except Exception:
-        _unmark_order()
-        raise
+    finally:
+        if not success:
+            _unmark_order()
 
     return jsonify(response_dict), status
 

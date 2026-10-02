@@ -191,6 +191,31 @@ class Digistore24WebhookTests(unittest.TestCase):
 
         self.assertNotIn("ds24_retry_test", app_module._PROCESSED_DIGISTORE24_ORDERS)
 
+    def test_worker_timeout_systemexit_still_unmarks_order_for_retry(self):
+        """실제 테스트 구매로 발견된 버그 재현: gunicorn 워커가 --timeout을 넘기면
+        SIGALRM 핸들러가 sys.exit(1)로 SystemExit을 던진다. SystemExit은
+        BaseException만 상속하고 Exception은 상속하지 않으므로, 예전처럼
+        "except Exception: _unmark_order(); raise" 구조였다면 이 경우
+        _unmark_order()가 호출되지 않아 order_id가 영원히 "처리 완료"로 남고
+        Digistore24의 재전송 IPN도 전부 무시돼 고객이 리포트를 영영 못 받는
+        치명적인 버그가 생긴다. finally 기반 구조로 고쳤으니 SystemExit이 나도
+        반드시 unmark돼야 한다."""
+
+        def _timeout(**kw):
+            raise SystemExit(1)
+
+        self._patch(report_pipeline, "run_paid_signup", _timeout)
+
+        form = _base_form("ds24_worker_timeout", PAID_PRODUCT_ID, "kunde@example.com", _valid_paid_custom_data_json())
+        with self.assertRaises(SystemExit):
+            self._post_webhook(form)
+
+        self.assertNotIn(
+            "ds24_worker_timeout",
+            app_module._PROCESSED_DIGISTORE24_ORDERS,
+            "SystemExit(워커 타임아웃)이 나도 주문은 반드시 재시도 가능하게 unmark돼야 한다",
+        )
+
     def test_premium_requires_gender(self):
         if "premium" not in app_module.DIGISTORE24_PRODUCT_TIER_MAP.values():
             self.skipTest("DIGISTORE24_PRODUCT_ID_PREMIUM env var가 설정 안 된 환경(premium tier 비활성)")
