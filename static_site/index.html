@@ -475,10 +475,23 @@
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
 
+  // Digistore24는 "custom" 파라미터 값에서 큰따옴표(")를 전부 제거해버린다
+  // (실제 테스트 구매로 확인: 보낸 값 {"email": "a@b.de"}가 IPN 콜백에는
+  // {email: a@b.de}로, 즉 따옴표가 싹 사라진 채로 돌아와서 서버의
+  // json.loads()가 깨짐). 그래서 JSON을 그대로 보내지 않고, 따옴표가 전혀
+  // 없는 base64url로 인코딩해서 보낸다 (app.py에서 base64 디코딩 후 JSON
+  // 파싱). UTF-8(독일어 움라우트 등 포함 가능한 생년월일/도시 등) 안전하게
+  // 처리하기 위해 encodeURIComponent -> unescape -> btoa 경유.
+  function base64UrlEncodeJson(obj) {
+    var jsonStr = JSON.stringify(obj);
+    var b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
   function buildDigistore24Url(productId, email, customData) {
     var params = new URLSearchParams();
     params.set('email', email);
-    params.set('custom', JSON.stringify(customData));
+    params.set('custom', base64UrlEncodeJson(customData));
     return DIGISTORE24_ORDER_FORM_BASE + productId + '?' + params.toString();
   }
 

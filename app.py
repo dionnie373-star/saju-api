@@ -1148,6 +1148,22 @@ def _verify_digistore24_signature(form, passphrase: str) -> bool:
     return hmac.compare_digest(computed.lower(), received.lower())
 
 
+def _decode_digistore24_custom(raw: str) -> str:
+    """static_site/index.html의 base64UrlEncodeJson()이 인코딩한 "custom" 값을 원래 JSON
+    문자열로 되돌린다.
+
+    왜 JSON을 그대로 안 보내고 base64url을 쓰는가: 실제 테스트 구매로 확인한 결과,
+    Digistore24는 "custom" 파라미터 값에서 큰따옴표(")를 전부 제거해버린다 — 보낸 값이
+    {"email": "a@b.de"}였는데 실제 IPN 콜백에는 {email: a@b.de}로, 즉 JSON을 깨뜨리는
+    방식으로 따옴표만 사라진 채 돌아옴(원인 불명 — Digistore24 쪽 입력 새니타이징으로 추정).
+    JSON 파싱이 매번 실패해서, 애초에 큰따옴표가 전혀 없는 base64url 인코딩으로 바꿨다.
+    """
+    import base64
+
+    padded = raw + "=" * (-len(raw) % 4)
+    return base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8")
+
+
 @app.route("/webhooks/digistore24", methods=["POST"])
 def digistore24_webhook():
     """Digistore24 IPN(Instant Payment Notification) 웹훅.
@@ -1162,9 +1178,6 @@ def digistore24_webhook():
 
     if not _verify_digistore24_signature(request.form, passphrase):
         return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
-
-    # TEMP DEBUG (실제 구매 IPN의 product_id/custom 형식 확인용 — 확인 후 반드시 제거할 것)
-    print(f"[ds24-debug] form keys/values: {dict(request.form)}", flush=True)
 
     event = request.form.get("event", "")
     if event != "on_payment":
@@ -1194,13 +1207,14 @@ def digistore24_webhook():
         _unmark_order()
         return jsonify({"ok": False, "error": f"등록되지 않은 product_id: {product_id}"}), 400
 
+    import binascii as _binascii
     import json as _json
 
     try:
-        custom_data = _json.loads(request.form.get("custom") or "{}")
+        custom_data = _json.loads(_decode_digistore24_custom(request.form.get("custom") or ""))
         if not isinstance(custom_data, dict):
             raise ValueError("custom은 JSON 객체여야 합니다.")
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, _binascii.Error):
         _unmark_order()
         return jsonify({"ok": False, "error": "custom 파라미터가 올바른 JSON이 아닙니다."}), 400
 

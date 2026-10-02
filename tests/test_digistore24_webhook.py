@@ -41,10 +41,21 @@ def _sign(form: dict, passphrase: str = PASSPHRASE) -> str:
     return hashlib.sha512(sha_string.encode("utf-8")).hexdigest()
 
 
-def _valid_paid_custom_data_json():
+def _base64url_encode_json(data: dict) -> str:
+    """static_site/index.html의 base64UrlEncodeJson()과 독립적으로 동일한 로직을
+    재구현(app._decode_digistore24_custom과 짝 맞는 인코더) — Digistore24가 "custom"
+    파라미터 값의 큰따옴표(")를 전부 제거해버리는 걸 실제 테스트 구매로 확인해서,
+    큰따옴표가 전혀 없는 base64url로 바꿔 보내기로 함(패딩 "=" 제거).
+    """
+    import base64
     import json
 
-    return json.dumps({
+    raw = base64.urlsafe_b64encode(json.dumps(data).encode("utf-8")).decode("ascii")
+    return raw.rstrip("=")
+
+
+def _valid_paid_custom_data_json():
+    return _base64url_encode_json({
         "name": "Test Kunde",
         "birth_date": "1990-05-15",
         "birth_time": "14:30",
@@ -106,14 +117,16 @@ class Digistore24WebhookTests(unittest.TestCase):
         self.assertEqual(resp.get_json()["ignored"], "on_refund")
 
     def test_missing_withdrawal_consent_rejected(self):
-        import json
-
         calls = []
         self._patch(report_pipeline, "run_paid_signup", lambda **kw: calls.append(kw))
 
-        custom = json.loads(_valid_paid_custom_data_json())
-        del custom["withdrawal_consent"]
-        form = _base_form("ds24_no_consent", PAID_PRODUCT_ID, "kunde@example.com", json.dumps(custom))
+        custom = {
+            "name": "Test Kunde",
+            "birth_date": "1990-05-15",
+            "birth_time": "14:30",
+            "birth_city": "Berlin",
+        }
+        form = _base_form("ds24_no_consent", PAID_PRODUCT_ID, "kunde@example.com", _base64url_encode_json(custom))
         resp = self._post_webhook(form)
 
         self.assertEqual(resp.status_code, 400)
