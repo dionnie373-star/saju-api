@@ -1163,6 +1163,9 @@ def digistore24_webhook():
     if not _verify_digistore24_signature(request.form, passphrase):
         return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
 
+    # TEMP DEBUG (실제 구매 IPN의 product_id/custom 형식 확인용 — 확인 후 반드시 제거할 것)
+    print(f"[ds24-debug] form keys/values: {dict(request.form)}", flush=True)
+
     event = request.form.get("event", "")
     if event != "on_payment":
         # 환불/차지백 등 우리가 아직 처리하지 않는 이벤트는 조용히 무시한다
