@@ -469,9 +469,9 @@
   // 결제가 끝나면 그 custom 값이 그대로 /webhooks/digistore24 IPN으로
   // 돌아온다 (app.py의 DIGISTORE24_PRODUCT_TIER_MAP 참고).
   var DIGISTORE24_PRODUCT_IDS = {
-    paid: '740708',       // Palja Jahresreport - EUR 9.90 (테스트 등록, 승인 대기중)
-    premium: '',          // 아직 Digistore24에 미등록
-    compatibility: '',    // 아직 Digistore24에 미등록
+    paid: '740708',          // Palja Jahresreport - EUR 9.90 (승인 대기중)
+    premium: '740939',       // Palja Lebenskarte - EUR 24.90 (승인 대기중)
+    compatibility: '740941', // Palja Kompatibilitäts-Check - EUR 4.90 (승인 대기중)
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
 

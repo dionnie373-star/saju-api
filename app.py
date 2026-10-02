@@ -1092,13 +1092,12 @@ def paddle_webhook():
 # "custom" GET 파라미터 하나에 JSON으로 인코딩해서 주문서 링크에 실어 보내고,
 # 결제가 끝나면 그 custom 값이 IPN(웹훅) POST에 그대로 되돌아온다.
 #
-# 아직 Digistore24 쪽 상품 승인이 안 끝났고(2026-10-03 기준 "Request
-# approval" 체크리스트만 열어봄, 제출 전), 그래서 아래 매핑은 전부 비어있을
-# 수 있다 — 값이 없는 tier는 그냥 비활성 상태로 남는다 (Paddle의 궁합
-# 애드온과 같은 패턴).
-#   DIGISTORE24_PRODUCT_ID_PAID          -> Palja Jahresreport, EUR 9.90 (상품ID 740708, 테스트 등록 완료)
-#   DIGISTORE24_PRODUCT_ID_PREMIUM       -> Palja Lebenskarte, EUR 24.90 (아직 미등록)
-#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 4.90 (아직 미등록)
+# 세 상품 모두 2026-10-03에 Digistore24 승인 요청을 제출했고(승인 대기중),
+# 승인이 날 때까지는 테스트 결제(Test Pay)만 가능하다 — 값이 없는 tier는
+# 그냥 비활성 상태로 남는다 (Paddle의 궁합 애드온과 같은 패턴).
+#   DIGISTORE24_PRODUCT_ID_PAID          -> Palja Jahresreport, EUR 9.90 (상품ID 740708, 승인 대기중)
+#   DIGISTORE24_PRODUCT_ID_PREMIUM       -> Palja Lebenskarte, EUR 24.90 (상품ID 740939, 승인 대기중)
+#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 4.90 (상품ID 740941, 승인 대기중)
 DIGISTORE24_PRODUCT_TIER_MAP = {}
 
 _ds24_paid_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PAID", "740708")
