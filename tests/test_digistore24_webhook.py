@@ -25,14 +25,20 @@ PAID_PRODUCT_ID = "740708"
 
 
 def _sign(form: dict, passphrase: str = PASSPHRASE) -> str:
-    """digistore_ipn.pdf에 설명된 알고리즘을 그대로 재현 (app._verify_digistore24_signature
-    와 동일한 로직이어야 서명이 맞는다 — 테스트가 구현을 베끼는 게 아니라, 공식 문서의
-    알고리즘을 독립적으로 재구현해서 둘이 일치하는지 확인하는 것).
+    """Digistore24 공식 레퍼런스 구현(digistore24.com/download/ipn/examples/ipn/sha_sign.php의
+    digistore_signature() 함수)을 독립적으로 재구현한 것 — app._verify_digistore24_signature와
+    같은 로직이어야 서명이 맞는다. (처음엔 digistore_ipn.pdf 기반 알고리즘을 썼었는데 실제 IPN
+    호출과 서명이 안 맞아서, 실제 캡처한 test IPN 페이로드로 역산해 이 알고리즘으로 교체함:
+    sha_sign/빈 값 제외 → 키 대소문자 구분 정렬 → "key=value+passphrase"를 구분자 없이 연결.)
     """
-    parts = [f"{k}={v}" for k, v in form.items() if k != "sha_sign"]
-    parts.sort(key=lambda p: p.split("=", 1)[0].lower())
-    signing_string = "xxxxx".join(parts) + "xxxxx" + passphrase
-    return hashlib.sha512(signing_string.encode("utf-8")).hexdigest()
+    items = [
+        (k, v)
+        for k, v in form.items()
+        if k.lower() not in ("sha_sign", "shasign") and v not in (None, "", False)
+    ]
+    items.sort(key=lambda kv: kv[0])
+    sha_string = "".join(f"{k}={v}{passphrase}" for k, v in items)
+    return hashlib.sha512(sha_string.encode("utf-8")).hexdigest()
 
 
 def _valid_paid_custom_data_json():

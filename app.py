@@ -1120,23 +1120,31 @@ _PROCESSED_DIGISTORE24_LOCK = threading.Lock()
 def _verify_digistore24_signature(form, passphrase: str) -> bool:
     """Digistore24 IPN의 sha_sign을 검증한다.
 
-    알고리즘 (공식 IPN 가이드, digistore24.com/download/ipn/examples/ipn/digistore_ipn.pdf):
-    sha_sign을 제외한 모든 POST 파라미터를 이름(대소문자 무시) 기준으로
-    정렬한 뒤 "name=value"를 줄바꿈 없이 "xxxxx"로 이어붙이고, 맨 끝에
-    "xxxxx" + sha_passphrase를 붙여서 SHA512 hex digest를 구한다.
+    알고리즘 (공식 레퍼런스 구현, digistore24.com/download/ipn/examples/ipn/sha_sign.php의
+    digistore_signature() 함수를 그대로 이식 — 처음에 참고했던 digistore_ipn.pdf 기반 알고리즘은
+    실제 IPN 요청과 서명이 맞지 않아, 실제 테스트 IPN 호출을 캡처해서 역산/검증 후 수정함):
+    sha_sign(대소문자 무관)과 빈 값(""/False)인 파라미터는 제외하고,
+    남은 키를 대소문자 구분한 문자열 정렬로 정렬한 뒤, 각 "key=value" 바로 뒤에
+    매번 sha_passphrase를 이어붙인다(구분자 없음 — 즉 key1=value1PASSPHRASEkey2=value2PASSPHRASE...).
+    이 문자열 전체의 SHA512 hex digest(대문자)가 sha_sign과 일치해야 한다.
     """
     if not passphrase:
         return False
 
-    received = (form.get("sha_sign") or "").strip()
+    received = (form.get("sha_sign") or form.get("SHASIGN") or "").strip()
     if not received:
         return False
 
-    parts = [f"{k}={v}" for k, v in form.items(multi=False) if k != "sha_sign"]
-    parts.sort(key=lambda p: p.split("=", 1)[0].lower())
-    signing_string = "xxxxx".join(parts) + "xxxxx" + passphrase
+    items = [
+        (k, v)
+        for k, v in form.items(multi=False)
+        if k.lower() not in ("sha_sign", "shasign") and v not in (None, "", False)
+    ]
+    items.sort(key=lambda kv: kv[0])  # 대소문자 구분하는 문자열 정렬 (PHP SORT_STRING과 동일)
 
-    computed = hashlib.sha512(signing_string.encode("utf-8")).hexdigest()
+    sha_string = "".join(f"{k}={v}{passphrase}" for k, v in items)
+
+    computed = hashlib.sha512(sha_string.encode("utf-8")).hexdigest()
     return hmac.compare_digest(computed.lower(), received.lower())
 
 
@@ -1151,9 +1159,6 @@ def digistore24_webhook():
     상품ID로 등급(tier) 판별 → custom에 담긴 생년월일시로 리포트 생성/발송.
     """
     passphrase = os.environ.get("DIGISTORE24_SHA_PASSPHRASE")
-
-    # TEMP DEBUG (서명 불일치 원인 조사용 — 확인 후 반드시 제거할 것)
-    print(f"[ds24-debug] form keys/values: {dict(request.form)}", flush=True)
 
     if not _verify_digistore24_signature(request.form, passphrase):
         return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
