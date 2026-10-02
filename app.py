@@ -1152,6 +1152,9 @@ def digistore24_webhook():
     """
     passphrase = os.environ.get("DIGISTORE24_SHA_PASSPHRASE")
 
+    # TEMP DEBUG (서명 불일치 원인 조사용 — 확인 후 반드시 제거할 것)
+    print(f"[ds24-debug] form keys/values: {dict(request.form)}", flush=True)
+
     if not _verify_digistore24_signature(request.form, passphrase):
         return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
 
