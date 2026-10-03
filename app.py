@@ -949,7 +949,14 @@ def _fulfill_report_order(tier, custom_data, email):
     payload["email"] = email
     payload["tier"] = tier
     if tier == "paid":
-        payload.setdefault("monthly_year", date.today().year + 1)
+        # Jahresreport 대상 연도 결정 규칙(2026-10-03 확정):
+        # 7월~12월에 신청 -> 다음 해 운세 (예: 2026-07~2026-12 신청 -> 2027년)
+        # 1월~6월에 신청 -> 같은 해 운세 (예: 2027-01~2027-06 신청 -> 2027년)
+        # 이전에는 무조건 "올해+1"이어서, 예를 들어 2027년 1~12월 내내 아무도
+        # 2027년 리포트를 받을 수 없고 전부 2028년으로 건너뛰는 문제가 있었음.
+        _today = date.today()
+        _default_monthly_year = _today.year + 1 if _today.month >= 7 else _today.year
+        payload.setdefault("monthly_year", _default_monthly_year)
     elif tier == "premium" and not payload.get("gender"):
         raise PipelineError("premium 리포트에는 gender가 필요합니다.", 400)
 
