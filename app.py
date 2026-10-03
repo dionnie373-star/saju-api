@@ -27,6 +27,7 @@ import hashlib
 import hmac
 import os
 import re
+import secrets
 import sys
 import threading
 import time
@@ -1132,6 +1133,79 @@ if _ds24_compat_id:
 _PROCESSED_DIGISTORE24_ORDERS = set()
 _PROCESSED_DIGISTORE24_LOCK = threading.Lock()
 
+# 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전에는
+# 생년월일/출생시간/출생지/이메일을 base64url로 "인코딩"만 해서 Digistore24
+# 체크아웃 URL의 "custom" GET 파라미터에 그대로 실어 보냈다. base64는 암호화가
+# 아니라서 그 값은 디코딩하면 그대로 읽히고, URL 파라미터라서 브라우저 히스토리/
+# 리퍼러/서버 접근로그/Digistore24 쪽 로그 등에 남을 수 있었다 — 생년월일시+
+# 출생지+이메일 조합은 민감한 개인정보라 이렇게 평문으로 떠돌면 안 된다.
+#
+# 수정: 이제 프론트엔드는 /orders/pending으로 주문 데이터를 먼저 POST하고,
+# 서버가 무작위 토큰만 발급한다. Digistore24 URL에는 그 토큰만 실리고,
+# 실제 개인정보는 여기 서버 메모리에 결제 완료 전까지만 보관된다 — IPN이
+# 토큰을 들고 돌아오면 그걸로 조회해서 쓴다.
+#
+# 한계(알고 하는 트레이드오프): 메모리 기반이라 "주문 클릭 직후 ~ Digistore24
+# 결제 완료 사이"에 서버가 재시작되면(배포/크래시) 그 특정 주문 하나의 토큰만
+# 사라져서 자동 처리가 실패한다 — 이 경우 Digistore24 쪽 구매 내역에는 이메일/
+# 상품 정보가 남아있으니 수동으로 처리 가능하다. DB 없이 이 정도 잔여 위험만
+# 받아들이는 선택이고, 주문량이 늘어 이 위험이 부담스러워지면 이 dict를 실제
+# 주문 DB로 교체하면 된다(중복방지 Set을 DB로 바꾸는 것과 같은 방향의 개선).
+_PENDING_DIGISTORE24_ORDERS = {}
+_PENDING_DIGISTORE24_LOCK = threading.Lock()
+_PENDING_ORDER_TTL_SECONDS = 24 * 3600  # 24시간 넘게 결제 안 하면 장바구니 이탈로 보고 버림
+
+
+def _sweep_expired_pending_orders():
+    """오래 방치된(장바구니 이탈) pending order를 정리해서 메모리가 무한정 늘지 않게 한다.
+
+    호출하는 쪽에서 이미 _PENDING_DIGISTORE24_LOCK을 잡고 있어야 한다.
+    """
+    cutoff = time.time() - _PENDING_ORDER_TTL_SECONDS
+    expired = [tok for tok, entry in _PENDING_DIGISTORE24_ORDERS.items() if entry["created_at"] < cutoff]
+    for tok in expired:
+        _PENDING_DIGISTORE24_ORDERS.pop(tok, None)
+
+
+@app.route("/orders/pending", methods=["POST", "OPTIONS"])
+def create_pending_order():
+    """Digistore24 체크아웃으로 넘어가기 직전, 생년월일 등 개인정보를 URL에 직접
+    싣지 않기 위한 중간 단계.
+
+    프론트엔드(static_site/index.html)가 주문 폼 데이터를 여기로 먼저 POST하면,
+    서버가 그 데이터를 메모리에 잠깐 보관해두고 무작위 토큰만 돌려준다.
+    프론트엔드는 그 토큰만 Digistore24 체크아웃 URL의 "custom" 파라미터에
+    실어 보낸다 (위 _PENDING_DIGISTORE24_ORDERS 설명 참고).
+    """
+    if request.method == "OPTIONS":
+        return "", 204
+
+    try:
+        payload = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "잘못된 JSON 형식입니다."}), 400
+
+    email = (payload.get("email") or "").strip()
+    if not email or "@" not in email:
+        return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
+    if not payload.get("withdrawal_consent"):
+        return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht fehlt."}), 400
+
+    # 실제 결제는 아니지만, 서버 메모리를 무한정 채우는 악용(봇이 계속 POST만
+    # 반복)은 막아야 한다 — /signup보다는 느슨하게(아직 Claude 호출/메일 발송
+    # 비용이 발생하는 단계가 아니므로) 설정.
+    if _rate_limited("pending_order_ip", _client_ip(), max_count=20, window_seconds=3600):
+        return jsonify({"ok": False, "error": "Zu viele Anfragen. Bitte versuche es später erneut."}), 429
+
+    with _PENDING_DIGISTORE24_LOCK:
+        _sweep_expired_pending_orders()
+        token = secrets.token_urlsafe(24)
+        while token in _PENDING_DIGISTORE24_ORDERS:  # 극히 드문 충돌 대비
+            token = secrets.token_urlsafe(24)
+        _PENDING_DIGISTORE24_ORDERS[token] = {"data": payload, "created_at": time.time()}
+
+    return jsonify({"ok": True, "token": token})
+
 
 def _verify_digistore24_signature(form, passphrase: str) -> bool:
     """Digistore24 IPN의 sha_sign을 검증한다.
@@ -1164,31 +1238,17 @@ def _verify_digistore24_signature(form, passphrase: str) -> bool:
     return hmac.compare_digest(computed.lower(), received.lower())
 
 
-def _decode_digistore24_custom(raw: str) -> str:
-    """static_site/index.html의 base64UrlEncodeJson()이 인코딩한 "custom" 값을 원래 JSON
-    문자열로 되돌린다.
-
-    왜 JSON을 그대로 안 보내고 base64url을 쓰는가: 실제 테스트 구매로 확인한 결과,
-    Digistore24는 "custom" 파라미터 값에서 큰따옴표(")를 전부 제거해버린다 — 보낸 값이
-    {"email": "a@b.de"}였는데 실제 IPN 콜백에는 {email: a@b.de}로, 즉 JSON을 깨뜨리는
-    방식으로 따옴표만 사라진 채 돌아옴(원인 불명 — Digistore24 쪽 입력 새니타이징으로 추정).
-    JSON 파싱이 매번 실패해서, 애초에 큰따옴표가 전혀 없는 base64url 인코딩으로 바꿨다.
-    """
-    import base64
-
-    padded = raw + "=" * (-len(raw) % 4)
-    return base64.urlsafe_b64decode(padded.encode("ascii")).decode("utf-8")
-
-
 @app.route("/webhooks/digistore24", methods=["POST"])
 def digistore24_webhook():
     """Digistore24 IPN(Instant Payment Notification) 웹훅.
 
-    palja.de의 주문 버튼이 Digistore24 주문서 링크로 이동할 때
-    "custom" GET 파라미터에 생년월일시/이메일/동의 여부 등을 JSON으로 실어
-    보내고, 결제가 끝나면 Digistore24가 그 custom 값을 그대로 담아 이
-    엔드포인트를 호출한다. 처리 흐름은 Paddle 웹훅과 동일 — 서명 검증 →
-    상품ID로 등급(tier) 판별 → custom에 담긴 생년월일시로 리포트 생성/발송.
+    palja.de의 주문 버튼이 Digistore24 주문서 링크로 이동할 때, 생년월일시/
+    이메일/동의 여부 등은 먼저 /orders/pending으로 서버에 저장되고, "custom"
+    GET 파라미터에는 그 주문을 가리키는 무작위 토큰만 실린다(개인정보 노출
+    방지 — _PENDING_DIGISTORE24_ORDERS 설명 참고). 결제가 끝나면 Digistore24가
+    그 토큰을 그대로 담아 이 엔드포인트를 호출한다. 처리 흐름은 Paddle 웹훅과
+    동일 — 서명 검증 → 상품ID로 등급(tier) 판별 → 토큰으로 조회한 생년월일시로
+    리포트 생성/발송.
     """
     passphrase = os.environ.get("DIGISTORE24_SHA_PASSPHRASE")
 
@@ -1223,16 +1283,21 @@ def digistore24_webhook():
         _unmark_order()
         return jsonify({"ok": False, "error": f"등록되지 않은 product_id: {product_id}"}), 400
 
-    import binascii as _binascii
-    import json as _json
-
-    try:
-        custom_data = _json.loads(_decode_digistore24_custom(request.form.get("custom") or ""))
-        if not isinstance(custom_data, dict):
-            raise ValueError("custom은 JSON 객체여야 합니다.")
-    except (ValueError, TypeError, _binascii.Error):
+    # custom은 이제 JSON이 아니라 /orders/pending이 발급한 무작위 토큰이다.
+    # 아직 "pop"하지 않고 조회만 한다 — 이 요청이 처리 도중 실패해서
+    # Digistore24가 IPN을 재전송하면(위 order_id unmark 로직), 그 재시도도
+    # 같은 토큰으로 다시 조회할 수 있어야 하기 때문이다. 실제로 제거하는
+    # 시점은 맨 아래 success=True가 확정된 후다.
+    pending_token = (request.form.get("custom") or "").strip()
+    with _PENDING_DIGISTORE24_LOCK:
+        pending_entry = _PENDING_DIGISTORE24_ORDERS.get(pending_token)
+    if not pending_entry or not isinstance(pending_entry.get("data"), dict):
         _unmark_order()
-        return jsonify({"ok": False, "error": "custom 파라미터가 올바른 JSON이 아닙니다."}), 400
+        return jsonify({
+            "ok": False,
+            "error": "주문 데이터를 찾을 수 없습니다(토큰이 유효하지 않거나 만료됨).",
+        }), 400
+    custom_data = pending_entry["data"]
 
     email = (request.form.get("email") or custom_data.get("email") or "").strip()
     if not email or "@" not in email:
@@ -1264,6 +1329,11 @@ def digistore24_webhook():
     finally:
         if not success:
             _unmark_order()
+        else:
+            # 성공했을 때만 pending 토큰을 지운다 - 실패 시에는 남겨둬서
+            # Digistore24의 재전송 IPN이 같은 토큰으로 다시 조회할 수 있게 한다.
+            with _PENDING_DIGISTORE24_LOCK:
+                _PENDING_DIGISTORE24_ORDERS.pop(pending_token, None)
 
     return jsonify(response_dict), status
 

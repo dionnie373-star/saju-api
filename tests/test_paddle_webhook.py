@@ -57,7 +57,11 @@ class PaddleWebhookTests(unittest.TestCase):
         self._patches = []
 
     def tearDown(self):
-        for target, name, original in self._patches:
+        # LIFO로 복원 - 같은 (target, name)을 한 테스트 안에서 두 번 patch하면
+        # 순서대로 복원할 때 "original"이 실제로는 이전 patch의 대체 함수라서
+        # 최종 상태가 진짜 원본으로 안 돌아가는 버그가 있다(test_digistore24_webhook.py
+        # 쪽에서 실제로 발견/수정함 - 여기도 같은 패턴이라 동일하게 고쳐둔다).
+        for target, name, original in reversed(self._patches):
             setattr(target, name, original)
         self._patches = []
 

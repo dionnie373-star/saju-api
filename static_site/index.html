@@ -464,10 +464,15 @@
   // "값 없으면 비활성" 패턴).
   //
   // Digistore24는 Paddle.js 같은 임베드 모달이 없고, 자체 호스팅 주문서
-  // (checkout-ds24.com)로 리다이렉트하는 방식이다. 생년월일시 등은 "custom"
-  // GET 파라미터 하나에 JSON으로 인코딩해서 주문서 링크에 실어 보내고,
-  // 결제가 끝나면 그 custom 값이 그대로 /webhooks/digistore24 IPN으로
-  // 돌아온다 (app.py의 DIGISTORE24_PRODUCT_TIER_MAP 참고).
+  // (checkout-ds24.com)로 리다이렉트하는 방식이다.
+  //
+  // 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전엔
+  // 생년월일/출생시간/출생지 같은 개인정보를 "custom" GET 파라미터에 직접
+  // 실어서(base64url 인코딩만 — 암호화 아님) Digistore24 주문서 링크에 보냈다.
+  // 이러면 그 값이 브라우저 히스토리/리퍼러/서버 로그 등에 평문으로 남을 수
+  // 있다. 이제는 먼저 우리 서버(/orders/pending)에 주문 데이터를 보내고,
+  // 서버가 돌려준 무작위 토큰만 "custom"에 싣는다 — 실제 개인정보는 URL에
+  // 전혀 노출되지 않는다 (app.py의 _PENDING_DIGISTORE24_ORDERS 설명 참고).
   var DIGISTORE24_PRODUCT_IDS = {
     paid: '740708',          // Palja Jahresreport - EUR 9.90 (승인 대기중)
     premium: '740939',       // Palja Lebenskarte - EUR 24.90 (승인 대기중)
@@ -475,23 +480,23 @@
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
 
-  // Digistore24는 "custom" 파라미터 값에서 큰따옴표(")를 전부 제거해버린다
-  // (실제 테스트 구매로 확인: 보낸 값 {"email": "a@b.de"}가 IPN 콜백에는
-  // {email: a@b.de}로, 즉 따옴표가 싹 사라진 채로 돌아와서 서버의
-  // json.loads()가 깨짐). 그래서 JSON을 그대로 보내지 않고, 따옴표가 전혀
-  // 없는 base64url로 인코딩해서 보낸다 (app.py에서 base64 디코딩 후 JSON
-  // 파싱). UTF-8(독일어 움라우트 등 포함 가능한 생년월일/도시 등) 안전하게
-  // 처리하기 위해 encodeURIComponent -> unescape -> btoa 경유.
-  function base64UrlEncodeJson(obj) {
-    var jsonStr = JSON.stringify(obj);
-    var b64 = btoa(unescape(encodeURIComponent(jsonStr)));
-    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  async function createPendingOrderToken(orderData) {
+    var resp = await fetch('/orders/pending', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+    var body = await resp.json().catch(function () { return {}; });
+    if (!resp.ok || !body.token) {
+      throw new Error(body.error || 'Bestellung konnte nicht vorbereitet werden.');
+    }
+    return body.token;
   }
 
-  function buildDigistore24Url(productId, email, customData) {
+  function buildDigistore24Url(productId, email, token) {
     var params = new URLSearchParams();
     params.set('email', email);
-    params.set('custom', base64UrlEncodeJson(customData));
+    params.set('custom', token);
     return DIGISTORE24_ORDER_FORM_BASE + productId + '?' + params.toString();
   }
 
@@ -502,7 +507,7 @@
     checkoutErrorEl.style.display = 'block';
   }
 
-  function openCheckout(tier) {
+  async function openCheckout(tier, btnEl) {
     checkoutErrorEl.style.display = 'none';
 
     var birthdate = document.getElementById('birthdate').value.trim();
@@ -520,7 +525,7 @@
     var productId = DIGISTORE24_PRODUCT_IDS[tier];
     if (!productId) { showCheckoutError('Dieser Report ist gerade nicht bestellbar. Bitte schau bald wieder vorbei.'); return; }
 
-    var customData = {
+    var orderData = {
       email: email,
       birth_date: birthdate,
       birth_time: birthtime,
@@ -528,13 +533,21 @@
       withdrawal_consent: true,
       withdrawal_consent_at: new Date().toISOString(),
     };
-    if (gender) { customData.gender = gender; }
+    if (gender) { orderData.gender = gender; }
 
-    window.location.href = buildDigistore24Url(productId, email, customData);
+    var originalLabel = btnEl ? btnEl.textContent : null;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Wird vorbereitet …'; }
+    try {
+      var token = await createPendingOrderToken(orderData);
+      window.location.href = buildDigistore24Url(productId, email, token);
+    } catch (e) {
+      showCheckoutError(e.message || 'Bestellung konnte nicht vorbereitet werden. Bitte versuche es erneut.');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
+    }
   }
 
-  document.getElementById('buyPaidBtn').addEventListener('click', function () { openCheckout('paid'); });
-  document.getElementById('buyPremiumBtn').addEventListener('click', function () { openCheckout('premium'); });
+  document.getElementById('buyPaidBtn').addEventListener('click', function (ev) { openCheckout('paid', ev.currentTarget); });
+  document.getElementById('buyPremiumBtn').addEventListener('click', function (ev) { openCheckout('premium', ev.currentTarget); });
 
   var compatErrorEl = document.getElementById('compatError');
 
@@ -543,7 +556,7 @@
     compatErrorEl.style.display = 'block';
   }
 
-  function openCompatCheckout() {
+  async function openCompatCheckout(ev) {
     compatErrorEl.style.display = 'none';
 
     var nameA = document.getElementById('compatName_a').value.trim();
@@ -566,7 +579,7 @@
     var productId = DIGISTORE24_PRODUCT_IDS.compatibility;
     if (!productId) { showCompatError('Der Kompatibilitäts-Check ist in Kürze verfügbar. Bitte schau bald wieder vorbei.'); return; }
 
-    var customData = {
+    var orderData = {
       email: email,
       name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA, gender_a: genderA,
       name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB, gender_b: genderB,
@@ -574,7 +587,16 @@
       withdrawal_consent_at: new Date().toISOString(),
     };
 
-    window.location.href = buildDigistore24Url(productId, email, customData);
+    var btnEl = ev ? ev.currentTarget : null;
+    var originalLabel = btnEl ? btnEl.textContent : null;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Wird vorbereitet …'; }
+    try {
+      var token = await createPendingOrderToken(orderData);
+      window.location.href = buildDigistore24Url(productId, email, token);
+    } catch (e) {
+      showCompatError(e.message || 'Bestellung konnte nicht vorbereitet werden. Bitte versuche es erneut.');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
+    }
   }
 
   document.getElementById('buyCompatBtn').addEventListener('click', openCompatCheckout);
