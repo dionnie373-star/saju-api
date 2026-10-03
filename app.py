@@ -34,6 +34,7 @@ from datetime import datetime, date, time as dtime, timedelta, timezone as dt_ti
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import Flask, request, jsonify, send_from_directory, redirect
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
@@ -48,6 +49,14 @@ from korean_saju import (  # noqa: E402
 )
 
 app = Flask(__name__)
+# Render는 요청을 앱에 전달하기 전에 자체 리버스 프록시를 거치므로, 클라이언트가
+# 직접 보낸 X-Forwarded-For 헤더값을 그대로 신뢰하면 IP 기반 레이트리밋을
+# "X-Forwarded-For: 1.2.3.4"처럼 헤더를 조작해서 우회할 수 있다. ProxyFix는
+# 신뢰할 프록시 홉 수(x_for=1)만큼만 거슬러 올라가서 "우리 쪽 인프라가 실제로
+# 관찰한" IP를 request.remote_addr로 노출해준다 — 클라이언트가 그 앞에 아무리
+# 가짜 X-Forwarded-For 값을 붙여도 영향받지 않는다(표준적인 Flask/werkzeug
+# 권장 방식). 레이트리밋 외 용도(로깅 등)로도 이 신뢰 가능한 값을 쓴다.
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 _lunar, _solar_terms = load_bundled_data()
 
@@ -806,9 +815,10 @@ def _rate_limited(bucket: str, key: str, *, max_count: int, window_seconds: floa
 
 
 def _client_ip() -> str:
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    # X-Forwarded-For 헤더를 직접 파싱하지 않는다 - 그러면 클라이언트가 그
+    # 헤더값 자체를 조작해서(레이트리밋 우회 목적) 아무 IP나 자처할 수 있다.
+    # 위에서 적용한 ProxyFix가 "신뢰할 프록시 홉(Render) 뒤에서 실제로 관찰된
+    # IP"만 request.remote_addr에 반영해주므로, 그 값만 신뢰한다.
     return request.remote_addr or "unknown"
 
 
