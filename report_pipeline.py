@@ -996,7 +996,7 @@ def run_free_signup(*, payload, calc_result):
 
     report_text = call_claude(
         "free_report_prompt.json",
-        {"4.data.compact": calc_result["compact"], "compact": calc_result["compact"]},
+        {"compact": calc_result["compact"]},
     )
 
     return _send_report(
