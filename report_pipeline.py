@@ -213,6 +213,12 @@ _WRONG_ELEMENT_WORD_RE = re.compile(r"\bGold\b")
 # 프롬프트 지시만으로는 안 지켜지는 게 실측으로 확인됐으니, 이것도 코드로
 # 결정론적으로 잡는다.
 _FORMAL_ADDRESS_RE = re.compile(r"\bSie\b|\bIhr(e|er|es|em|en)?\b")
+# 실제 발송된 리포트(Lebenskarte PDF) 검수에서 발견된, 독일어 원어민이 보면
+# 바로 걸리는 연어(collocation) 오류 두 가지. 둘 다 프롬프트 지시만으로는
+# 막히지 않는 게 실측으로 확인돼서, 다른 격식체/한자 체크와 같은 방식으로
+# 코드에서 결정론적으로 잡는다.
+_WRONG_COLLOCATION_RE = re.compile(r"\bLeistungen\s+gebracht\b")
+_AWKWARD_BEDARF_RE = re.compile(r"\bBedarf\s+nach\b")
 
 
 def check_mechanical_rules(report_text, *, min_words):
@@ -241,6 +247,10 @@ def check_mechanical_rules(report_text, *, min_words):
             f"격식체(Sie/Ihr) {formal_count}회 사용됨 - 웹사이트와 동일하게 반드시 "
             f"'du/dein/dich' 비격식체만 써야 함(Sie/Ihr/Ihnen 전부 금지)"
         )
+    if _WRONG_COLLOCATION_RE.search(report_text):
+        issues.append("연어 오류: 'Leistungen gebracht'는 틀린 표현 - 'Leistungen erbracht'로 써야 함")
+    if _AWKWARD_BEDARF_RE.search(report_text):
+        issues.append("어색한 표현: 'Bedarf nach'는 'Bedürfnis nach' 또는 'Bedarf an'으로 써야 함")
     word_count = len(report_text.split())
     if word_count < min_words:
         issues.append(f"분량 미달: {word_count}단어 (최소 {min_words}단어 요구)")
