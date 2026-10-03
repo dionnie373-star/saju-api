@@ -37,6 +37,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+import orders_store
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
 from korean_saju import (  # noqa: E402
@@ -762,12 +764,23 @@ def health():
 def _add_cors_headers(response):
     """랜딩페이지(Claude 아티팩트 등 별도 도메인)에서 이 API를 호출할 수 있도록 CORS 허용.
 
-    ALLOWED_ORIGIN 환경변수로 특정 도메인만 허용하도록 좁힐 수 있다.
-    기본값은 "*"(모든 도메인) — MVP 단계에서는 편의상 열어두고,
-    실사용자 결제가 붙기 전에 실제 랜딩페이지 도메인으로 좁히는 걸 권장.
+    ALLOWED_ORIGIN 환경변수로 허용 도메인을 좁힐 수 있다. 쉼표로 여러 개를
+    나열하면(예: "https://palja.de,https://palja.fr") 그 목록에 있는 도메인만
+    허용된다 — 여러 나라별 도메인을 운영해도 이 한 변수로 전부 관리 가능.
+    기본값은 "*"(모든 도메인) — ALLOWED_ORIGIN을 설정하기 전까지는 지금까지와
+    동일하게 전부 열려 있다. 실사용자 결제가 붙으면 실제 랜딩페이지 도메인(들)로
+    좁히는 걸 권장.
     """
-    origin = os.environ.get("ALLOWED_ORIGIN", "*")
-    response.headers["Access-Control-Allow-Origin"] = origin
+    allowed_origin_setting = os.environ.get("ALLOWED_ORIGIN", "*").strip()
+    if allowed_origin_setting == "*":
+        response.headers["Access-Control-Allow-Origin"] = "*"
+    else:
+        allowed_origins = {o.strip() for o in allowed_origin_setting.split(",") if o.strip()}
+        request_origin = request.headers.get("Origin", "")
+        if request_origin and request_origin in allowed_origins:
+            response.headers["Access-Control-Allow-Origin"] = request_origin
+            response.headers["Vary"] = "Origin"
+        # 목록에 없는 Origin이면 헤더를 아예 안 붙인다 -> 브라우저가 CORS로 차단.
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type"
     return response
@@ -901,10 +914,9 @@ if _compatibility_price_id:
 # 기준으로 "이미 처리 완료된" 결제를 기록해두고, 재전송이 들어오면 리포트를
 # 다시 생성/발송하지 않고 조용히 200으로 응답한다.
 # (참고: 처리 도중 실패하면 목록에서 제거해서 다음 재시도가 정상적으로
-#  다시 시도될 수 있게 한다. 메모리 기반이라 서버 재시작 시 초기화되지만,
-#  Paddle의 재시도는 보통 몇 분 안에 끝나므로 이 용도로는 충분하다.)
-_PROCESSED_PADDLE_TRANSACTIONS = set()
-_PROCESSED_PADDLE_LOCK = threading.Lock()
+#  다시 시도될 수 있게 한다. orders_store가 DATABASE_URL 설정 여부에 따라
+#  메모리 또는 영구 DB에 저장한다 — 자세한 내용은 orders_store.py 참고.)
+_PADDLE_PROVIDER = "paddle"
 
 
 def _fulfill_report_order(tier, custom_data, email):
@@ -1044,14 +1056,8 @@ def paddle_webhook():
 
     transaction_id = data.get("id")
     if transaction_id:
-        with _PROCESSED_PADDLE_LOCK:
-            if transaction_id in _PROCESSED_PADDLE_TRANSACTIONS:
-                return jsonify({"ok": True, "duplicate": True, "message": "이미 처리된 트랜잭션입니다."})
-            _PROCESSED_PADDLE_TRANSACTIONS.add(transaction_id)
-            # 메모리 누수 방지용 상한선 (평소에는 절대 도달하지 않음)
-            if len(_PROCESSED_PADDLE_TRANSACTIONS) > 2000:
-                _PROCESSED_PADDLE_TRANSACTIONS.clear()
-                _PROCESSED_PADDLE_TRANSACTIONS.add(transaction_id)
+        if not orders_store.try_mark_processed(_PADDLE_PROVIDER, transaction_id):
+            return jsonify({"ok": True, "duplicate": True, "message": "이미 처리된 트랜잭션입니다."})
 
     items = data.get("items") or []
     price_id = None
@@ -1061,15 +1067,13 @@ def paddle_webhook():
     tier = PADDLE_PRICE_TIER_MAP.get(price_id)
     if not tier:
         if transaction_id:
-            with _PROCESSED_PADDLE_LOCK:
-                _PROCESSED_PADDLE_TRANSACTIONS.discard(transaction_id)
+            orders_store.unmark_processed(_PADDLE_PROVIDER, transaction_id)
         return jsonify({"ok": False, "error": f"등록되지 않은 price_id: {price_id}"}), 400
 
     def _unmark_transaction():
         # 처리에 실패하면 목록에서 빼서, Paddle이 재시도할 때 다시 시도할 수 있게 한다.
         if transaction_id:
-            with _PROCESSED_PADDLE_LOCK:
-                _PROCESSED_PADDLE_TRANSACTIONS.discard(transaction_id)
+            orders_store.unmark_processed(_PADDLE_PROVIDER, transaction_id)
 
     email = (
         custom_data.get("email")
@@ -1130,8 +1134,7 @@ _ds24_compat_id = os.environ.get("DIGISTORE24_PRODUCT_ID_COMPATIBILITY")
 if _ds24_compat_id:
     DIGISTORE24_PRODUCT_TIER_MAP[_ds24_compat_id] = "compatibility"
 
-_PROCESSED_DIGISTORE24_ORDERS = set()
-_PROCESSED_DIGISTORE24_LOCK = threading.Lock()
+_DIGISTORE24_PROVIDER = "digistore24"
 
 # 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전에는
 # 생년월일/출생시간/출생지/이메일을 base64url로 "인코딩"만 해서 Digistore24
@@ -1142,29 +1145,16 @@ _PROCESSED_DIGISTORE24_LOCK = threading.Lock()
 #
 # 수정: 이제 프론트엔드는 /orders/pending으로 주문 데이터를 먼저 POST하고,
 # 서버가 무작위 토큰만 발급한다. Digistore24 URL에는 그 토큰만 실리고,
-# 실제 개인정보는 여기 서버 메모리에 결제 완료 전까지만 보관된다 — IPN이
-# 토큰을 들고 돌아오면 그걸로 조회해서 쓴다.
+# 실제 개인정보는 orders_store에 결제 완료 전까지만 보관된다(DATABASE_URL
+# 설정 여부에 따라 메모리 또는 영구 DB) — IPN이 토큰을 들고 돌아오면 그걸로
+# 조회해서 쓴다.
 #
-# 한계(알고 하는 트레이드오프): 메모리 기반이라 "주문 클릭 직후 ~ Digistore24
-# 결제 완료 사이"에 서버가 재시작되면(배포/크래시) 그 특정 주문 하나의 토큰만
-# 사라져서 자동 처리가 실패한다 — 이 경우 Digistore24 쪽 구매 내역에는 이메일/
-# 상품 정보가 남아있으니 수동으로 처리 가능하다. DB 없이 이 정도 잔여 위험만
-# 받아들이는 선택이고, 주문량이 늘어 이 위험이 부담스러워지면 이 dict를 실제
-# 주문 DB로 교체하면 된다(중복방지 Set을 DB로 바꾸는 것과 같은 방향의 개선).
-_PENDING_DIGISTORE24_ORDERS = {}
-_PENDING_DIGISTORE24_LOCK = threading.Lock()
+# 한계(DATABASE_URL 미설정 시의 알고 하는 트레이드오프): 메모리 기반이면
+# "주문 클릭 직후 ~ Digistore24 결제 완료 사이"에 서버가 재시작되면(배포/
+# 크래시) 그 특정 주문 하나의 토큰만 사라져서 자동 처리가 실패한다 — 이
+# 경우 Digistore24 쪽 구매 내역에는 이메일/상품 정보가 남아있으니 수동으로
+# 처리 가능하다. DATABASE_URL을 설정하면 이 위험이 사라진다.
 _PENDING_ORDER_TTL_SECONDS = 24 * 3600  # 24시간 넘게 결제 안 하면 장바구니 이탈로 보고 버림
-
-
-def _sweep_expired_pending_orders():
-    """오래 방치된(장바구니 이탈) pending order를 정리해서 메모리가 무한정 늘지 않게 한다.
-
-    호출하는 쪽에서 이미 _PENDING_DIGISTORE24_LOCK을 잡고 있어야 한다.
-    """
-    cutoff = time.time() - _PENDING_ORDER_TTL_SECONDS
-    expired = [tok for tok, entry in _PENDING_DIGISTORE24_ORDERS.items() if entry["created_at"] < cutoff]
-    for tok in expired:
-        _PENDING_DIGISTORE24_ORDERS.pop(tok, None)
 
 
 @app.route("/orders/pending", methods=["POST", "OPTIONS"])
@@ -1173,9 +1163,9 @@ def create_pending_order():
     싣지 않기 위한 중간 단계.
 
     프론트엔드(static_site/index.html)가 주문 폼 데이터를 여기로 먼저 POST하면,
-    서버가 그 데이터를 메모리에 잠깐 보관해두고 무작위 토큰만 돌려준다.
+    서버가 그 데이터를 orders_store에 잠깐 보관해두고 무작위 토큰만 돌려준다.
     프론트엔드는 그 토큰만 Digistore24 체크아웃 URL의 "custom" 파라미터에
-    실어 보낸다 (위 _PENDING_DIGISTORE24_ORDERS 설명 참고).
+    실어 보낸다 (위 orders_store 설명 참고).
     """
     if request.method == "OPTIONS":
         return "", 204
@@ -1197,12 +1187,11 @@ def create_pending_order():
     if _rate_limited("pending_order_ip", _client_ip(), max_count=20, window_seconds=3600):
         return jsonify({"ok": False, "error": "Zu viele Anfragen. Bitte versuche es später erneut."}), 429
 
-    with _PENDING_DIGISTORE24_LOCK:
-        _sweep_expired_pending_orders()
+    orders_store.sweep_expired_pending_orders(_PENDING_ORDER_TTL_SECONDS)
+    token = secrets.token_urlsafe(24)
+    while orders_store.pending_token_exists(token):  # 극히 드문 충돌 대비
         token = secrets.token_urlsafe(24)
-        while token in _PENDING_DIGISTORE24_ORDERS:  # 극히 드문 충돌 대비
-            token = secrets.token_urlsafe(24)
-        _PENDING_DIGISTORE24_ORDERS[token] = {"data": payload, "created_at": time.time()}
+    orders_store.store_pending_order(token, payload)
 
     return jsonify({"ok": True, "token": token})
 
@@ -1245,7 +1234,7 @@ def digistore24_webhook():
     palja.de의 주문 버튼이 Digistore24 주문서 링크로 이동할 때, 생년월일시/
     이메일/동의 여부 등은 먼저 /orders/pending으로 서버에 저장되고, "custom"
     GET 파라미터에는 그 주문을 가리키는 무작위 토큰만 실린다(개인정보 노출
-    방지 — _PENDING_DIGISTORE24_ORDERS 설명 참고). 결제가 끝나면 Digistore24가
+    방지 — orders_store 설명 참고). 결제가 끝나면 Digistore24가
     그 토큰을 그대로 담아 이 엔드포인트를 호출한다. 처리 흐름은 Paddle 웹훅과
     동일 — 서명 검증 → 상품ID로 등급(tier) 판별 → 토큰으로 조회한 생년월일시로
     리포트 생성/발송.
@@ -1264,18 +1253,12 @@ def digistore24_webhook():
 
     order_id = request.form.get("order_id", "")
     if order_id:
-        with _PROCESSED_DIGISTORE24_LOCK:
-            if order_id in _PROCESSED_DIGISTORE24_ORDERS:
-                return jsonify({"ok": True, "duplicate": True, "message": "이미 처리된 주문입니다."})
-            _PROCESSED_DIGISTORE24_ORDERS.add(order_id)
-            if len(_PROCESSED_DIGISTORE24_ORDERS) > 2000:
-                _PROCESSED_DIGISTORE24_ORDERS.clear()
-                _PROCESSED_DIGISTORE24_ORDERS.add(order_id)
+        if not orders_store.try_mark_processed(_DIGISTORE24_PROVIDER, order_id):
+            return jsonify({"ok": True, "duplicate": True, "message": "이미 처리된 주문입니다."})
 
     def _unmark_order():
         if order_id:
-            with _PROCESSED_DIGISTORE24_LOCK:
-                _PROCESSED_DIGISTORE24_ORDERS.discard(order_id)
+            orders_store.unmark_processed(_DIGISTORE24_PROVIDER, order_id)
 
     product_id = request.form.get("product_id", "")
     tier = DIGISTORE24_PRODUCT_TIER_MAP.get(product_id)
@@ -1289,8 +1272,7 @@ def digistore24_webhook():
     # 같은 토큰으로 다시 조회할 수 있어야 하기 때문이다. 실제로 제거하는
     # 시점은 맨 아래 success=True가 확정된 후다.
     pending_token = (request.form.get("custom") or "").strip()
-    with _PENDING_DIGISTORE24_LOCK:
-        pending_entry = _PENDING_DIGISTORE24_ORDERS.get(pending_token)
+    pending_entry = orders_store.get_pending_order(pending_token)
     if not pending_entry or not isinstance(pending_entry.get("data"), dict):
         _unmark_order()
         return jsonify({
@@ -1332,8 +1314,7 @@ def digistore24_webhook():
         else:
             # 성공했을 때만 pending 토큰을 지운다 - 실패 시에는 남겨둬서
             # Digistore24의 재전송 IPN이 같은 토큰으로 다시 조회할 수 있게 한다.
-            with _PENDING_DIGISTORE24_LOCK:
-                _PENDING_DIGISTORE24_ORDERS.pop(pending_token, None)
+            orders_store.delete_pending_order(pending_token)
 
     return jsonify(response_dict), status
 

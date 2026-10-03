@@ -24,6 +24,7 @@ os.environ.setdefault("FROM_EMAIL", "test@example.com")
 os.environ.setdefault("FROM_NAME", "Palja Test")
 
 import app as app_module  # noqa: E402
+import orders_store  # noqa: E402
 import report_pipeline  # noqa: E402
 
 WEBHOOK_SECRET = os.environ["PADDLE_WEBHOOK_SECRET"]
@@ -52,7 +53,7 @@ def _base_transaction_event(transaction_id, price_id, custom_data):
 class PaddleWebhookTests(unittest.TestCase):
     def setUp(self):
         app_module.app.config["TESTING"] = True
-        app_module._PROCESSED_PADDLE_TRANSACTIONS.clear()
+        orders_store.reset_for_tests()
         self.client = app_module.app.test_client()
         self._patches = []
 
@@ -180,7 +181,7 @@ class PaddleWebhookTests(unittest.TestCase):
         self.assertEqual(first.status_code, 502)
 
         # 실패 후에는 트랜잭션이 "처리 완료" 목록에서 빠져 있어야 재시도가 가능하다
-        self.assertNotIn("txn_retry_test", app_module._PROCESSED_PADDLE_TRANSACTIONS)
+        self.assertFalse(orders_store.is_marked_processed("paddle", "txn_retry_test"))
 
     def test_compatibility_requires_both_persons_birth_data(self):
         if "compatibility" not in app_module.PADDLE_PRICE_TIER_MAP.values():

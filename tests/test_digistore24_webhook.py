@@ -13,7 +13,6 @@ unittest만 사용, report_pipeline의 run_*_signup을 monkeypatch해서 외부
 """
 import hashlib
 import os
-import time
 import unittest
 
 os.environ.setdefault("PADDLE_WEBHOOK_SECRET", "test_secret_for_pytest")
@@ -24,6 +23,7 @@ os.environ.setdefault("FROM_EMAIL", "test@example.com")
 os.environ.setdefault("FROM_NAME", "Palja Test")
 
 import app as app_module  # noqa: E402
+import orders_store  # noqa: E402
 import report_pipeline  # noqa: E402
 
 PASSPHRASE = os.environ["DIGISTORE24_SHA_PASSPHRASE"]
@@ -73,8 +73,7 @@ def _base_form(order_id, product_id, email, custom_token, event="on_payment"):
 class Digistore24WebhookTests(unittest.TestCase):
     def setUp(self):
         app_module.app.config["TESTING"] = True
-        app_module._PROCESSED_DIGISTORE24_ORDERS.clear()
-        app_module._PENDING_DIGISTORE24_ORDERS.clear()
+        orders_store.reset_for_tests()
         app_module._RATE_LIMIT_HISTORY.clear()
         self.client = app_module.app.test_client()
         self._patches = []
@@ -90,7 +89,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         for target, name, original in reversed(self._patches):
             setattr(target, name, original)
         self._patches = []
-        app_module._PENDING_DIGISTORE24_ORDERS.clear()
+        orders_store.reset_for_tests()
 
     def _patch(self, target, name, replacement):
         original = getattr(target, name)
@@ -110,7 +109,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         """엔드포인트의 자체 검증(withdrawal_consent 등)을 우회해서 직접 pending
         store에 꽂아넣는다 — 체크아웃을 건너뛴 위조 요청을 흉내내서, 웹훅 쪽
         방어선(서버 재확인)을 테스트하기 위함."""
-        app_module._PENDING_DIGISTORE24_ORDERS[token] = {"data": data, "created_at": time.time()}
+        orders_store.store_pending_order(token, data)
 
     def test_missing_signature_rejected(self):
         token = self._create_pending_order(_valid_paid_order_data())
@@ -204,13 +203,13 @@ class Digistore24WebhookTests(unittest.TestCase):
         self._patch(report_pipeline, "run_paid_signup", lambda **kw: None)
 
         token = self._create_pending_order(_valid_paid_order_data())
-        self.assertIn(token, app_module._PENDING_DIGISTORE24_ORDERS)
+        self.assertTrue(orders_store.pending_token_exists(token))
 
         form = _base_form("ds24_consume_test", PAID_PRODUCT_ID, "kunde@example.com", token)
         resp = self._post_webhook(form)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertNotIn(token, app_module._PENDING_DIGISTORE24_ORDERS)
+        self.assertFalse(orders_store.pending_token_exists(token))
 
     def test_duplicate_order_id_does_not_resend_report(self):
         """Digistore24도 Paddle처럼 응답이 늦으면 같은 IPN을 재전송할 수 있다 —
@@ -241,10 +240,10 @@ class Digistore24WebhookTests(unittest.TestCase):
         first = self._post_webhook(form)
         self.assertEqual(first.status_code, 502)
 
-        self.assertNotIn("ds24_retry_test", app_module._PROCESSED_DIGISTORE24_ORDERS)
+        self.assertFalse(orders_store.is_marked_processed("digistore24", "ds24_retry_test"))
         # 실패했으니 토큰은 지워지면 안 된다 - Digistore24가 IPN을 재전송하면
         # 같은 토큰으로 다시 조회할 수 있어야 한다.
-        self.assertIn(token, app_module._PENDING_DIGISTORE24_ORDERS)
+        self.assertTrue(orders_store.pending_token_exists(token))
 
         # 재전송 시뮬레이션: 이번엔 성공하도록 바꾸고 같은 토큰으로 다시 호출.
         calls = []
@@ -273,9 +272,8 @@ class Digistore24WebhookTests(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self._post_webhook(form)
 
-        self.assertNotIn(
-            "ds24_worker_timeout",
-            app_module._PROCESSED_DIGISTORE24_ORDERS,
+        self.assertFalse(
+            orders_store.is_marked_processed("digistore24", "ds24_worker_timeout"),
             "SystemExit(워커 타임아웃)이 나도 주문은 반드시 재시도 가능하게 unmark돼야 한다",
         )
 
@@ -298,12 +296,12 @@ class PendingOrderEndpointTests(unittest.TestCase):
 
     def setUp(self):
         app_module.app.config["TESTING"] = True
-        app_module._PENDING_DIGISTORE24_ORDERS.clear()
+        orders_store.reset_for_tests()
         app_module._RATE_LIMIT_HISTORY.clear()
         self.client = app_module.app.test_client()
 
     def tearDown(self):
-        app_module._PENDING_DIGISTORE24_ORDERS.clear()
+        orders_store.reset_for_tests()
         app_module._RATE_LIMIT_HISTORY.clear()
 
     def test_valid_order_returns_token_and_stores_no_pii_response(self):
