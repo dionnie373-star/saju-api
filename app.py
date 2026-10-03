@@ -1242,6 +1242,11 @@ def digistore24_webhook():
     passphrase = os.environ.get("DIGISTORE24_SHA_PASSPHRASE")
 
     if not _verify_digistore24_signature(request.form, passphrase):
+        # 임시 진단용 로깅(2026-10-04, orders_store 교체 시점에 Digistore24가
+        # "이 연결은 에러만 낸다"며 자동 비활성화한 원인을 찾기 위해 추가) —
+        # sha_sign 자체는 빼고 나머지 필드만 남긴다.
+        safe_form = {k: v for k, v in request.form.items() if k.lower() != "sha_sign"}
+        app.logger.warning("[digistore24 거부] reason=signature_mismatch form=%r", safe_form)
         return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
 
     event = request.form.get("event", "")
@@ -1260,9 +1265,19 @@ def digistore24_webhook():
         if order_id:
             orders_store.unmark_processed(_DIGISTORE24_PROVIDER, order_id)
 
+    def _log_rejected_request(reason: str):
+        # 임시 진단용 로깅(2026-10-04) — Digistore24가 "이 연결은 에러만 낸다"며
+        # 자동 비활성화한 원인을 찾기 위해 추가함. sha_sign만 제외하고 나머지
+        # 폼 필드를 전부 남긴다 — 이 reject 경로는 정상적인 결제라면 절대
+        # 타지 않아야 하는 경로라 평소엔 로그가 거의 안 쌓인다. 원인 파악 후
+        # (또는 실사용자 데이터가 여기 섞이기 시작하면) 이 로깅은 제거할 것.
+        safe_form = {k: v for k, v in request.form.items() if k.lower() != "sha_sign"}
+        app.logger.warning("[digistore24 거부] reason=%s form=%r", reason, safe_form)
+
     product_id = request.form.get("product_id", "")
     tier = DIGISTORE24_PRODUCT_TIER_MAP.get(product_id)
     if not tier:
+        _log_rejected_request("unknown_product_id")
         _unmark_order()
         return jsonify({"ok": False, "error": f"등록되지 않은 product_id: {product_id}"}), 400
 
@@ -1274,6 +1289,7 @@ def digistore24_webhook():
     pending_token = (request.form.get("custom") or "").strip()
     pending_entry = orders_store.get_pending_order(pending_token)
     if not pending_entry or not isinstance(pending_entry.get("data"), dict):
+        _log_rejected_request("pending_token_not_found")
         _unmark_order()
         return jsonify({
             "ok": False,
@@ -1283,11 +1299,13 @@ def digistore24_webhook():
 
     email = (request.form.get("email") or custom_data.get("email") or "").strip()
     if not email or "@" not in email:
+        _log_rejected_request("missing_email")
         _unmark_order()
         return jsonify({"ok": False, "error": "유효한 email이 없습니다."}), 400
 
     # Paddle과 동일하게, 체크아웃 우회 호출을 막기 위해 서버에서도 재확인.
     if not custom_data.get("withdrawal_consent"):
+        _log_rejected_request("missing_withdrawal_consent")
         _unmark_order()
         return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
 
