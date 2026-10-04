@@ -993,13 +993,24 @@ def _fulfill_report_order(tier, custom_data, email):
     return {"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."}, 200
 
 
-def _verify_paddle_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
+PADDLE_SIGNATURE_MAX_AGE_SECONDS = 300  # 5분 — 이보다 오래된 서명은 재전송 공격으로 간주해 거부
+
+
+def _verify_paddle_signature(raw_body: bytes, signature_header: str, secret: str, max_age_seconds: int = PADDLE_SIGNATURE_MAX_AGE_SECONDS) -> bool:
     """Paddle 웹훅 서명(Paddle-Signature 헤더)을 검증한다.
 
     헤더 형식: "ts=<유닉스시간>;h1=<HMAC-SHA256 hex>"
     서명 대상 문자열은 "{ts}:{raw_request_body}" 이고, 키는 Paddle이 발급한
     notification destination의 시크릿 키(pdl_ntfset_...)다.
     (참고: https://developer.paddle.com/webhooks/signature-verification)
+
+    재생공격(replay attack) 방지(2026-10-04, 외부 코드 리뷰 지적 반영): 서명
+    자체가 유효해도, ts가 현재 시각보다 max_age_seconds 넘게 오래됐으면
+    거부한다. HMAC 서명은 ts까지 포함해서 계산되므로, 과거에 누군가 가로챈
+    (raw_body, signature_header) 조합을 그대로 재전송해도 본문/서명이 똑같이
+    유효하게 검증돼버리는 문제가 있었다 — ts 신선도 체크가 없으면 그 재전송도
+    통과해서 똑같은 리포트가 다시 생성/발송될 수 있다(물론 order_id 멱등성
+    체크가 또 막아주긴 하지만, 방어는 여러 겹일수록 좋다).
     """
     if not secret or not signature_header:
         return False
@@ -1013,6 +1024,16 @@ def _verify_paddle_signature(raw_body: bytes, signature_header: str, secret: str
     ts = parts.get("ts")
     h1 = parts.get("h1")
     if not ts or not h1:
+        return False
+
+    try:
+        ts_int = int(ts)
+    except ValueError:
+        return False
+    # 미래 시각으로 조작된 ts(시계 오차 여유는 60초만 허용)도, 너무 오래된
+    # ts도 거부한다 — 둘 다 이 범위를 벗어나면 신선한 요청이 아니다.
+    age = time.time() - ts_int
+    if age > max_age_seconds or age < -60:
         return False
 
     signed_payload = f"{ts}:{raw_body.decode('utf-8')}"

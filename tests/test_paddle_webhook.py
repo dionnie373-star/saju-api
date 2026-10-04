@@ -32,8 +32,9 @@ PAID_PRICE_ID = "pri_01m3f98f0s27hjx0xy4bc9em4d"
 PREMIUM_PRICE_ID = "pri_01m3f9bjxx7sgpr1wvm5g8k61r"
 
 
-def _sign(raw_body: bytes, secret: str = WEBHOOK_SECRET) -> str:
-    ts = str(int(time.time()))
+def _sign(raw_body: bytes, secret: str = WEBHOOK_SECRET, ts: str = None) -> str:
+    if ts is None:
+        ts = str(int(time.time()))
     signed_payload = f"{ts}:{raw_body.decode('utf-8')}"
     h1 = hmac.new(secret.encode("utf-8"), signed_payload.encode("utf-8"), hashlib.sha256).hexdigest()
     return f"ts={ts};h1={h1}"
@@ -71,11 +72,11 @@ class PaddleWebhookTests(unittest.TestCase):
         self._patches.append((target, name, original))
         setattr(target, name, replacement)
 
-    def _post_webhook(self, event, secret=WEBHOOK_SECRET, with_signature=True):
+    def _post_webhook(self, event, secret=WEBHOOK_SECRET, with_signature=True, ts=None):
         raw_body = json.dumps(event).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if with_signature:
-            headers["Paddle-Signature"] = _sign(raw_body, secret)
+            headers["Paddle-Signature"] = _sign(raw_body, secret, ts=ts)
         return self.client.post("/webhooks/paddle", data=raw_body, headers=headers)
 
     def _valid_paid_custom_data(self):
@@ -96,6 +97,21 @@ class PaddleWebhookTests(unittest.TestCase):
     def test_wrong_signature_secret_rejected(self):
         event = _base_transaction_event("txn_bad_sig", PAID_PRICE_ID, self._valid_paid_custom_data())
         resp = self._post_webhook(event, secret="wrong_secret")
+        self.assertEqual(resp.status_code, 401)
+
+    def test_stale_signature_rejected_as_replay_attack(self):
+        """서명 자체는(과거엔) 유효했어도, ts가 너무 오래되면(5분 초과) 거부해야 한다 —
+        가로챈 (body, signature)를 그대로 재전송하는 공격을 막기 위한 체크."""
+        event = _base_transaction_event("txn_replay_test", PAID_PRICE_ID, self._valid_paid_custom_data())
+        old_ts = str(int(time.time()) - 600)  # 10분 전
+        resp = self._post_webhook(event, ts=old_ts)
+        self.assertEqual(resp.status_code, 401)
+
+    def test_future_signature_rejected(self):
+        """시계가 미래로 조작된 ts도 거부한다(60초 여유만 허용)."""
+        event = _base_transaction_event("txn_future_test", PAID_PRICE_ID, self._valid_paid_custom_data())
+        future_ts = str(int(time.time()) + 600)
+        resp = self._post_webhook(event, ts=future_ts)
         self.assertEqual(resp.status_code, 401)
 
     def test_non_transaction_completed_event_ignored_with_200(self):

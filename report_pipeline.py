@@ -942,6 +942,36 @@ _EMAIL_FOOTER_HTML = f"""\
   </p>
 """
 
+def _geocoding_fallback_notice_html(birth_cities):
+    """출생 도시를 못 찾아서(내장 표에도 없고 지오코딩 API도 실패) 독일 평균
+    좌표로 근사 계산한 경우, 고객에게 조용히 숨기지 않고 짧게 알려주는 안내문.
+
+    birth_cities: 근사 계산이 적용된 도시 이름들의 리스트(궁합 리포트처럼
+    두 사람을 같이 보내는 경우 여러 개일 수 있다). 비어있으면 안내 없음
+    (빈 문자열 반환) — 대부분의 경우 여기 해당하며, 그러면 이메일에
+    아무것도 추가되지 않는다.
+
+    (2026-10-04 추가 — 외부 코드 리뷰에서 "지오코딩 실패가 고객에게 전혀
+    알려지지 않는다"는 지적을 받고 수정. API 응답에는 longitude_source
+    필드가 이미 있었지만 프론트엔드/이메일 어디에서도 안 쓰이고 있었음.)
+    """
+    cities = [c for c in birth_cities if c]
+    if not cities:
+        return ""
+    if len(cities) == 1:
+        city_text = f'"{cities[0]}"'
+    else:
+        city_text = ", ".join(f'"{c}"' for c in cities)
+    return f"""\
+  <p style="font-size: 13px; line-height: 1.6; color: #6B4F2A; background: #FBF2E4; padding: 10px 14px; border-radius: 6px; margin: 16px 0;">
+    Hinweis: Wir konnten den Geburtsort {city_text} nicht eindeutig finden und haben für die
+    Berechnung näherungsweise die Koordinaten der Mitte Deutschlands verwendet. In seltenen
+    Fällen kann das die genaue Stundenangabe leicht beeinflussen. Bei Fragen schreib uns gerne
+    an dionnie373@gmail.com.
+  </p>
+"""
+
+
 _FREE_EMAIL_SUBJECT = "Dein kostenloses Saju-Profil ist da ✨"
 
 _FREE_EMAIL_HTML_TEMPLATE = """\
@@ -952,7 +982,7 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
     dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Tradition ist fertig —
     du findest es als PDF im Anhang dieser E-Mail.
   </p>
-""" + _COMPATIBILITY_PROMO_HTML + """\
+{geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -962,7 +992,7 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
 """
 
 
-def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None):
+def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None):
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -973,7 +1003,8 @@ def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_sub
         )
 
         name_suffix = f" {name}" if name else ""
-        html_body = email_html_template.format(name_suffix=name_suffix)
+        geocoding_notice = _geocoding_fallback_notice_html(geocoding_notice_cities or [])
+        html_body = email_html_template.format(name_suffix=name_suffix, geocoding_notice=geocoding_notice)
 
         send_email(
             to_email=email,
@@ -999,6 +1030,10 @@ def run_free_signup(*, payload, calc_result):
         {"compact": calc_result["compact"]},
     )
 
+    fallback_city = None
+    if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
+        fallback_city = calc_result["input"].get("birth_city")
+
     return _send_report(
         email=email,
         name=name,
@@ -1008,6 +1043,7 @@ def run_free_signup(*, payload, calc_result):
         email_subject=_FREE_EMAIL_SUBJECT,
         email_html_template=_FREE_EMAIL_HTML_TEMPLATE,
         pdf_filename="Palja-Profil.pdf",
+        geocoding_notice_cities=[fallback_city],
     )
 
 
@@ -1021,7 +1057,7 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
     vielen Dank für deinen Kauf. Dein persönlicher Jahresreport nach der koreanischen Saju-Tradition —
     mit allen 12 Monaten im Detail — liegt dieser E-Mail als PDF bei.
   </p>
-""" + _COMPATIBILITY_PROMO_HTML + """\
+{geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -1070,6 +1106,10 @@ def run_paid_signup(*, payload, calc_result):
         min_words=2500,
     )
 
+    fallback_city = None
+    if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
+        fallback_city = calc_result["input"].get("birth_city")
+
     return _send_report(
         email=email,
         name=name,
@@ -1079,6 +1119,7 @@ def run_paid_signup(*, payload, calc_result):
         email_subject=_PAID_EMAIL_SUBJECT,
         email_html_template=_PAID_EMAIL_HTML_TEMPLATE,
         pdf_filename="Palja-Jahresreport.pdf",
+        geocoding_notice_cities=[fallback_city],
     )
 
 
@@ -1092,7 +1133,7 @@ _PREMIUM_EMAIL_HTML_TEMPLATE = """\
     vielen Dank für deinen Kauf. Deine persönliche Lebenskarte nach der koreanischen Saju-Tradition —
     mit deinen 10-Jahres-Lebensphasen — liegt dieser E-Mail als PDF bei.
   </p>
-""" + _COMPATIBILITY_PROMO_HTML + """\
+{geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -1111,6 +1152,7 @@ _COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
     Hallo{name_suffix},<br><br>
     vielen Dank für deinen Kauf. Eure Saju-Kompatibilitätsanalyse liegt dieser E-Mail als PDF bei.
   </p>
+{geocoding_notice}\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -1152,6 +1194,11 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
         },
     )
 
+    fallback_cities = []
+    for calc_result in (calc_result_a, calc_result_b):
+        if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
+            fallback_cities.append(calc_result["input"].get("birth_city"))
+
     return _send_report(
         email=email,
         name=None,
@@ -1161,6 +1208,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
         email_subject=_COMPATIBILITY_EMAIL_SUBJECT,
         email_html_template=_COMPATIBILITY_EMAIL_HTML_TEMPLATE,
         pdf_filename="Palja-Kompatibilitaet.pdf",
+        geocoding_notice_cities=fallback_cities,
     )
 
 
@@ -1220,6 +1268,10 @@ def run_premium_signup(*, payload, calc_result):
             print(f"[report_pipeline] 경고: 타임라인 그래픽 생성 실패, 없이 진행: {e}")
             intro_flowables = None
 
+    fallback_city = None
+    if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
+        fallback_city = calc_result["input"].get("birth_city")
+
     return _send_report(
         email=email,
         name=name,
@@ -1230,4 +1282,5 @@ def run_premium_signup(*, payload, calc_result):
         email_html_template=_PREMIUM_EMAIL_HTML_TEMPLATE,
         pdf_filename="Palja-Lebenskarte.pdf",
         pdf_intro_flowables=intro_flowables,
+        geocoding_notice_cities=[fallback_city],
     )
