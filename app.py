@@ -34,7 +34,7 @@ import time
 from datetime import datetime, date, time as dtime, timedelta, timezone as dt_timezone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-from flask import Flask, request, jsonify, send_from_directory, redirect
+from flask import Flask, request, jsonify, send_from_directory, redirect, Response
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 import orders_store
@@ -1250,6 +1250,24 @@ def _verify_digistore24_signature(form, passphrase: str) -> bool:
 
 @app.route("/webhooks/digistore24", methods=["POST"])
 def digistore24_webhook():
+    """Digistore24 IPN 엔드포인트 래퍼.
+
+    Digistore24는 응답 본문이 "OK"로 시작해야 성공으로 본다(JSON 200은 "에러"로
+    집계되어, 연결 353269가 "에러만 낸다"며 자동 비활성화된 원인). 그래서 2xx는
+    "OK" 텍스트로, 에러는 기존 상태코드를 유지하되 "ERROR: ..." 텍스트로 돌려준다.
+    """
+    result = _digistore24_webhook_impl()
+    resp, status = result if isinstance(result, tuple) else (result, 200)
+    if 200 <= status < 300:
+        return Response("OK", status=status, mimetype="text/plain")
+    try:
+        msg = (resp.get_json() or {}).get("error", "error")
+    except Exception:
+        msg = "error"
+    return Response(f"ERROR: {msg}", status=status, mimetype="text/plain")
+
+
+def _digistore24_webhook_impl():
     """Digistore24 IPN(Instant Payment Notification) 웹훅.
 
     palja.de의 주문 버튼이 Digistore24 주문서 링크로 이동할 때, 생년월일시/

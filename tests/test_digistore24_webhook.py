@@ -130,7 +130,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         form = _base_form("ds24_refund", PAID_PRODUCT_ID, "kunde@example.com", token, event="on_refund")
         resp = self._post_webhook(form)
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.get_json()["ignored"], "on_refund")
+        self.assertEqual(resp.get_data(as_text=True), "OK")
 
     def test_missing_withdrawal_consent_rejected(self):
         calls = []
@@ -150,7 +150,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         resp = self._post_webhook(form)
 
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("withdrawal_consent", resp.get_json()["error"])
+        self.assertIn("withdrawal_consent", resp.get_data(as_text=True))
         self.assertEqual(len(calls), 0, "동의 없이는 리포트 파이프라인이 절대 호출되면 안 된다")
 
     def test_missing_email_rejected(self):
@@ -174,7 +174,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         form = _base_form("ds24_unknown_product", "999999999", "kunde@example.com", token)
         resp = self._post_webhook(form)
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("product_id", resp.get_json()["error"])
+        self.assertIn("product_id", resp.get_data(as_text=True))
 
     def test_unknown_or_expired_token_rejected(self):
         """custom이 /orders/pending에서 발급된 적 없는(또는 이미 소비/만료된) 토큰이면
@@ -182,7 +182,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         form = _base_form("ds24_bad_token", PAID_PRODUCT_ID, "kunde@example.com", "totally_made_up_token")
         resp = self._post_webhook(form)
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("토큰", resp.get_json()["error"])
+        self.assertIn("토큰", resp.get_data(as_text=True))
 
     def test_valid_paid_order_triggers_pipeline_once(self):
         calls = []
@@ -193,7 +193,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         resp = self._post_webhook(form)
 
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.get_json()["ok"])
+        self.assertEqual(resp.get_data(as_text=True), "OK")
         self.assertEqual(len(calls), 1)
         self.assertEqual(calls[0]["payload"]["email"], "kunde@example.com")
         self.assertEqual(calls[0]["payload"]["tier"], "paid")
@@ -226,7 +226,7 @@ class Digistore24WebhookTests(unittest.TestCase):
 
         second = self._post_webhook(form)
         self.assertEqual(second.status_code, 200)
-        self.assertTrue(second.get_json().get("duplicate"))
+        self.assertEqual(second.get_data(as_text=True), "OK")
         self.assertEqual(len(calls), 1, "중복 전송 시 리포트 파이프라인이 다시 호출되면 안 된다")
 
     def test_failed_pipeline_unmarks_order_and_keeps_token_for_retry(self):
@@ -288,7 +288,7 @@ class Digistore24WebhookTests(unittest.TestCase):
         form = _base_form("ds24_premium_no_gender", premium_product_id, "kunde@example.com", token)
         resp = self._post_webhook(form)
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("gender", resp.get_json()["error"])
+        self.assertIn("gender", resp.get_data(as_text=True))
 
 
 class PendingOrderEndpointTests(unittest.TestCase):
