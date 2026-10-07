@@ -1376,6 +1376,106 @@ def _digistore24_webhook_impl():
     return jsonify(response_dict), status
 
 
+# --- Fungies 연동 (2026-10-08, Digistore24 승인이 막힐 때를 대비한 예비 결제) ---
+# 환경변수:
+#   FUNGIES_WEBHOOK_SECRET        -> Fungies 대시보드 Developers > Webhooks에서 만든 시크릿
+#   FUNGIES_OFFER_PAID / _PREMIUM / _COMPATIBILITY
+#                                 -> 각 상품 offer의 id 또는 internalId
+# 주문 데이터(생년월일 등)는 Digistore24와 같은 방식으로 /orders/pending이 발급한
+# 무작위 토큰만 체크아웃에 싣고(customFields의 "order_token"), 웹훅에서 토큰으로 조회한다.
+FUNGIES_OFFER_TIER_MAP = {}
+for _env_name, _tier_name in (
+    ("FUNGIES_OFFER_PAID", "paid"),
+    ("FUNGIES_OFFER_PREMIUM", "premium"),
+    ("FUNGIES_OFFER_COMPATIBILITY", "compatibility"),
+):
+    _offer_val = os.environ.get(_env_name)
+    if _offer_val:
+        FUNGIES_OFFER_TIER_MAP[_offer_val] = _tier_name
+
+_FUNGIES_PROVIDER = "fungies"
+
+
+def _verify_fungies_signature(raw_body: bytes, signature_header: str, secret: str) -> bool:
+    """x-fngs-signature: "sha256_" + HMAC-SHA256(secret, raw body) hex."""
+    if not secret or not signature_header:
+        return False
+    computed = "sha256_" + hmac.new(secret.encode("utf-8"), raw_body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(computed, signature_header.strip())
+
+
+@app.route("/webhooks/fungies", methods=["POST"])
+def fungies_webhook():
+    """Fungies payment_success 웹훅 -> 리포트 생성/발송 (Digistore24 웹훅과 동일한 흐름)."""
+    raw_body = request.get_data()
+    secret = os.environ.get("FUNGIES_WEBHOOK_SECRET")
+    if not _verify_fungies_signature(raw_body, request.headers.get("x-fngs-signature", ""), secret):
+        return jsonify({"ok": False, "error": "signature mismatch"}), 403
+
+    try:
+        event = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "invalid json"}), 400
+
+    if event.get("type") != "payment_success":
+        return jsonify({"ok": True, "ignored": event.get("type")})
+
+    data = event.get("data") or {}
+    order = data.get("order") or {}
+    if order.get("status") and order.get("status") != "PAID":
+        return jsonify({"ok": True, "ignored": f"order_status_{order.get('status')}"})
+
+    items = data.get("items") or []
+    first = (items[0] if items else {}) or {}
+    offer = first.get("offer") or {}
+    tier = FUNGIES_OFFER_TIER_MAP.get(offer.get("id")) or FUNGIES_OFFER_TIER_MAP.get(offer.get("internalId"))
+    if not tier:
+        app.logger.warning("[fungies 거부] reason=unknown_offer offer=%r", offer)
+        return jsonify({"ok": False, "error": "unknown offer"}), 400
+
+    order_id = order.get("id") or event.get("id") or ""
+    if order_id and not orders_store.try_mark_processed(_FUNGIES_PROVIDER, order_id):
+        return jsonify({"ok": True, "duplicate": True})
+
+    def _unmark():
+        if order_id:
+            orders_store.unmark_processed(_FUNGIES_PROVIDER, order_id)
+
+    token = ((first.get("customFields") or {}).get("order_token") or "").strip()
+    pending = orders_store.get_pending_order(token)
+    if not pending or not isinstance(pending.get("data"), dict):
+        app.logger.warning("[fungies 거부] reason=pending_token_not_found order=%s", order_id)
+        _unmark()
+        return jsonify({"ok": False, "error": "pending order not found"}), 400
+    custom_data = pending["data"]
+
+    user = data.get("user") or data.get("customer") or {}
+    email = (user.get("email") or custom_data.get("email") or "").strip()
+    if not email or "@" not in email:
+        _unmark()
+        return jsonify({"ok": False, "error": "no valid email"}), 400
+
+    if not custom_data.get("withdrawal_consent"):
+        _unmark()
+        return jsonify({"ok": False, "error": "withdrawal_consent missing"}), 400
+
+    from report_pipeline import PipelineError
+
+    success = False
+    try:
+        response_dict, status = _fulfill_report_order(tier, custom_data, email)
+        success = True
+    except (CalcError, PipelineError) as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+    finally:
+        if not success:
+            _unmark()
+        else:
+            orders_store.delete_pending_order(token)
+
+    return jsonify(response_dict), status
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
