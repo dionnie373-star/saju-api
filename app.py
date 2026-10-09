@@ -1343,6 +1343,36 @@ def _verify_digistore24_signature(form, passphrase: str) -> bool:
     return hmac.compare_digest(computed.lower(), received.lower())
 
 
+@app.route("/admin/test-report", methods=["POST"])
+def admin_test_report():
+    """결제 없이 유료 리포트를 생성/발송해 보는 내부 테스트용 엔드포인트.
+
+    Render 환경변수 ADMIN_TEST_TOKEN이 설정돼 있을 때만 동작한다(미설정이면 404).
+    헤더 X-Admin-Token이 일치해야 하며, Claude API 비용이 드는 만큼 토큰은 길고
+    무작위여야 한다. 테스트가 끝나면 환경변수를 지우면 바로 꺼진다.
+    body(JSON): {"tier": "paid|premium|compatibility", "email": "...", ...주문 폼 필드(custom_data)}
+    """
+    token = os.environ.get("ADMIN_TEST_TOKEN", "").strip()
+    if len(token) < 20:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    given = request.headers.get("X-Admin-Token", "")
+    if not hmac.compare_digest(given.encode("utf-8"), token.encode("utf-8")):
+        return jsonify({"ok": False, "error": "Unauthorized"}), 401
+    from report_pipeline import PipelineError
+
+    data = request.get_json(silent=True) or {}
+    tier = data.pop("tier", "")
+    email = (data.pop("email", "") or "").strip()
+    if tier not in ("paid", "premium", "compatibility") or "@" not in email:
+        return jsonify({"ok": False, "error": "tier/email 확인"}), 400
+    data.setdefault("withdrawal_consent", True)
+    try:
+        resp, status = _fulfill_report_order(tier, data, email)
+    except (CalcError, PipelineError) as e:
+        return jsonify({"ok": False, "error": str(e)}), e.status
+    return jsonify(resp), status
+
+
 @app.route("/webhooks/digistore24", methods=["POST"])
 def digistore24_webhook():
     """Digistore24 IPN 엔드포인트 래퍼.
