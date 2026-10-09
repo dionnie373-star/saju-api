@@ -1366,10 +1366,15 @@ def admin_test_report():
     if tier not in ("paid", "premium", "compatibility") or "@" not in email:
         return jsonify({"ok": False, "error": "tier/email 확인"}), 400
     data.setdefault("withdrawal_consent", True)
+    return_text = bool(data.pop("return_text", False))
     try:
         resp, status = _fulfill_report_order(tier, data, email)
     except (CalcError, PipelineError) as e:
         return jsonify({"ok": False, "error": str(e)}), e.status
+    if return_text:
+        import report_pipeline
+        resp = dict(resp)
+        resp["report_text"] = report_pipeline.LAST_REPORT_TEXT
     return jsonify(resp), status
 
 

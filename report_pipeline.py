@@ -1105,7 +1105,13 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
 """
 
 
+# 내부 테스트용(/admin/test-report): 마지막으로 생성된 리포트 본문을 보관한다.
+LAST_REPORT_TEXT = ""
+
+
 def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None, lang="de"):
+    global LAST_REPORT_TEXT
+    LAST_REPORT_TEXT = report_text
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
