@@ -144,6 +144,9 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, la
     text = "".join(p.get("text", "") for p in parts if p.get("type") == "text")
     if not text.strip():
         raise PipelineError("Claude가 빈 응답을 반환했습니다.", status=502)
+    if lang != "de":
+        # 비독일어 출력은 아직 파일럿 단계라 실제 출력 언어/품질을 로그로 확인할 수 있게 한다.
+        print(f"[report_pipeline] lang={lang} {prompt_template_name} 출력 앞부분: {text.strip()[:300]!r}")
     return text.strip()
 
 
