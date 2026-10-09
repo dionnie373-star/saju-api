@@ -65,6 +65,9 @@ class PipelineError(Exception):
         self.status = status
 
 
+import i18n
+
+
 def _load_prompt_template(name):
     path = os.path.join(PROMPTS_DIR, name)
     with open(path, "r", encoding="utf-8") as f:
@@ -79,7 +82,20 @@ def _fill_placeholders(text, variables):
     return re.sub(r"\{\{\s*([\w.]+)\s*\}\}", repl, text)
 
 
-def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90):
+def _build_messages(template, variables, lang, correction_note=""):
+    """템플릿 메시지를 변수로 채우고 lang에 맞게 변환한다(fr이면 첫 메시지 앞에 언어 전환 블록)."""
+    messages = []
+    last = len(template["messages"]) - 1
+    for i, m in enumerate(template["messages"]):
+        content = _fill_placeholders(m["content"], variables)
+        content = i18n.localize_prompt_text(content, lang, is_first_message=(i == 0))
+        if i == last and correction_note:
+            content += correction_note
+        messages.append({"role": m["role"], "content": content})
+    return messages
+
+
+def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, lang="de"):
     """prompts/*.json 템플릿을 불러와 변수({{compact}} 등)를 채운 뒤 Claude를 호출.
 
     성공 시 생성된 독일어 리포트 텍스트(str)를 반환한다.
@@ -93,10 +109,7 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90):
         )
 
     template = _load_prompt_template(prompt_template_name)
-    messages = []
-    for m in template["messages"]:
-        content = _fill_placeholders(m["content"], variables)
-        messages.append({"role": m["role"], "content": content})
+    messages = _build_messages(template, variables, lang)
 
     body = {
         "model": template.get("model", "claude-haiku-4-5-20251001"),
@@ -221,7 +234,7 @@ _WRONG_COLLOCATION_RE = re.compile(r"\bLeistungen\s+gebracht\b")
 _AWKWARD_BEDARF_RE = re.compile(r"\bBedarf\s+nach\b")
 
 
-def check_mechanical_rules(report_text, *, min_words):
+def check_mechanical_rules(report_text, *, min_words, lang="de"):
     """LLM 판단이 필요 없는, 코드로 100% 정확하게 확인 가능한 규칙들을 검사한다.
 
     2차 LLM 검증(validate_report_consistency)은 확률적이라 스스로 오탐/누락을
@@ -232,6 +245,15 @@ def check_mechanical_rules(report_text, *, min_words):
     반환값: 문제 문자열 리스트(비어있으면 통과).
     """
     issues = []
+    if lang == "fr":
+        issues.extend(i18n.fr_mechanical_issues(report_text))
+        hanja_matches = _HANJA_RE.findall(report_text)
+        if hanja_matches:
+            issues.append(f"한자/CJK 문자 포함됨: {''.join(sorted(set(hanja_matches)))[:20]}")
+        word_count = len(report_text.split())
+        if word_count < min_words:
+            issues.append(f"분량 미달: {word_count}단어 (최소 {min_words}단어 요구)")
+        return issues
     for word in _BANNED_WORDS:
         if word in report_text:
             issues.append(f"금지 단어 '{word}' 포함됨")
@@ -268,7 +290,7 @@ def check_mechanical_rules(report_text, *, min_words):
 _SCHICKSAL_WORD_RE = re.compile(r"schicksal\w*", re.IGNORECASE)
 
 
-def _strip_schicksal_sentences(text):
+def _strip_schicksal_sentences(text, word_re=None):
     """최종 리포트 텍스트에서 'Schicksal' 계열 단어가 들어간 문장을 통째로 제거.
 
     check_mechanical_rules/자동 재생성 루프는 그대로 유지한 채(1차 방어선),
@@ -277,6 +299,7 @@ def _strip_schicksal_sentences(text):
     깨지므로, 그 문장이 속한 문장 전체를 자연스럽게 들어낸다(같은 줄의 다른
     문장이나 마크다운 접두사(#, -, >)는 그대로 보존).
     """
+    _SCHICKSAL_WORD_RE = word_re or globals()["_SCHICKSAL_WORD_RE"]
     if not _SCHICKSAL_WORD_RE.search(text):
         return text
 
@@ -318,18 +341,13 @@ def _strip_schicksal_sentences(text):
     return result
 
 
-def _regenerate_with_correction(prompt_template_name, variables, correction_note, *, api_key=None):
+def _regenerate_with_correction(prompt_template_name, variables, correction_note, *, api_key=None, lang="de"):
     """같은 프롬프트를 다시 채우되, 마지막 사용자 메시지 끝에 교정 지시를 덧붙여
 
     한 번 더 호출한다. 실패하면(네트워크 오류 등) None을 반환한다.
     """
     template = _load_prompt_template(prompt_template_name)
-    messages = []
-    for i, m in enumerate(template["messages"]):
-        content = _fill_placeholders(m["content"], variables)
-        if i == len(template["messages"]) - 1:
-            content += correction_note
-        messages.append({"role": m["role"], "content": content})
+    messages = _build_messages(template, variables, lang, correction_note)
 
     body = {
         "model": template.get("model", "claude-haiku-4-5-20251001"),
@@ -392,7 +410,7 @@ def _build_correction_note(validation, *, min_words):
     )
 
 
-def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None, min_words=0, max_retries=2):
+def generate_verified_report(prompt_template_name, variables, *, source_data, api_key=None, min_words=0, max_retries=2, lang="de"):
     """call_claude로 리포트를 생성하고, 두 종류의 자동 검증을 거친 뒤 문제가 있으면
 
     최대 max_retries번 자동으로 재생성을 시도한다(사람 검수 없이 AI가 AI 출력을
@@ -417,10 +435,10 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
     "issues"가 들어있고, mechanical 문제는 issues 안에 {"claim": "...", "problem": "..."}
     형태로 같이 담긴다.
     """
-    report_text = call_claude(prompt_template_name, variables, api_key=api_key)
+    report_text = call_claude(prompt_template_name, variables, api_key=api_key, lang=lang)
 
     def _full_validation(text):
-        mechanical_issues = check_mechanical_rules(text, min_words=min_words)
+        mechanical_issues = check_mechanical_rules(text, min_words=min_words, lang=lang)
         llm_result = validate_report_consistency(text, source_data, api_key=api_key)
         issues = [{"claim": "(기계적 검사)", "problem": m} for m in mechanical_issues]
         issues.extend(llm_result.get("issues", []))
@@ -437,7 +455,7 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
         attempts += 1
         correction_note = _build_correction_note(validation, min_words=min_words)
         retried_text = _regenerate_with_correction(
-            prompt_template_name, variables, correction_note, api_key=api_key
+            prompt_template_name, variables, correction_note, api_key=api_key, lang=lang
         )
         if not retried_text:
             break
@@ -448,11 +466,13 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
     # 여기서 결정론적으로 제거한다. 이후 mechanical 이슈 목록에서도 이제는
     # 해소된 "Schicksal" 관련 항목을 걷어내서, 아래 경고 로그가 실제로 남은
     # 문제만 정확히 보여주게 한다.
-    if _SCHICKSAL_WORD_RE.search(report_text):
-        report_text = _strip_schicksal_sentences(report_text)
+    _destiny_re = i18n.FR_DESTIN_RE if lang == "fr" else _SCHICKSAL_WORD_RE
+    _destiny_label = "destin" if lang == "fr" else "Schicksal"
+    if _destiny_re.search(report_text):
+        report_text = _strip_schicksal_sentences(report_text, _destiny_re)
         validation["issues"] = [
             issue for issue in validation["issues"]
-            if "Schicksal" not in issue.get("problem", "")
+            if _destiny_label not in issue.get("problem", "")
         ]
         validation["consistent"] = not validation["issues"]
 
@@ -694,7 +714,7 @@ _AXIS_LABELS_DE = {
 }
 
 
-def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166):
+def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166, lang="de"):
     """80년 대운을 가로 타임라인 그래픽 하나로 요약해서 보여주는 Drawing.
 
     챗지피티 디자인 리뷰 제안("Lebenslinie"): 24.90유로 리포트를 열자마자
@@ -725,7 +745,7 @@ def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166):
 
         if i == current_index:
             cx = x + (seg_w - 1) / 2
-            d.add(String(cx, bar_y + bar_h + 10, "DU BIST HIER", fontName="WorkSans-Bold", fontSize=6.5,
+            d.add(String(cx, bar_y + bar_h + 10, (i18n.FR_STRINGS["you_are_here"] if lang == "fr" else "DU BIST HIER"), fontName="WorkSans-Bold", fontSize=6.5,
                          fillColor=HexColor("#211D1A"), textAnchor="middle"))
             d.add(Line(cx, bar_y + bar_h + 8, cx, bar_y + bar_h + 1, strokeColor=HexColor("#211D1A"), strokeWidth=1))
 
@@ -740,7 +760,7 @@ def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166):
     for axis in seen_axes:
         color = _AXIS_COLORS.get(axis, "#8A6F5C")
         d.add(Rect(lx, legend_y, 8, 8, fillColor=HexColor(color), strokeColor=None))
-        label = _AXIS_LABELS_DE.get(axis, axis)
+        label = (i18n.FR_STRINGS["axis_labels"] if lang == "fr" else _AXIS_LABELS_DE).get(axis, axis)
         d.add(String(lx + 12, legend_y + 1, label, fontName="WorkSans", fontSize=7.5, fillColor=HexColor("#3B3630")))
         lx += 12 + stringWidth(label, "WorkSans", 7.5) + 16
 
@@ -765,7 +785,7 @@ def _draw_branded_footer(canvas, doc, *, title):
     canvas.restoreState()
 
 
-def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None):
+def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de"):
     """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
 
     intro_flowables: 표지(제목/부제) 바로 다음, 본문 텍스트 전에 끼워 넣을
@@ -784,7 +804,9 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None):
     ]
     if intro_flowables:
         story.extend(intro_flowables)
-    story.extend(_build_toc_flowables(report_text))
+    story.extend(_build_toc_flowables(
+        report_text, heading=(i18n.FR_STRINGS["toc_heading"] if lang == "fr" else "Inhalt")
+    ))
     story.extend(_report_text_to_flowables(report_text))
 
     footer = functools.partial(_draw_branded_footer, title=title.upper())
@@ -942,7 +964,7 @@ _EMAIL_FOOTER_HTML = f"""\
   </p>
 """
 
-def _geocoding_fallback_notice_html(birth_cities):
+def _geocoding_fallback_notice_html(birth_cities, lang="de"):
     """출생 도시를 못 찾아서(내장 표에도 없고 지오코딩 API도 실패) 독일 평균
     좌표로 근사 계산한 경우, 고객에게 조용히 숨기지 않고 짧게 알려주는 안내문.
 
@@ -962,6 +984,13 @@ def _geocoding_fallback_notice_html(birth_cities):
         city_text = f'"{cities[0]}"'
     else:
         city_text = ", ".join(f'"{c}"' for c in cities)
+    if lang == "fr":
+        return (
+            '  <p style="font-size: 13px; line-height: 1.6; color: #6B4F2A; background: #FBF2E4; '
+            'padding: 10px 14px; border-radius: 6px; margin: 16px 0;">\n    '
+            + i18n.FR_STRINGS["geo_notice"].format(cities=city_text)
+            + "\n  </p>\n"
+        )
     return f"""\
   <p style="font-size: 13px; line-height: 1.6; color: #6B4F2A; background: #FBF2E4; padding: 10px 14px; border-radius: 6px; margin: 16px 0;">
     Hinweis: Wir konnten den Geburtsort {city_text} nicht eindeutig finden und haben für die
@@ -970,6 +999,58 @@ def _geocoding_fallback_notice_html(birth_cities):
     an dionnie373@gmail.com.
   </p>
 """
+
+
+def _fr_email_template(kind):
+    """프랑스어 이메일 HTML 템플릿({name_suffix}, {geocoding_notice} 자리표시자 포함)."""
+    t = i18n.FR_STRINGS
+    promo = ""
+    if kind in ("free", "paid", "premium"):
+        promo = (
+            '  <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; '
+            'padding: 14px 16px; border-radius: 8px;">\n'
+            f'    {t["promo"]}\n'
+            f'    <a href="{SITE_BASE_URL}/fr/#compatibilite" style="color: #A9784F;">{t["promo_link"]}</a>\n'
+            "  </p>\n"
+        )
+    links = " · ".join(
+        f'<a href="{SITE_BASE_URL}/{path}" style="color: #A79E93;">{label}</a>'
+        for path, label in t["footer_links"]
+    )
+    footer = (
+        '  <p style="font-size: 12px; line-height: 1.6; color: #A79E93; border-top: 1px solid #E4DCD1; '
+        'padding-top: 14px; margin-top: 24px;">\n'
+        f"    Daily Ground (Jiwon Han) · {links}<br>\n"
+        f'    {t["footer_questions"]} <a href="mailto:dionnie373@gmail.com" style="color: #A79E93;">dionnie373@gmail.com</a>.\n'
+        "  </p>\n"
+    )
+    return (
+        '<div style="font-family: \'Work Sans\', Arial, sans-serif; color: #211D1A; max-width: 560px; margin: 0 auto;">\n'
+        '  <h1 style="font-family: Georgia, serif; font-size: 22px; font-weight: 500;">PALJA</h1>\n'
+        '  <p style="font-size: 15px; line-height: 1.6; color: #3B3630;">\n'
+        f'    {t["hello"]}<br><br>\n'
+        f'    {t[kind]["intro"]}\n'
+        "  </p>\n"
+        "{geocoding_notice}"
+        + promo
+        + '  <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">\n'
+        f'    {t["disclaimer"]}\n'
+        "  </p>\n"
+        + footer
+        + "</div>\n"
+    )
+
+
+def _doc_strings(kind, lang, name):
+    """(pdf_title, pdf_subtitle, filename, email_subject, email_template) — lang별 문구 묶음."""
+    if lang == "fr":
+        s = i18n.FR_STRINGS[kind]
+        if kind == "compatibility":
+            subtitle = None
+        else:
+            subtitle = s["subtitle_named"].format(name=name) if name else s["subtitle_anon"]
+        return s["pdf_title"], subtitle, s["filename"], s["subject"], _fr_email_template(kind)
+    raise ValueError("de는 각 run_* 함수의 기존 상수를 그대로 쓴다")
 
 
 _FREE_EMAIL_SUBJECT = "Dein kostenloses Saju-Profil ist da ✨"
@@ -992,18 +1073,18 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
 """
 
 
-def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None):
+def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None, lang="de"):
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pdf_path = os.path.join(tmpdir, pdf_filename)
         build_pdf(
             pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
-            intro_flowables=pdf_intro_flowables,
+            intro_flowables=pdf_intro_flowables, lang=lang,
         )
 
         name_suffix = f" {name}" if name else ""
-        geocoding_notice = _geocoding_fallback_notice_html(geocoding_notice_cities or [])
+        geocoding_notice = _geocoding_fallback_notice_html(geocoding_notice_cities or [], lang)
         html_body = email_html_template.format(name_suffix=name_suffix, geocoding_notice=geocoding_notice)
 
         send_email(
@@ -1024,15 +1105,25 @@ def run_free_signup(*, payload, calc_result):
     """
     name = (payload.get("name") or "").strip()
     email = payload["email"].strip()
+    lang = i18n.normalize_lang(payload.get("lang"))
 
     report_text = call_claude(
         "free_report_prompt.json",
         {"compact": calc_result["compact"]},
+        lang=lang,
     )
 
     fallback_city = None
     if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
         fallback_city = calc_result["input"].get("birth_city")
+
+    if lang == "fr":
+        t, st, fn, subj, tpl = _doc_strings("free", lang, name)
+        return _send_report(
+            email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
+            email_subject=subj, email_html_template=tpl, pdf_filename=fn,
+            geocoding_notice_cities=[fallback_city], lang=lang,
+        )
 
     return _send_report(
         email=email,
@@ -1076,6 +1167,7 @@ def run_paid_signup(*, payload, calc_result):
     """
     name = (payload.get("name") or "").strip()
     email = payload["email"].strip()
+    lang = i18n.normalize_lang(payload.get("lang"))
 
     if not calc_result.get("monthly_compact"):
         raise PipelineError(
@@ -1104,11 +1196,20 @@ def run_paid_signup(*, payload, calc_result):
         # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
         source_data=calc_result["monthly_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
         min_words=2500,
+        lang=lang,
     )
 
     fallback_city = None
     if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
         fallback_city = calc_result["input"].get("birth_city")
+
+    if lang == "fr":
+        t, st, fn, subj, tpl = _doc_strings("paid", lang, name)
+        return _send_report(
+            email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
+            email_subject=subj, email_html_template=tpl, pdf_filename=fn,
+            geocoding_notice_cities=[fallback_city], lang=lang,
+        )
 
     return _send_report(
         email=email,
@@ -1173,6 +1274,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     name_a = (payload.get("name_a") or "Person A").strip()
     name_b = (payload.get("name_b") or "Person B").strip()
     email = payload["email"].strip()
+    lang = i18n.normalize_lang(payload.get("lang"))
 
     # 성별은 선택 입력이다 (Saju 계산 자체에는 쓰이지 않음 — daewoon 계산에만 필요하고
     # 궁합 리포트에는 daewoon이 없음). 명시적으로 "female"/"male"을 골랐을 때만 프롬프트가
@@ -1192,12 +1294,21 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
             "compact_a": calc_result_a["compact"],
             "compact_b": calc_result_b["compact"],
         },
+        lang=lang,
     )
 
     fallback_cities = []
     for calc_result in (calc_result_a, calc_result_b):
         if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
             fallback_cities.append(calc_result["input"].get("birth_city"))
+
+    if lang == "fr":
+        t, _st, fn, subj, tpl = _doc_strings("compatibility", lang, None)
+        return _send_report(
+            email=email, name=None, pdf_title=t, pdf_subtitle=f"{name_a} & {name_b}",
+            report_text=report_text, email_subject=subj, email_html_template=tpl,
+            pdf_filename=fn, geocoding_notice_cities=fallback_cities, lang=lang,
+        )
 
     return _send_report(
         email=email,
@@ -1220,6 +1331,7 @@ def run_premium_signup(*, payload, calc_result):
     """
     name = (payload.get("name") or "").strip()
     email = payload["email"].strip()
+    lang = i18n.normalize_lang(payload.get("lang"))
 
     if not calc_result.get("daewoon_compact"):
         raise PipelineError(
@@ -1253,15 +1365,19 @@ def run_premium_signup(*, payload, calc_result):
         # 못 맞췄음(최고 3357단어) - 프롬프트 목표도 3,200~4,200으로 낮춰서
         # 달성 가능한 기준으로 재설정함(2026-09-27).
         min_words=3200,
+        lang=lang,
     )
 
     intro_flowables = None
     if daewoon_facts:
         try:
             intro_flowables = [
-                Paragraph("Deine Lebenskarte auf einen Blick", _PDF_STYLES["h2"]),
+                Paragraph(
+                    i18n.FR_STRINGS["lifemap_heading"] if lang == "fr" else "Deine Lebenskarte auf einen Blick",
+                    _PDF_STYLES["h2"],
+                ),
                 _H2_RULE,
-                _build_daewoon_timeline_drawing(daewoon_facts),
+                _build_daewoon_timeline_drawing(daewoon_facts, lang=lang),
                 Spacer(1, 6 * mm),
             ]
         except Exception as e:  # noqa: BLE001 - 타임라인 그래픽은 부가 요소, 실패해도 리포트 발송은 막지 않음
@@ -1271,6 +1387,14 @@ def run_premium_signup(*, payload, calc_result):
     fallback_city = None
     if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
         fallback_city = calc_result["input"].get("birth_city")
+
+    if lang == "fr":
+        t, st, fn, subj, tpl = _doc_strings("premium", lang, name)
+        return _send_report(
+            email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
+            email_subject=subj, email_html_template=tpl, pdf_filename=fn,
+            pdf_intro_flowables=intro_flowables, geocoding_notice_cities=[fallback_city], lang=lang,
+        )
 
     return _send_report(
         email=email,

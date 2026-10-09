@@ -154,8 +154,48 @@ KNOWN_CITY_TIMEZONE = {
 
 DEFAULT_TIMEZONE = "Europe/Berlin"  # 독일 타겟 서비스이므로 도시를 못 찾았을 때의 기본값
 
+# 프랑스어권(프랑스/벨기에/스위스 프랑스어권/룩셈부르크) 주요 도시 — 프랑스어 사이트
+# (lang="fr")용. 지오코딩 API가 실패해도 즉시 처리되도록 내장한다. 시간대는
+# 프랑스 본토 Europe/Paris, 벨기에 Europe/Brussels, 스위스 Europe/Zurich.
+_FR_CITIES = {
+    "paris": (2.3522, "Europe/Paris"), "marseille": (5.3698, "Europe/Paris"),
+    "lyon": (4.8357, "Europe/Paris"), "toulouse": (1.4442, "Europe/Paris"),
+    "nice": (7.2620, "Europe/Paris"), "nantes": (-1.5534, "Europe/Paris"),
+    "montpellier": (3.8767, "Europe/Paris"), "strasbourg": (7.7521, "Europe/Paris"),
+    "bordeaux": (-0.5792, "Europe/Paris"), "lille": (3.0573, "Europe/Paris"),
+    "rennes": (-1.6778, "Europe/Paris"), "reims": (4.0317, "Europe/Paris"),
+    "saint-étienne": (4.3872, "Europe/Paris"), "saint-etienne": (4.3872, "Europe/Paris"),
+    "le havre": (0.1079, "Europe/Paris"), "toulon": (5.9280, "Europe/Paris"),
+    "grenoble": (5.7245, "Europe/Paris"), "dijon": (5.0415, "Europe/Paris"),
+    "angers": (-0.5518, "Europe/Paris"), "nîmes": (4.3601, "Europe/Paris"),
+    "nimes": (4.3601, "Europe/Paris"), "villeurbanne": (4.8800, "Europe/Paris"),
+    "clermont-ferrand": (3.0870, "Europe/Paris"), "le mans": (0.1996, "Europe/Paris"),
+    "aix-en-provence": (5.4474, "Europe/Paris"), "brest": (-4.4861, "Europe/Paris"),
+    "tours": (0.6848, "Europe/Paris"), "amiens": (2.2957, "Europe/Paris"),
+    "limoges": (1.2611, "Europe/Paris"), "perpignan": (2.8954, "Europe/Paris"),
+    "metz": (6.1757, "Europe/Paris"), "besançon": (6.0240, "Europe/Paris"),
+    "besancon": (6.0240, "Europe/Paris"), "orléans": (1.9090, "Europe/Paris"),
+    "orleans": (1.9090, "Europe/Paris"), "rouen": (1.0993, "Europe/Paris"),
+    "mulhouse": (7.3359, "Europe/Paris"), "caen": (-0.3707, "Europe/Paris"),
+    "nancy": (6.1844, "Europe/Paris"), "avignon": (4.8055, "Europe/Paris"),
+    "poitiers": (0.3404, "Europe/Paris"), "ajaccio": (8.7369, "Europe/Paris"),
+    "bruxelles": (4.3517, "Europe/Brussels"), "brussels": (4.3517, "Europe/Brussels"),
+    "liège": (5.5797, "Europe/Brussels"), "liege": (5.5797, "Europe/Brussels"),
+    "charleroi": (4.4446, "Europe/Brussels"), "namur": (4.8719, "Europe/Brussels"),
+    "lausanne": (6.6323, "Europe/Zurich"), "genève": (6.1432, "Europe/Zurich"),
+    "geneve": (6.1432, "Europe/Zurich"), "neuchâtel": (6.9319, "Europe/Zurich"),
+    "luxembourg": (6.1296, "Europe/Luxembourg"),
+}
+DEFAULT_LONGITUDE_FR = 2.3522  # 파리 (프랑스어 사이트에서 도시를 못 찾았을 때의 최종 대비값)
+DEFAULT_TIMEZONE_FR = "Europe/Paris"
 
-def _lookup_location(city_name):
+for _k, (_lon, _tz) in _FR_CITIES.items():
+    KNOWN_CITY_LONGITUDE.setdefault(_k, _lon)
+    KNOWN_CITY_TIMEZONE.setdefault(_k, _tz)
+
+
+
+def _lookup_location(city_name, lang="de"):
     """도시 이름 -> (경도, 시간대, 출처). 1) 내장 표 2) 무료 지오코딩 API 3) 기본값 순으로 시도.
 
     시간대(IANA 이름, 예: "Europe/Berlin")가 있어야 사용자가 입력한 "현지 시계
@@ -189,6 +229,8 @@ def _lookup_location(city_name):
     except Exception:
         pass
 
+    if lang == "fr":
+        return DEFAULT_LONGITUDE_FR, DEFAULT_TIMEZONE_FR, "default_fallback"
     return DEFAULT_LONGITUDE, DEFAULT_TIMEZONE, "default_fallback"
 
 
@@ -551,7 +593,8 @@ def run_calculation(payload):
         raise CalcError(f"생년월일시를 해석할 수 없습니다: {e}") from e
 
     longitude_source = "provided"
-    timezone_name = timezone_override or DEFAULT_TIMEZONE
+    lang = "fr" if payload.get("lang") == "fr" else "de"
+    timezone_name = timezone_override or (DEFAULT_TIMEZONE_FR if lang == "fr" else DEFAULT_TIMEZONE)
     if longitude is not None:
         try:
             longitude = float(longitude)
@@ -559,9 +602,9 @@ def run_calculation(payload):
             raise CalcError("longitude 값은 숫자여야 합니다.") from None
         if birth_city and not timezone_override:
             # longitude를 직접 줬어도 birth_city가 같이 왔으면 시간대는 도시로 찾는다.
-            _, timezone_name, _ = _lookup_location(birth_city)
+            _, timezone_name, _ = _lookup_location(birth_city, lang)
     else:
-        longitude, timezone_name_from_city, longitude_source = _lookup_location(birth_city)
+        longitude, timezone_name_from_city, longitude_source = _lookup_location(birth_city, lang)
         if not timezone_override:
             timezone_name = timezone_name_from_city
 
@@ -857,12 +900,17 @@ def signup():
         return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
 
     # 같은 이메일로는 10분에 1번, 같은 IP로는 1시간에 5번까지만 허용.
+    _fr = payload.get("lang") == "fr"
     if _rate_limited("signup_email", email.lower(), max_count=1, window_seconds=600):
+        if _fr:
+            return jsonify({"ok": False, "error": "Un profil gratuit a déjà été demandé récemment pour cette adresse e-mail. Vérifiez votre boîte de réception ou réessayez dans quelques minutes."}), 429
         return jsonify({
             "ok": False,
             "error": "Für diese E-Mail-Adresse wurde bereits vor Kurzem ein kostenloses Profil angefordert. Bitte schau in deinem Postfach nach oder versuche es in ein paar Minuten erneut.",
         }), 429
     if _rate_limited("signup_ip", _client_ip(), max_count=5, window_seconds=3600):
+        if _fr:
+            return jsonify({"ok": False, "error": "Trop de demandes. Veuillez réessayer plus tard."}), 429
         return jsonify({
             "ok": False,
             "error": "Zu viele Anfragen. Bitte versuche es später erneut.",
@@ -949,12 +997,14 @@ def _fulfill_report_order(tier, custom_data, email):
             "birth_date": custom_data.get("birth_date_a"),
             "birth_time": custom_data.get("birth_time_a"),
             "birth_city": custom_data.get("birth_city_a"),
+            "lang": custom_data.get("lang"),
         }
         payload_b = {
             "name": custom_data.get("name_b"),
             "birth_date": custom_data.get("birth_date_b"),
             "birth_time": custom_data.get("birth_time_b"),
             "birth_city": custom_data.get("birth_city_b"),
+            "lang": custom_data.get("lang"),
         }
 
         calc_result_a = run_calculation(payload_a)
