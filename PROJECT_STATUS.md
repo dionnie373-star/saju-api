@@ -527,3 +527,8 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - 자동 검사 추가(i18n.fr_mechanical_issues): 독자(vous)를 성별 분사로 묘사, révèle/prouve/garantit, 희소성·긴박 표현, 'Feu en ciel' 직역, 영어 단어 혼입.
 - ⚠️ 알려진 리스크: 리포트 생성이 약 190~250초 → gunicorn --timeout 300에 근접(재시도 발생 시 초과 가능), Digistore24 IPN은 빠른 응답을 기대. 출시 전 "웹훅은 즉시 OK 응답 + 백그라운드 생성"으로 전환 권장(독일어도 동일).
 - 출시 전 필수: 프랑스어 원어민 교정(12개월 전체), ChatGPT 지적처럼 문법/표현 검수.
+
+## 모델 구성 (A/B 테스트 후 확정)
+- 유료 전 티어(연간/프리미엄/궁합, DE·FR): claude-sonnet-5-5 (thinking between_tools, max_tokens 12000)
+- 무료 리포트·검증 호출: Haiku 4.5
+- 궁합 Sonnet 테스트: 948단어, 두 사람 모두 반영, 호칭/한자 이상 없음
