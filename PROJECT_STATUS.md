@@ -519,3 +519,11 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 6. 변호사 확인: médiateur, loi applicable, CGV
 7. 프랑스어 연간 리포트/프리미엄/궁합 실생성 테스트 후 샘플 PDF 이미지 교체
 (코드 테스트: palja.fr 호스트로 /, /cgv, /mentions-legales, /merci, /fr/... 모두 200 확인됨)
+
+## 🇫🇷 프랑스어 전용 프롬프트 (2026-10-09)
+- `prompts/fr/<이름>.json`이 있으면 lang=fr에서 우선 사용(없으면 독일어 기반+덧씌움). 현재 전용: **paid_report_prompt.json** (유료 연간). 남은 것: free / compatibility / premium.
+- 모델: 프랑스어 연간 리포트는 `claude-sonnet-5-5`, thinking은 `{"type":"between_tools"}`로 끔(안 끄면 thinking이 max_tokens를 다 써서 빈 응답), max_tokens 12000. Haiku 대비 프랑스어 품질 우수(영어 단어 혼입/문법 오류 거의 없음). 비용은 Anthropic 콘솔에서 확인 필요.
+- 검증 도구: Render 환경변수 `ADMIN_TEST_TOKEN` 설정 시 `POST /admin/test-report`(헤더 X-Admin-Token)로 결제 없이 생성·발송 테스트, `return_text:true`면 본문 반환. **출시 전/테스트 후 환경변수 삭제할 것.**
+- 자동 검사 추가(i18n.fr_mechanical_issues): 독자(vous)를 성별 분사로 묘사, révèle/prouve/garantit, 희소성·긴박 표현, 'Feu en ciel' 직역, 영어 단어 혼입.
+- ⚠️ 알려진 리스크: 리포트 생성이 약 190~250초 → gunicorn --timeout 300에 근접(재시도 발생 시 초과 가능), Digistore24 IPN은 빠른 응답을 기대. 출시 전 "웹훅은 즉시 OK 응답 + 백그라운드 생성"으로 전환 권장(독일어도 동일).
+- 출시 전 필수: 프랑스어 원어민 교정(12개월 전체), ChatGPT 지적처럼 문법/표현 검수.
