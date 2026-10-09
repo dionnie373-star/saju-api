@@ -950,6 +950,18 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
 # 로컬 상수로 둔다.)
 SITE_BASE_URL = "https://palja-api.onrender.com"
 
+# 프랑스어 사이트 주소. palja.fr 도메인 연결 후 Render 환경변수
+# FR_SITE_BASE_URL=https://palja.fr 로 설정하면 메일 링크가 루트 기준(palja.fr/mentions-legales)으로
+# 바뀐다. 미설정이면 파일럿 경로(<SITE_BASE_URL>/fr/...)를 그대로 쓴다.
+def _fr_url(path):
+    base = os.environ.get("FR_SITE_BASE_URL", "").strip().rstrip("/")
+    path = path.lstrip("/")
+    if base:
+        if path.startswith("fr/"):
+            path = path[3:]
+        return f"{base}/{path}"
+    return f"{SITE_BASE_URL}/{path}"
+
 _COMPATIBILITY_PROMO_HTML = f"""\
   <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; padding: 14px 16px; border-radius: 8px;">
     Neugierig, wie gut du mit jemand anderem zusammenpasst?
@@ -1015,7 +1027,7 @@ def _fr_email_template(kind):
             '  <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; '
             'padding: 14px 16px; border-radius: 8px;">\n'
             f'    {t["promo"]}\n'
-            f'    <a href="{SITE_BASE_URL}/fr/#compatibilite" style="color: #A9784F;">{t["promo_link"]}</a>\n'
+            f'    <a href="{_fr_url("fr/#compatibilite")}" style="color: #A9784F;">{t["promo_link"]}</a>\n'
             "  </p>\n"
         )
     confirm = ""
@@ -1026,7 +1038,7 @@ def _fr_email_template(kind):
             "  </p>\n"
         )
     links = " · ".join(
-        f'<a href="{SITE_BASE_URL}/{path}" style="color: #A79E93;">{label}</a>'
+        f'<a href="{_fr_url(path)}" style="color: #A79E93;">{label}</a>'
         for path, label in t["footer_links"]
     )
     footer = (

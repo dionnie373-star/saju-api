@@ -509,3 +509,13 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - palja.fr 연결 시 할 일: Render에 커스텀 도메인 추가 + DNS, ALLOWED_ORIGIN에 https://palja.fr 추가,
   report_pipeline.SITE_BASE_URL(이메일 링크)와 fr 페이지 og:url을 도메인별로 분리, 공개 시점에 noindex 메타와 robots Disallow 제거.
 - 프랑스어 Digistore24 상품(3개)은 독일어 승인 결과를 본 뒤 생성. 판매 페이지 URL=/fr/, 감사 페이지=/fr/merci.
+
+## 🇫🇷 palja.fr 런칭 체크리스트 (도메인 구매 후)
+1. 도메인 구매 → Render palja-api > Settings > Custom Domains에 palja.fr, www.palja.fr 추가 → 등록기관 DNS에 Render가 안내하는 CNAME/A 레코드 설정
+2. Render 환경변수: `FR_SITE_BASE_URL=https://palja.fr`, `ALLOWED_ORIGIN=https://palja.de,https://palja.fr` (코드 준비 완료: 메일 링크가 palja.fr 루트 기준으로 바뀜)
+3. static_site/fr/*.html의 og:url/og:image/canonical를 palja.fr 기준으로 교체
+4. noindex 제거: fr 페이지 meta robots + `robots_txt`의 palja.fr Disallow 해제, sitemap 추가
+5. Digistore24 프랑스어 상품 3개 생성(독일어 승인 후) → fr/index.html에 상품 ID 입력, 감사 페이지 /merci
+6. 변호사 확인: médiateur, loi applicable, CGV
+7. 프랑스어 연간 리포트/프리미엄/궁합 실생성 테스트 후 샘플 PDF 이미지 교체
+(코드 테스트: palja.fr 호스트로 /, /cgv, /mentions-legales, /merci, /fr/... 모두 200 확인됨)
