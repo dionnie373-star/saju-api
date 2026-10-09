@@ -9,6 +9,6 @@
     }
   ],
   "thinking": {
-    "type": "disabled"
+    "type": "between_tools"
   }
 }

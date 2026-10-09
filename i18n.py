@@ -99,6 +99,12 @@ FR_INFORMAL_RE = re.compile(r"\b(?:tu|toi|tes|ta)\b", re.IGNORECASE)
 # 금(金) = Métal. "Or"(금속 이름) 사용 금지 — 문장 첫머리 접속사 "Or,"는 허용해야
 # 하므로 "élément Or"/"l'Or" 같은 명백한 경우만 잡는다.
 FR_WRONG_ELEMENT_RE = re.compile(r"\b[ée]l[ée]ment\s+Or\b|\bl['’]Or\b")
+# 영어 단어 혼입("s'est deepened" 등) — 프랑스어에 없는 영어 기능어/흔한 동사형을 잡는다.
+FR_ENGLISH_LEAK_RE = re.compile(
+    r"\b(?:deepened|deepen|growing|moving|feeling|balance[ds]?|the|with|your|and|because|which|while|between|energy|flow|"
+    r"journey|focus(?:ed)?|mindful|insight|gentle|healing)\b",
+    re.IGNORECASE,
+)
 # 독일어 흔적(프롬프트의 독일어 용어가 새어 나온 경우)
 FR_GERMAN_LEAK_RE = re.compile(r"\b(?:Holz|Feuer|Erde|Metall|Wasser|Dein|Deine|Jahresreport)\b")
 
@@ -128,6 +134,11 @@ def fr_mechanical_issues(report_text):
             f"비격식 호칭(tu/toi/ta/tes) {len(informal)}회 사용됨 - 프랑스어 리포트는 "
             f"반드시 'vous/votre/vos' 존댓말만 써야 함"
         )
+    eng = {m.lower() for m in FR_ENGLISH_LEAK_RE.findall(report_text)}
+    # "balance"/"focus"/"insight"는 프랑스어에도 쓰이는 차용어이므로 단독으로는 제외
+    eng -= {"balance", "balances", "focus", "insight", "gentle"}
+    if eng:
+        issues.append(f"영어 단어가 섞여 있음: {', '.join(sorted(eng))} — 전부 프랑스어로 바꿔야 함")
     if FR_GERMAN_LEAK_RE.search(report_text):
         issues.append("독일어 단어(Holz/Feuer/Erde/Metall/Wasser/Dein 등)가 섞여 있음 - 전부 프랑스어로 바꿔야 함")
     return issues
