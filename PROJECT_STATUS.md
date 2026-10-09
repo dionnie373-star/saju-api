@@ -532,3 +532,9 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - 유료 전 티어(연간/프리미엄/궁합, DE·FR): claude-sonnet-5-5 (thinking between_tools, max_tokens 12000)
 - 무료 리포트·검증 호출: Haiku 4.5
 - 궁합 Sonnet 테스트: 948단어, 두 사람 모두 반영, 호칭/한자 이상 없음
+
+## 비동기 리포트 생성 (2026-10-09)
+- Digistore24/Fungies 웹훅: 서명·중복·토큰 검증 후 즉시 "OK" 응답, 리포트 생성·발송은 백그라운드 스레드(`_start_fulfillment`). Paddle 웹훅(미사용)과 `/admin/test-report`는 기존 동기 방식.
+- 서버 오류(5xx)는 1회 재시도(20초 후), 입력 오류(4xx/CalcError)는 재시도 없음. 최종 실패 시 order 표시 해제 + 운영자(CONTACT_TO_EMAIL, 기본 dionnie373@gmail.com)에게 알림 메일. pending 토큰은 남음.
+- 한계: 생성 도중 서버 재시작(배포 등) 시 해당 주문 유실 가능 -> 배포는 주문이 없는 시간에. 환경변수 FULFILL_ASYNC=0이면 동기 방식으로 복귀.
+- 테스트: tests/test_async_fulfillment.py (총 125개)

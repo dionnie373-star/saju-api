@@ -73,12 +73,18 @@ def _base_form(order_id, product_id, email, custom_token, event="on_payment"):
 class Digistore24WebhookTests(unittest.TestCase):
     def setUp(self):
         app_module.app.config["TESTING"] = True
+        # 기존 회귀 테스트는 동기 실행 경로로 검증한다(비동기 경로는 test_async_fulfillment.py).
+        app_module.FULFILL_ASYNC = False
+        app_module.FULFILL_RETRY_DELAY_SECONDS = 0
+        self._orig_alert = app_module._alert_owner
+        app_module._alert_owner = lambda *a, **k: None
         orders_store.reset_for_tests()
         app_module._RATE_LIMIT_HISTORY.clear()
         self.client = app_module.app.test_client()
         self._patches = []
 
     def tearDown(self):
+        app_module._alert_owner = self._orig_alert
         # LIFO로 복원해야 한다 - 같은 (target, name)을 한 테스트 안에서 두 번
         # patch하는 경우(예: 재전송 시뮬레이션 테스트), 순서대로 복원하면 중간에
         # 저장된 "original"이 사실은 이전 patch의 대체 함수라서 최종 상태가

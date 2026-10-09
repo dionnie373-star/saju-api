@@ -1121,6 +1121,90 @@ def _fulfill_report_order(tier, custom_data, email):
     return {"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."}, 200
 
 
+# --- 비동기 리포트 생성 (2026-10-09) -------------------------------------
+# Sonnet 리포트는 생성에 200~250초가 걸려 gunicorn 타임아웃(300초)과 결제사의
+# IPN 응답 대기 시간을 넘길 위험이 있다. 그래서 검증/중복 체크까지만 요청 안에서
+# 처리하고, 즉시 "OK"를 돌려준 뒤 리포트 생성·발송은 백그라운드 스레드에서 한다.
+# 실패하면 주문 표시를 되돌리고(unmark) 운영자에게 알림 메일을 보낸다.
+# 알려진 한계: 생성 도중 서버가 재시작되면 해당 주문은 유실될 수 있다(스레드 소멸).
+FULFILL_ASYNC = os.environ.get("FULFILL_ASYNC", "1") != "0"
+FULFILL_MAX_ATTEMPTS = 2
+FULFILL_RETRY_DELAY_SECONDS = 20
+OWNER_ALERT_EMAIL = os.environ.get("CONTACT_TO_EMAIL", "dionnie373@gmail.com")
+
+
+def _alert_owner(subject, body_text):
+    try:
+        import html as _h
+        from report_pipeline import send_email
+        send_email(to_email=OWNER_ALERT_EMAIL, subject=subject[:150],
+                   html_body=f"<pre style='white-space:pre-wrap'>{_h.escape(body_text)}</pre>")
+    except Exception as e:  # 알림 실패가 처리 흐름을 깨면 안 된다
+        app.logger.error("[alert] owner alert failed: %s", type(e).__name__)
+
+
+def _fulfill_with_retry(provider, order_id, token, tier, custom_data, email):
+    """_fulfill_report_order를 재시도와 함께 실행. 성공 시 True.
+
+    SystemExit(gunicorn 워커 타임아웃) 같은 BaseException이 나도 finally에서 반드시
+    주문 표시를 되돌린다(고객은 못 받았는데 "처리 완료"로 남는 사고 방지).
+    """
+    from report_pipeline import PipelineError
+    last_err = None
+    success = False
+    try:
+        for attempt in range(1, FULFILL_MAX_ATTEMPTS + 1):
+            try:
+                _fulfill_report_order(tier, custom_data, email)
+                success = True
+                break
+            except CalcError as e:  # 입력 문제는 재시도해도 같다
+                last_err = e
+                break
+            except PipelineError as e:
+                last_err = e
+                if e.status < 500 or attempt == FULFILL_MAX_ATTEMPTS:
+                    break
+            except Exception as e:
+                last_err = e
+                if attempt == FULFILL_MAX_ATTEMPTS:
+                    break
+            time.sleep(FULFILL_RETRY_DELAY_SECONDS)
+    finally:
+        if success:
+            if token:
+                orders_store.delete_pending_order(token)
+        else:
+            if order_id:
+                orders_store.unmark_processed(provider, order_id)
+            app.logger.error("[fulfill 실패] provider=%s order=%s tier=%s err=%r", provider, order_id, tier, last_err)
+            _alert_owner(
+                f"[Palja] 리포트 생성 실패 - {provider} {order_id}",
+                f"provider: {provider}\norder_id: {order_id}\ntier: {tier}\n고객 이메일: {email}\n"
+                f"오류: {type(last_err).__name__}: {last_err}\n\n"
+                "결제는 완료됐지만 리포트가 발송되지 않았습니다. 고객에게 직접 안내하거나 재생성이 필요합니다. "
+                "(주문 데이터는 pending 토큰으로 남아 있습니다.)",
+            )
+    return success
+
+
+def _start_fulfillment(provider, order_id, token, tier, custom_data, email):
+    """비동기면 스레드로 시작하고 (OK응답용 dict, 200), 동기 모드면 기존 방식대로 실행."""
+    if not FULFILL_ASYNC:
+        ok = _fulfill_with_retry(provider, order_id, token, tier, custom_data, email)
+        if ok:
+            return {"ok": True, "message": f"{tier} 리포트를 생성해서 이메일로 발송했습니다."}, 200
+        return {"ok": False, "error": "report generation failed"}, 502
+    t = threading.Thread(
+        target=_fulfill_with_retry,
+        args=(provider, order_id, token, tier, custom_data, email),
+        daemon=True,
+        name=f"fulfill-{provider}-{order_id}",
+    )
+    t.start()
+    return {"ok": True, "accepted": True, "message": "주문을 접수했습니다. 리포트는 곧 이메일로 발송됩니다."}, 200
+
+
 PADDLE_SIGNATURE_MAX_AGE_SECONDS = 300  # 5분 — 이보다 오래된 서명은 재전송 공격으로 간주해 거부
 
 
@@ -1516,31 +1600,11 @@ def _digistore24_webhook_impl():
         _unmark_order()
         return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
 
-    from report_pipeline import PipelineError
-
-    # 실제 테스트 구매로 확인된 버그: gunicorn 워커 타임아웃(--timeout)이 리포트
-    # 생성 도중(Claude API 호출 중) 터지면, 워커가 SIGALRM 핸들러에서
-    # sys.exit(1)로 SystemExit을 던진다. SystemExit은 BaseException만 상속하고
-    # Exception은 상속하지 않기 때문에 아래 "except Exception"으로는 절대 못
-    # 잡혀서 _unmark_order()가 호출되지 않았었다 — 그 결과 고객은 리포트를 못
-    # 받았는데 order_id는 "처리 완료"로 영원히 남아, Digistore24가 재전송하는
-    # IPN도 전부 "이미 처리된 주문"으로 무시되는 치명적인 버그였다. finally로
-    # 바꿔서 성공(success=True)한 경우만 제외하고 어떤 예외(SystemExit 포함)가
-    # 나도 반드시 unmark되게 한다.
-    success = False
-    try:
-        response_dict, status = _fulfill_report_order(tier, custom_data, email)
-        success = True
-    except (CalcError, PipelineError) as e:
-        return jsonify({"ok": False, "error": str(e)}), e.status
-    finally:
-        if not success:
-            _unmark_order()
-        else:
-            # 성공했을 때만 pending 토큰을 지운다 - 실패 시에는 남겨둬서
-            # Digistore24의 재전송 IPN이 같은 토큰으로 다시 조회할 수 있게 한다.
-            orders_store.delete_pending_order(pending_token)
-
+    # 리포트 생성은 200~250초가 걸리므로 백그라운드에서 처리하고 즉시 OK를 돌려준다
+    # (_start_fulfillment 참고). 실패 시에는 order 표시가 되돌려지고 운영자에게 알림이 간다.
+    response_dict, status = _start_fulfillment(
+        _DIGISTORE24_PROVIDER, order_id, pending_token, tier, custom_data, email
+    )
     return jsonify(response_dict), status
 
 
@@ -1627,20 +1691,9 @@ def fungies_webhook():
         _unmark()
         return jsonify({"ok": False, "error": "withdrawal_consent missing"}), 400
 
-    from report_pipeline import PipelineError
-
-    success = False
-    try:
-        response_dict, status = _fulfill_report_order(tier, custom_data, email)
-        success = True
-    except (CalcError, PipelineError) as e:
-        return jsonify({"ok": False, "error": str(e)}), e.status
-    finally:
-        if not success:
-            _unmark()
-        else:
-            orders_store.delete_pending_order(token)
-
+    response_dict, status = _start_fulfillment(
+        _FUNGIES_PROVIDER, order_id, token, tier, custom_data, email
+    )
     return jsonify(response_dict), status
 
 

@@ -41,6 +41,11 @@ def _event(token, offer=OFFER, etype="payment_success", order_id="ord_1", status
 class FungiesWebhookTests(unittest.TestCase):
     def setUp(self):
         app_module.app.config["TESTING"] = True
+        # 기존 회귀 테스트는 동기 실행 경로로 검증한다(비동기 경로는 test_async_fulfillment.py).
+        app_module.FULFILL_ASYNC = False
+        app_module.FULFILL_RETRY_DELAY_SECONDS = 0
+        self._orig_alert = app_module._alert_owner
+        app_module._alert_owner = lambda *a, **k: None
         orders_store.reset_for_tests()
         app_module._RATE_LIMIT_HISTORY.clear()
         self.client = app_module.app.test_client()
@@ -52,6 +57,7 @@ class FungiesWebhookTests(unittest.TestCase):
         report_pipeline.run_paid_signup = lambda **kw: self.calls.append(kw)
 
     def tearDown(self):
+        app_module._alert_owner = self._orig_alert
         report_pipeline.run_paid_signup = self._orig
         app_module.FUNGIES_OFFER_TIER_MAP.clear()
         orders_store.reset_for_tests()
