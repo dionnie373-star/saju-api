@@ -22,6 +22,11 @@ class FrenchMechanicalRulesTest(unittest.TestCase):
     def test_informal_tu_flagged(self):
         self.assertTrue(any("tu/toi" in i for i in self._issues("Tu peux prendre ton temps, toi.")))
 
+    def test_german_output_flagged(self):
+        german = "Dein Jahr beginnt ruhig und die Energie ist nicht laut. Eine Zeit mit Wasser."
+        self.assertTrue(any("독일어" in i for i in self._issues(german)))
+        self.assertFalse(any("독일어로 작성" in i for i in self._issues("Votre année commence calmement. Une période avec de l'Eau.")))
+
     def test_german_leak_and_hanja_flagged(self):
         self.assertTrue(self._issues("Votre élément Holz est fort."))
         self.assertTrue(self._issues("丙午 est une combinaison."))
@@ -46,8 +51,10 @@ class FrenchPromptTest(unittest.TestCase):
         self.assertEqual(i18n.localize_prompt_text("abc", "de"), "abc")
         out = i18n.localize_prompt_text("abc", "fr")
         self.assertIn("프랑스어", out)
-        self.assertTrue(out.endswith("abc"))
-        self.assertEqual(i18n.localize_prompt_text("abc", "fr", is_first_message=False), "abc")
+        self.assertIn("abc", out)
+        mid = i18n.localize_prompt_text("독일어 abc", "fr", is_first_message=False, is_last_message=False)
+        self.assertEqual(mid, "프랑스어 abc")
+        self.assertIn("최종 확인", out)
 
     def test_all_prompts_build_with_fr(self):
         for name in ("free_report_prompt.json", "paid_report_prompt.json",

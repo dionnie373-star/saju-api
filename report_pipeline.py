@@ -88,7 +88,9 @@ def _build_messages(template, variables, lang, correction_note=""):
     last = len(template["messages"]) - 1
     for i, m in enumerate(template["messages"]):
         content = _fill_placeholders(m["content"], variables)
-        content = i18n.localize_prompt_text(content, lang, is_first_message=(i == 0))
+        content = i18n.localize_prompt_text(
+            content, lang, is_first_message=(i == 0), is_last_message=(i == last)
+        )
         if i == last and correction_note:
             content += correction_note
         messages.append({"role": m["role"], "content": content})

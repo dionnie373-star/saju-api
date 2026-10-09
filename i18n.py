@@ -38,6 +38,7 @@ _FR_PROMPT_OVERRIDE = """\
 - 월 이름은 프랑스어로("Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"). 챕터 소제목은 예를 들어 "Janvier — Des ressources qui souhaitent se montrer"처럼 그 달 축에 맞게 프랑스어로 쓰세요.
 - 본문의 독일어 예시 소제목은 다음 프랑스어로 대응하세요: "Dein Jahr auf einen Blick" → "Votre année en un coup d'œil"; "Monate, in denen vieles leichter fließen kann" → "Les mois où les choses peuvent couler plus facilement"; "Monate für mehr Achtsamkeit" → "Les mois pour davantage d'attention".
 - 상품명: Jahresreport → "rapport annuel", Lebenskarte → "carte de vie", Kompatibilitäts-Check → "test de compatibilité". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 프랑스어로, 구간 개수는 "8 périodes de vie de dix ans"라고 쓰세요.
+- 무료 리포트의 유료 리포트 구매 유도 블록은 다음 프랑스어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Votre rapport annuel Saju 2027 — 9,90 €", 그다음 "Ce qui vous attend :" 아래 불릿 5개(Votre axe personnel pour 2027 / 12 chapitres mensuels avec des impulsions Saju personnalisées / Des questions de réflexion sur l'amour, le travail et le développement personnel / Vos forces personnelles et d'éventuelles tensions intérieures / Une boussole annuelle avec des questions concrètes pour vos propres décisions), 마무리 문장 "Un rapport de réflexion personnel fondé sur la tradition Saju — ni diagnostic scientifique de la personnalité, ni prédiction certaine de l'avenir."
 - 마지막 면책 문구는 프랑스어로: "Ce contenu est proposé à des fins de divertissement et de réflexion personnelle ; il ne remplace pas un avis médical ou psychologique."
 - 분량 기준(단어 수)은 프랑스어 단어 기준으로 동일하게 적용합니다(프랑스어는 독일어보다 단어 수가 많아지는 경향이 있으니 기준 미달이 되지 않도록 하세요).
 - 출력은 순수 프랑스어 텍스트만. 한글/한자/독일어 단어(예: "Holz", "Feuer", "Du", "dein")가 섞이지 않게 하세요.
@@ -46,13 +47,29 @@ _FR_PROMPT_OVERRIDE = """\
 """
 
 
-def localize_prompt_text(text, lang, *, is_first_message=True):
-    """프롬프트 메시지 본문을 lang에 맞게 변환한다. de는 그대로."""
+_FR_PROMPT_CLOSING = """
+
+[최종 확인 — 가장 중요, 출력 직전에 반드시 지킬 것]
+위 지시문에는 독일어 예시가 많지만, 실제 출력은 **처음부터 끝까지 프랑스어**여야 합니다. 제목·소제목·본문·불릿·면책 문구 전부 프랑스어이고, 호칭은 "vous", 오행은 Bois/Feu/Terre/Métal/Eau 입니다. 독일어 단어(und, der, die, das, ist, nicht, dein, Jahr, Energie 등)가 하나라도 섞이면 안 됩니다. 순수 프랑스어 텍스트만 출력하세요.
+"""
+
+
+def localize_prompt_text(text, lang, *, is_first_message=True, is_last_message=True):
+    """프롬프트 메시지 본문을 lang에 맞게 변환한다. de는 그대로.
+
+    fr: "독일어"라는 지시어를 "프랑스어"로 치환하고(출력 언어 지시가 본문 끝의
+    "순수 독일어 텍스트만 출력하세요"에도 있어서, 앞쪽 override만으로는 모델이
+    독일어로 출력하는 것이 실측으로 확인됨), 첫 메시지 앞에 override, 마지막
+    메시지 끝에 최종 확인 블록을 붙인다.
+    """
     if lang != "fr":
         return text
-    if not is_first_message:
-        return text
-    return _FR_PROMPT_OVERRIDE + text
+    text = text.replace("독일어", "프랑스어")
+    if is_first_message:
+        text = _FR_PROMPT_OVERRIDE + text
+    if is_last_message:
+        text = text + _FR_PROMPT_CLOSING
+    return text
 
 
 # ---------------------------------------------------------------------------
@@ -79,8 +96,20 @@ FR_WRONG_ELEMENT_RE = re.compile(r"\b[ée]l[ée]ment\s+Or\b|\bl['’]Or\b")
 FR_GERMAN_LEAK_RE = re.compile(r"\b(?:Holz|Feuer|Erde|Metall|Wasser|Dein|Deine|Jahresreport)\b")
 
 
+# 프롬프트 지시문이 독일어 예시투성이라서 모델이 통째로 독일어로 출력하는 사고가
+# 실제로 있었다(2026-10-09 프랑스어 파일럿 테스트). 독일어 기능어(프랑스어에는
+# 없는 단어)가 3개 이상 나오면 "독일어로 출력됨"으로 보고 재생성시킨다.
+FR_GERMAN_STOPWORDS_RE = re.compile(r"\b(?:und|der|die|das|nicht|dein|deine|deinen|ein|eine|mit|auch|wird|ist)\b")
+
+
 def fr_mechanical_issues(report_text):
     issues = []
+    german_hits = FR_GERMAN_STOPWORDS_RE.findall(report_text)
+    if len(german_hits) >= 3:
+        issues.append(
+            f"리포트가 프랑스어가 아니라 독일어로 작성됨(독일어 단어 {len(german_hits)}개 감지) — "
+            f"전체를 순수 프랑스어로 다시 작성해야 함"
+        )
     for rx, label in FR_BANNED_REGEXES:
         if rx.search(report_text):
             issues.append(f"금지 단어 '{label}' 포함됨")
