@@ -764,6 +764,7 @@ _LEGAL_PAGES = {
     "datenschutz": "datenschutz.html",
     "agb": "agb.html",
     "widerruf": "widerruf.html",
+    "kontakt": "kontakt.html",
     "danke": "danke.html",  # Digistore24 Thank-you 페이지 (승인 요건: 필수 고지문구 + trust badge)
 }
 
@@ -790,6 +791,7 @@ _FR_PAGES = {
     "cgv": "cgv.html",
     "confidentialite": "confidentialite.html",
     "retractation": "retractation.html",
+    "contact": "contact.html",
     "merci": "merci.html",  # Digistore24 Thank-you 페이지(프랑스어 상품용)
 }
 FR_SITE_DIR = os.path.join(STATIC_SITE_DIR, "fr")
@@ -813,6 +815,37 @@ def fr_page(page):
     if not filename:
         return jsonify({"ok": False, "error": "Not found"}), 404
     return send_from_directory(FR_SITE_DIR, filename)
+
+
+@app.route("/kontakt/senden", methods=["POST"])
+def contact_send():
+    """문의 양식 → 운영자 이메일로 전달. 허니팟 + IP/이메일 레이트리밋."""
+    try:
+        p = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "Invalid request."}), 400
+    fr = p.get("lang") == "fr"
+    if (p.get("website") or "").strip():  # 허니팟: 봇은 채운다 → 성공처럼 응답하고 버림
+        return jsonify({"ok": True})
+    name = (p.get("name") or "").strip()[:100]
+    email = (p.get("email") or "").strip()[:200]
+    message = (p.get("message") or "").strip()[:3000]
+    if "@" not in email or "\n" in email or "\r" in email or len(message) < 5:
+        return jsonify({"ok": False, "error": "Veuillez indiquer une adresse e-mail valide et un message." if fr else "Bitte gib eine gültige E-Mail-Adresse und eine Nachricht an."}), 400
+    if _rate_limited("contact_ip", _client_ip(), max_count=5, window_seconds=3600) or \
+       _rate_limited("contact_email", email.lower(), max_count=3, window_seconds=3600):
+        return jsonify({"ok": False, "error": "Trop de demandes. Veuillez réessayer plus tard." if fr else "Zu viele Anfragen. Bitte versuche es später erneut."}), 429
+    import html as _html
+    from report_pipeline import send_email
+    owner = os.environ.get("CONTACT_TO_EMAIL", "dionnie373@gmail.com")
+    body = (f"<p><b>Von:</b> {_html.escape(name) or '-'} &lt;{_html.escape(email)}&gt; ({'fr' if fr else 'de'})</p>"
+            f"<p style='white-space:pre-wrap'>{_html.escape(message)}</p>")
+    try:
+        send_email(to_email=owner, subject=f"[Palja Kontakt] {_html.escape(name) or email}"[:120], html_body=body)
+    except Exception as e:
+        print(f"[contact] send failed: {type(e).__name__}", flush=True)
+        return jsonify({"ok": False, "error": "Le message n'a pas pu être envoyé. Veuillez nous écrire directement par e-mail." if fr else "Die Nachricht konnte nicht gesendet werden. Bitte schreib uns direkt per E-Mail."}), 502
+    return jsonify({"ok": True})
 
 
 IMAGES_DIR = os.path.join(STATIC_SITE_DIR, "images")
