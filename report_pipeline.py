@@ -123,6 +123,7 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, la
     body = {
         "model": template.get("model", "claude-haiku-4-5-20251001"),
         "max_tokens": template.get("max_tokens", 8192),
+        **({"thinking": template["thinking"]} if template.get("thinking") else {}),
         "messages": messages,
     }
 
@@ -370,6 +371,7 @@ def _regenerate_with_correction(prompt_template_name, variables, correction_note
     body = {
         "model": template.get("model", "claude-haiku-4-5-20251001"),
         "max_tokens": template.get("max_tokens", 8192),
+        **({"thinking": template["thinking"]} if template.get("thinking") else {}),
         "messages": messages,
     }
     _api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
