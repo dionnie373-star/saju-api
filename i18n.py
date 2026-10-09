@@ -184,6 +184,11 @@ FR_STRINGS = {
         "Palja est proposé à des fins de divertissement et de réflexion personnelle ; "
         "il ne remplace pas un avis médical ou psychologique."
     ),
+    "withdrawal_confirmation": (
+        "Confirmation : vous avez expressément demandé que nous commencions l'exécution du contrat avant "
+        "l'expiration du délai de rétractation et reconnu que vous perdez votre droit de rétractation dès "
+        "que ce rapport a été fourni. Notre garantie volontaire de 60 jours reste inchangée."
+    ),
     "promo": "Envie de savoir à quel point vous vous accordez avec quelqu'un d'autre ?",
     "promo_link": "→ Test de compatibilité Saju (4,90 €)",
     "footer_questions": "Une question ? Écrivez-nous à",

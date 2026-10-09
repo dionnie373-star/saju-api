@@ -1018,6 +1018,13 @@ def _fr_email_template(kind):
             f'    <a href="{SITE_BASE_URL}/fr/#compatibilite" style="color: #A9784F;">{t["promo_link"]}</a>\n'
             "  </p>\n"
         )
+    confirm = ""
+    if kind != "free":
+        confirm = (
+            '  <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">\n'
+            f'    {t["withdrawal_confirmation"]}\n'
+            "  </p>\n"
+        )
     links = " · ".join(
         f'<a href="{SITE_BASE_URL}/{path}" style="color: #A79E93;">{label}</a>'
         for path, label in t["footer_links"]
@@ -1038,6 +1045,7 @@ def _fr_email_template(kind):
         "  </p>\n"
         "{geocoding_notice}"
         + promo
+        + confirm
         + '  <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">\n'
         f'    {t["disclaimer"]}\n'
         "  </p>\n"
@@ -1154,6 +1162,11 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
     mit allen 12 Monaten im Detail — liegt dieser E-Mail als PDF bei.
   </p>
 {geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
+  <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">
+    Bestätigung: Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der
+    Ausführung des Vertrags beginnen, und bestätigt, dass du dein Widerrufsrecht verlierst, sobald dieser
+    Report bereitgestellt wurde. Unsere freiwillige 60-Tage-Geld-zurück-Garantie bleibt davon unberührt.
+  </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -1240,6 +1253,11 @@ _PREMIUM_EMAIL_HTML_TEMPLATE = """\
     mit deinen 10-Jahres-Lebensphasen — liegt dieser E-Mail als PDF bei.
   </p>
 {geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
+  <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">
+    Bestätigung: Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der
+    Ausführung des Vertrags beginnen, und bestätigt, dass du dein Widerrufsrecht verlierst, sobald dieser
+    Report bereitgestellt wurde. Unsere freiwillige 60-Tage-Geld-zurück-Garantie bleibt davon unberührt.
+  </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
@@ -1259,6 +1277,11 @@ _COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
     vielen Dank für deinen Kauf. Eure Saju-Kompatibilitätsanalyse liegt dieser E-Mail als PDF bei.
   </p>
 {geocoding_notice}\
+  <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">
+    Bestätigung: Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der
+    Ausführung des Vertrags beginnen, und bestätigt, dass du dein Widerrufsrecht verlierst, sobald dieser
+    Report bereitgestellt wurde. Unsere freiwillige 60-Tage-Geld-zurück-Garantie bleibt davon unberührt.
+  </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
     medizinische oder psychologische Beratung.
