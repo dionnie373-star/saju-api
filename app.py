@@ -742,6 +742,8 @@ def landing_page():
     같은 Flask 앱에서 정적 파일로 서빙하면 프론트엔드/백엔드가 같은 출처가
     되어 이 제한이 사라진다.
     """
+    if _is_fr_host():
+        return send_from_directory(FR_SITE_DIR, "index.html")
     return send_from_directory(STATIC_SITE_DIR, "index.html")
 
 
@@ -768,6 +770,12 @@ _LEGAL_PAGES = {
 
 @app.route("/<page>", methods=["GET"])
 def legal_page(page):
+    if _is_fr_host():
+        # palja.fr(예정): 같은 앱을 프랑스어 사이트의 루트로 서빙한다.
+        fr_filename = _FR_PAGES.get(page)
+        if not fr_filename:
+            return jsonify({"ok": False, "error": "Not found"}), 404
+        return send_from_directory(FR_SITE_DIR, fr_filename)
     filename = _LEGAL_PAGES.get(page)
     if not filename:
         return jsonify({"ok": False, "error": "Not found"}), 404
@@ -785,6 +793,12 @@ _FR_PAGES = {
     "merci": "merci.html",  # Digistore24 Thank-you 페이지(프랑스어 상품용)
 }
 FR_SITE_DIR = os.path.join(STATIC_SITE_DIR, "fr")
+FR_HOSTS = ("palja.fr", "www.palja.fr")  # 프랑스어 전용 도메인(예정). Render 커스텀 도메인 + DNS 연결 후 동작.
+
+
+def _is_fr_host():
+    return (request.host or "").split(":")[0].lower() in FR_HOSTS
+
 
 
 @app.route("/fr", methods=["GET"])
@@ -817,6 +831,10 @@ def favicon():
 
 @app.route("/robots.txt", methods=["GET"])
 def robots_txt():
+    if _is_fr_host():
+        # 프랑스어 사이트(palja.fr)는 공개 전까지 검색 노출 금지. 공개할 때 이 줄과
+        # static_site/fr/*.html의 noindex 메타를 같이 제거할 것.
+        return Response("User-agent: *\nDisallow: /\n", mimetype="text/plain")
     return send_from_directory(STATIC_SITE_DIR, "robots.txt")
 
 

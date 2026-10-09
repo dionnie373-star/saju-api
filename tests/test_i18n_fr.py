@@ -151,3 +151,28 @@ class WithdrawalConfirmationEmailTest(unittest.TestCase):
         for tpl in (rp._PAID_EMAIL_HTML_TEMPLATE, rp._PREMIUM_EMAIL_HTML_TEMPLATE, rp._COMPATIBILITY_EMAIL_HTML_TEMPLATE):
             self.assertIn("Widerrufsrecht verlierst", tpl)
         self.assertNotIn("Widerrufsrecht verlierst", rp._FREE_EMAIL_HTML_TEMPLATE)
+
+
+class FrenchDomainRoutingTest(unittest.TestCase):
+    def _get(self, path, host):
+        import app
+        return app.app.test_client().get(path, headers={"Host": host})
+
+    def test_palja_fr_root_serves_french_site(self):
+        r = self._get("/", "palja.fr")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(b'lang="fr"', r.data)
+        self.assertEqual(self._get("/cgv", "www.palja.fr").status_code, 200)
+        self.assertEqual(self._get("/merci", "palja.fr").status_code, 200)
+        self.assertEqual(self._get("/agb", "palja.fr").status_code, 404)
+
+    def test_palja_de_unchanged(self):
+        r = self._get("/", "palja.de")
+        self.assertIn(b'lang="de"', r.data)
+        self.assertEqual(self._get("/agb", "palja.de").status_code, 200)
+        self.assertEqual(self._get("/cgv", "palja.de").status_code, 404)
+
+    def test_fr_robots_blocks_all_until_launch(self):
+        r = self._get("/robots.txt", "palja.fr")
+        self.assertIn(b"Disallow: /", r.data)
+        self.assertNotIn(b"Allow: /", r.data)
