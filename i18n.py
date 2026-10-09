@@ -86,6 +86,13 @@ FR_BANNED_REGEXES = [
     (re.compile(r"\bdes études (?:montrent|prouvent|démontrent)\b", re.IGNORECASE), "des études montrent"),
     (re.compile(r"\bstatistiquement significatif", re.IGNORECASE), "statistiquement significatif"),
     (re.compile(r"\bvalidé(?:e|s|es)?\b", re.IGNORECASE), "validé"),
+    (re.compile(r"\b(?:révèl(?:e|ent|era|erait)|prouv(?:e|ent)|garantit|garantissent)\b", re.IGNORECASE), "révèle/prouve/garantit"),
+    (re.compile(r"\bopportunité rare\b|\blongueur exceptionnelle\b|\bmoment idéal\b|\bdernière chance\b|\bmoment décisif\b|\bpour la première fois\b|\bcœur battant\b", re.IGNORECASE), "표현 금지(희소성/긴박감/범위 밖 단정)"),
+    (re.compile(r"\b(?:feu|terre|bois|métal|eau)\s+en\s+(?:ciel|terre)\b", re.IGNORECASE), "천간/지지 직역('Feu en ciel' 등)"),
+    # 독자(vous)를 성별 변화 분사/형용사로 묘사: "vous êtes aligné", "vous pourriez être sollicité"
+    (re.compile(
+        r"\bvous\b[^.!?\n]{0,40}?\b(?:êtes|serez|seriez|étiez|être)\s+(?:(?:plus|moins|très|souvent|parfois|davantage|également|aussi|bien)\s+)?[\wàâçéèêëîïôûùüÿœ]+(?:é|ée|és|ées)\b",
+        re.IGNORECASE), "독자(vous)를 성별 일치 분사로 묘사('vous êtes aligné' 등)"),
 ]
 # "vous"로 쓰기로 했으므로 비격식(tu 계열)이 나오면 걸러낸다.
 FR_INFORMAL_RE = re.compile(r"\b(?:tu|toi|tes|ta)\b", re.IGNORECASE)

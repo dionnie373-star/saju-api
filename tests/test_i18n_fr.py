@@ -176,3 +176,19 @@ class FrenchDomainRoutingTest(unittest.TestCase):
         r = self._get("/robots.txt", "palja.fr")
         self.assertIn(b"Disallow: /", r.data)
         self.assertNotIn(b"Allow: /", r.data)
+
+
+class FrenchStyleCheckTests(unittest.TestCase):
+    def test_flags_gendered_reader_participles_and_banned_phrases(self):
+        import i18n
+        for bad in ["Vous êtes aligné avec vos priorités.", "vous pourriez être sollicité davantage",
+                    "où ce que vous avez construit révèle son potentiel", "Une combinaison de Feu en ciel",
+                    "C'est une opportunité rare."]:
+            self.assertTrue(i18n.fr_mechanical_issues(bad), bad)
+
+    def test_allows_neutral_phrasing(self):
+        import i18n
+        for ok in ["Cette période peut vous inviter à vérifier vos priorités.",
+                   "Cet élément peut être associé à la structure.",
+                   "Vous pouvez vous demander ce qui vous convient."]:
+            self.assertEqual(i18n.fr_mechanical_issues(ok), [], ok)
