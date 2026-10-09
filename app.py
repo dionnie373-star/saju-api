@@ -782,6 +782,7 @@ _FR_PAGES = {
     "cgv": "cgv.html",
     "confidentialite": "confidentialite.html",
     "retractation": "retractation.html",
+    "merci": "merci.html",  # Digistore24 Thank-you 페이지(프랑스어 상품용)
 }
 FR_SITE_DIR = os.path.join(STATIC_SITE_DIR, "fr")
 
