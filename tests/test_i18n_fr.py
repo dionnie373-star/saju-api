@@ -110,5 +110,24 @@ class FrenchLocationTest(unittest.TestCase):
             self.assertEqual(tz, "Europe/Paris")
 
 
+class FrenchSiteRoutesTest(unittest.TestCase):
+    def test_pages_served(self):
+        import app
+        c = app.app.test_client()
+        for url in ("/fr/", "/fr/cgv", "/fr/confidentialite", "/fr/retractation", "/fr/mentions-legales"):
+            r = c.get(url)
+            self.assertEqual(r.status_code, 200, url)
+            self.assertIn(b'lang="fr"', r.data)
+            self.assertIn(b"noindex", r.data)
+        self.assertEqual(c.get("/fr/unknown").status_code, 404)
+
+    def test_fr_index_has_no_german_checkout_leftovers(self):
+        import app
+        html = app.app.test_client().get("/fr/").data.decode("utf-8")
+        self.assertIn("lang: 'fr'", html)
+        self.assertNotIn("Digistore24 Inc", html)
+        self.assertNotIn("§ 356", html)
+
+
 if __name__ == "__main__":
     unittest.main()

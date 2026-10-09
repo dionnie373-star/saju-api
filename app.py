@@ -774,6 +774,32 @@ def legal_page(page):
     return send_from_directory(STATIC_SITE_DIR, filename)
 
 
+# 프랑스어 파일럿 사이트(/fr/) — 결제 제공사가 확정되기 전이라 noindex 상태로 공개.
+# 무료 프로필(/signup, lang=fr)만 실제로 동작하고 유료 버튼은 "곧 이용 가능" 안내를 보인다.
+_FR_PAGES = {
+    "": "index.html",
+    "mentions-legales": "mentions-legales.html",
+    "cgv": "cgv.html",
+    "confidentialite": "confidentialite.html",
+    "retractation": "retractation.html",
+}
+FR_SITE_DIR = os.path.join(STATIC_SITE_DIR, "fr")
+
+
+@app.route("/fr", methods=["GET"])
+def fr_redirect():
+    return redirect("/fr/")
+
+
+@app.route("/fr/", defaults={"page": ""}, methods=["GET"])
+@app.route("/fr/<page>", methods=["GET"])
+def fr_page(page):
+    filename = _FR_PAGES.get(page)
+    if not filename:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return send_from_directory(FR_SITE_DIR, filename)
+
+
 IMAGES_DIR = os.path.join(STATIC_SITE_DIR, "images")
 
 

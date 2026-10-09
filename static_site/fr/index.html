@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Palja — L'art coréen de la réflexion sur soi (Saju)</title>
+<meta name="description" content="Votre profil personnel des cinq éléments selon la tradition coréenne du Saju — gratuit, en quelques minutes, directement dans votre boîte mail. Avec rapport annuel, carte de vie premium et test de compatibilité.">
+<!-- TODO: palja.de 도메인이 라이브되면 og:url과 og:image를 https://palja.de 기준으로 갱신할 것
+     (report_pipeline.py의 SITE_BASE_URL 상수와 동일한 시점에 같이 바꿀 것). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Palja">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:title" content="Palja — L'art coréen de la réflexion sur soi (Saju)">
+<meta property="og:description" content="Votre profil personnel des cinq éléments selon la tradition coréenne du Saju — gratuit, en quelques minutes, directement dans votre boîte mail.">
+<meta property="og:image" content="https://palja-api.onrender.com/images/hero-palace-sunset.jpg">
+<meta property="og:url" content="https://palja.de/fr/">
+<meta name="robots" content="noindex, nofollow"><!-- pilote : retirer à la mise en ligne publique -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Palja — L'art coréen de la réflexion sur soi (Saju)">
+<meta name="twitter:description" content="Votre profil personnel des cinq éléments selon la tradition coréenne du Saju — gratuit, en quelques minutes, directement dans votre boîte mail.">
+<meta name="twitter:image" content="https://palja-api.onrender.com/images/hero-palace-sunset.jpg">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #FAF7F1; font-family: 'Work Sans', sans-serif; color: #211D1A; }
+  h1, h2, .display { font-family: 'Fraunces', serif; }
+  a { color: #C1442E; }
+  a:hover { color: #9C3624; }
+  input:focus { outline: 2px solid #C1442E; outline-offset: 2px; }
+  button:focus-visible { outline: 2px solid #211D1A; outline-offset: 2px; }
+  ::placeholder { color: #A79E93; }
+  /* 히어로 배경 사진(object-fit: cover)은 컨테이너 높이가 콘텐츠(문구+가입폼 카드)에
+     따라 결정되는데, 노트북 폭(예: 1440px)처럼 폼 카드가 문구 옆에 나란히 붙어
+     컨테이너가 매우 낮고 넓어지는 경우 사진이 극단적으로 세로 크롭되어 인물이
+     통째로 잘려나가는 문제가 있었다. 최소 높이를 줘서 항상 인물/궁궐이 보이게 한다. */
+  .hero-pad { min-height: 560px; }
+  @media (max-width: 900px) {
+    .hero-pad { min-height: 480px; }
+  }
+  @media (max-width: 640px) {
+    .hero-content-pad { padding-top: 20px !important; padding-bottom: 56px !important; }
+    .hero-gap { gap: 32px !important; }
+    .cmpTable th, .cmpTable td { padding: 10px 8px !important; font-size: 12.5px !important; }
+    .cmpTable th:not(:first-child) { width: auto !important; }
+    /* 모바일에서는 한 컬럼으로 쌓이면서 히어로 사진의 밝은 부분(하늘) 위에
+       텍스트가 걸치는 경우가 생겨, 데스크탑용 대각선 그라데이션 대신
+       전체를 고르게 어둡게 덮는 오버레이로 교체해 대비를 확보한다. */
+    .hero-overlay-diag { background: linear-gradient(180deg, rgba(18,11,4,0.62) 0%, rgba(18,11,4,0.72) 100%) !important; }
+  }
+</style>
+</head>
+<body>
+
+<div style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch;">
+
+  <!-- Hero: 노을 진 궁궐을 내려다보는 갓 쓴 인물 (실사 이미지) -->
+  <div class="hero-pad" style="position: relative; width: 100%; box-sizing: border-box; overflow: hidden; background: #1A1006;">
+
+    <img src="/images/hero-palace-sunset.jpg" alt="" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 38% 44%; display: block;">
+
+    <div class="hero-overlay-diag" style="position: absolute; inset: 0; background: linear-gradient(100deg, rgba(20,12,4,0.88) 0%, rgba(24,15,6,0.62) 32%, rgba(24,15,6,0.18) 56%, rgba(24,15,6,0.05) 72%); pointer-events: none;"></div>
+    <div style="position: absolute; inset: 0; background: linear-gradient(0deg, rgba(15,9,3,0.55) 0%, rgba(15,9,3,0) 30%); pointer-events: none;"></div>
+
+    <div style="position: relative; z-index: 1; display: flex; flex-direction: column;">
+
+      <div style="width: 100%; box-sizing: border-box; padding: 28px 6vw; display: flex; justify-content: space-between; align-items: center;">
+        <div class="display" style="font-size: 22px; font-weight: 600; letter-spacing: 0.04em; color: #F3EFE4;">PALJA</div>
+        <div style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #C9C3B4;">Tradition coréenne du Saju</div>
+      </div>
+
+      <div class="hero-content-pad" style="width: 100%; box-sizing: border-box; padding: 32px 6vw 96px; display: flex; justify-content: center;">
+        <div class="hero-gap" style="width: 100%; max-width: 1100px; display: flex; gap: 64px; flex-wrap: wrap; align-items: flex-start;">
+
+          <div style="flex: 1 1 420px; min-width: 320px; display: flex; flex-direction: column; gap: 24px; padding-top: 12px;">
+            <h1 class="display" style="margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 500; line-height: 1.15; color: #F8F4E9; text-wrap: balance; text-shadow: 0 2px 10px rgba(0,0,0,0.45);">
+              Découvrez l'art coréen de la réflexion sur soi.
+            </h1>
+            <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #D8D2C2; max-width: 480px; text-shadow: 0 1px 6px rgba(0,0,0,0.4);">
+              Votre profil personnel des cinq éléments, selon la tradition coréenne du Saju vieille de plusieurs siècles — gratuit, en quelques minutes, directement dans votre boîte mail.
+            </p>
+            <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
+              <img src="/images/hero-fans-man.jpg" alt="" aria-hidden="true" width="36" height="36" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 2px solid rgba(243,239,228,0.7); flex-shrink: 0;">
+              <span style="font-size: 14px; color: #C9C3B4; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">Calculé à partir de votre moment de naissance exact — rien de standardisé.</span>
+            </div>
+          </div>
+
+      <div style="flex: 1 1 380px; min-width: 300px; max-width: 440px; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);">
+        <h2 class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Votre profil Saju gratuit</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="birthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date de naissance</label>
+          <input id="birthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
+          <input id="birthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1;">
+          <span style="font-size: 12px; color: #8A8074;">Vous ne connaissez plus l'heure exacte ? Pas de souci — nous calculons alors avec 12 h 00 ; votre profil sera simplement un peu moins précis.</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="color: #C1442E;">*</span></label>
+          <input id="birthplace" type="text" required placeholder="p. ex. Lyon" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+          <span style="font-size: 12px; color: #8A8074;">Afin de rattacher votre heure de naissance au bon fuseau horaire.</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="email" style="font-size: 13px; font-weight: 500; color: #4A4239;">Adresse e-mail</label>
+          <input id="email" type="email" placeholder="vous@exemple.fr" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(nécessaire uniquement pour la carte de vie premium)</span></label>
+          <select id="gender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            <option value="">Veuillez choisir</option>
+            <option value="female">Féminin</option>
+            <option value="male">Masculin</option>
+          </select>
+          <span style="font-size: 11.5px; color: #A79E93;">
+            Le calcul traditionnel de vos périodes de vie (Daewoon) ne distingue que ces deux sens. Si aucune option ne vous correspond, choisissez simplement celle qui vous convient le mieux — cela ne modifie que le sens du cycle, pas la signification de votre profil.
+          </span>
+        </div>
+
+        <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Recevoir mon profil Saju gratuit
+        </button>
+
+        <p id="errorMsg" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <p style="margin: 0; font-size: 12.5px; color: #8A8074; text-align: center; line-height: 1.5;">
+          Gratuit · Résultat par e-mail · environ 2 minutes
+        </p>
+        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center; line-height: 1.5;">
+          Nous utilisons vos informations uniquement pour établir votre profil et les traitons de manière confidentielle. Plus d'informations dans notre <a href="/fr/confidentialite" style="color: inherit; text-decoration: underline;">politique de confidentialité</a>.
+        </p>
+      </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saekdong stripe -->
+  <div style="width: 100%; height: 6px; display: flex;">
+    <div style="flex: 1; background: #2F6F4E;"></div>
+    <div style="flex: 1; background: #C1442E;"></div>
+    <div style="flex: 1; background: #D4A017;"></div>
+    <div style="flex: 1; background: #F1ECE1; border-top: 1px solid #E4DCD1; border-bottom: 1px solid #E4DCD1; box-sizing: border-box;"></div>
+    <div style="flex: 1; background: #201C1A;"></div>
+  </div>
+
+  <!-- Wie es funktioniert -->
+  <div style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center; background: #F3EEE4;">
+    <div style="width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 40px;">
+      <h2 class="display" style="margin: 0; font-size: 28px; font-weight: 500; text-align: center;">Comment ça marche</h2>
+      <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;">
+
+        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">1</div>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Saisissez vos données de naissance</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Date, heure (facultatif) et lieu — nous n'avons besoin de rien de plus.</p>
+        </div>
+
+        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">2</div>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Nous établissons votre profil des cinq éléments</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Selon la tradition coréenne du Saju — calculé précisément pour votre moment de naissance.</p>
+        </div>
+
+        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
+          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">3</div>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Votre profil directement par e-mail</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Au format PDF — à lire, à conserver ou à partager.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Kostenlos vs Jahresreport -->
+  <div id="pricing" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #F3EEE4;">
+    <div style="width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <h2 class="display" style="margin: 0; font-size: 28px; font-weight: 500; text-align: center;">Jusqu'où souhaitez-vous aller ?</h2>
+        <p style="margin: 0; font-size: 15px; color: #6B625A; text-align: center; max-width: 520px;">
+          Le profil gratuit est votre point de départ. Le rapport annuel vous accompagne toute l'année, mois après mois.
+        </p>
+      </div>
+      <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
+
+        <div style="flex: 1 1 320px; max-width: 380px; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Profil gratuit</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">0 €</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
+            <li>Votre répartition des cinq éléments</li>
+            <li>Un premier aperçu de votre personnalité</li>
+            <li>Regard sur l'année passée et à venir (aperçu)</li>
+          </ul>
+        </div>
+
+        <div style="flex: 1 1 320px; max-width: 380px; background: #211D1A; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; color: #FAF7F1;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Rapport annuel</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">9,90 €</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #E8E2D8;">
+            <li><strong>Des impulsions mensuelles</strong> pour les 12 mois</li>
+            <li><strong>Des éclairages approfondis</strong> sur les relations, le travail et vos objectifs personnels</li>
+            <li>Des réflexions mensuelles et votre boussole annuelle personnelle</li>
+            <li><strong>Au format PDF</strong> pour le conserver et le relire</li>
+          </ul>
+          <button type="button" id="buyPaidBtn" style="margin-top: auto; padding: 12px 18px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+            Commander le rapport annuel — 9,90 €
+          </button>
+          <span style="font-size: 11.5px; color: #A79E93; text-align: center;">🔒 Paiement sécurisé par carte bancaire, PayPal et plus</span>
+        </div>
+
+        <div style="flex: 1 1 320px; max-width: 380px; background: #FFFFFF; border: 2px solid #C1442E; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Carte de vie premium</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">24,90 €</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
+            <li>Tout le contenu du rapport annuel</li>
+            <li><strong>Analyse des périodes de vie (Daewoon)</strong> — vos grands cycles de dix ans</li>
+            <li>Tendances à long terme dans les relations, le travail et les finances</li>
+            <li><strong>Au format PDF</strong> — votre boussole de vie personnelle</li>
+          </ul>
+          <button type="button" id="buyPremiumBtn" style="margin-top: auto; padding: 12px 18px; background: #211D1A; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+            Commander la carte de vie — 24,90 €
+          </button>
+          <span style="font-size: 11.5px; color: #A79E93; text-align: center;">🔒 Paiement sécurisé par carte bancaire, PayPal et plus</span>
+        </div>
+
+      </div>
+
+      <p style="margin: 0; font-size: 12.5px; color: #A79E93; text-align: center;">Tous les prix s'entendent TVA légale en vigueur incluse.</p>
+
+      <div style="max-width: 640px; margin: 0 auto; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 10px; padding: 16px 20px; box-sizing: border-box; font-size: 13.5px; line-height: 1.65; color: #4A4239; text-align: center;">
+        <strong>Garantie satisfait ou remboursé de 60 jours — sans avoir à vous justifier.</strong><br>
+        Si votre rapport ne vous satisfait pas, envoyez-nous un court e-mail à <a href="mailto:dionnie373@gmail.com" style="color: inherit; text-decoration: underline;">dionnie373@gmail.com</a> dans les 60 jours suivant l'achat et vous serez intégralement remboursé(e) (<a href="/fr/retractation" style="color: inherit; text-decoration: underline;">détails</a>).<br>
+        <span style="color: #6B625A;">Nos rapports sont des produits numériques (PDF) livrés exclusivement par e-mail.</span>
+      </div>
+
+      <label for="withdrawalConsent" style="display: flex; gap: 10px; align-items: flex-start; max-width: 640px; margin: 0 auto; font-size: 13px; line-height: 1.6; color: #4A4239; cursor: pointer;">
+        <input type="checkbox" id="withdrawalConsent" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #C1442E;">
+        <span>
+          Je demande expressément que la création de mon rapport commence avant l'expiration du délai légal de rétractation de 14 jours, et je reconnais que je perds mon droit de rétractation dès que le rapport a été envoyé (art. L221-28, 13° du Code de la consommation, voir <a href="/fr/retractation" target="_blank" style="color: inherit; text-decoration: underline;">Rétractation</a>). Notre garantie volontaire de 60 jours reste inchangée.
+          Ce consentement est nécessaire pour l'achat d'un rapport.
+        </span>
+      </label>
+
+      <p id="checkoutError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+      <!-- Feature-Vergleichstabelle -->
+      <div style="width: 100%; overflow-x: auto;">
+        <table class="cmpTable" style="width: 100%; border-collapse: collapse; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; overflow: hidden; font-size: 14.5px;">
+          <thead>
+            <tr style="background: #EDE6D9;">
+              <th style="text-align: left; padding: 16px 20px; font-weight: 600; color: #3B3630;">Contenu</th>
+              <th style="text-align: center; padding: 16px 20px; font-weight: 600; color: #3B3630; width: 160px;">Gratuit</th>
+              <th style="text-align: center; padding: 16px 20px; font-weight: 600; color: #3B3630; width: 160px;">Rapport annuel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Votre répartition des cinq éléments</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Aperçu de la personnalité</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Bref et général</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Approfondi et personnalisé</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Regard sur l'année passée et à venir</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Aperçu</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Les 12 mois un par un</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Impulsions de réflexion mensuelles</td>
+              <td style="text-align: center; padding: 14px 20px; color: #C7BEB1; font-size: 17px;">–</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Éclairages sur relations, travail et objectifs</td>
+              <td style="text-align: center; padding: 14px 20px; color: #C7BEB1; font-size: 17px;">–</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Boussole annuelle personnelle en conclusion</td>
+              <td style="text-align: center; padding: 14px 20px; color: #C7BEB1; font-size: 17px;">–</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;">✓</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Format</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">E-mail</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">PDF à conserver</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kompatibilitäts-Check -->
+  <div id="compatibilite" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
+      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A79E93;">Extra</span>
+      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">À quel point vous accordez-vous avec quelqu'un d'autre ?</h2>
+      <p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">
+        Parfois, cela saute aux yeux : il manque complètement l'élément Eau à l'un, alors que l'autre en apporte en abondance. Cela s'équilibre-t-il — ou devient-il une source de frictions ? C'est précisément ce type d'interactions entre vos deux thèmes que révèle le test de compatibilité.
+      </p>
+      <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">
+        Saisissez vos deux dates de naissance et recevez l'analyse par e-mail — vous pouvez recommencer pour autant de personnes que vous le souhaitez.
+      </p>
+
+      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Vous</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Prénom (facultatif)</label>
+              <input id="compatName_a" type="text" placeholder="Votre prénom" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date de naissance</label>
+              <input id="compatDate_a" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
+              <input id="compatTime_a" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_a" type="text" placeholder="p. ex. Paris" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(facultatif, pour la formulation du texte)</span></label>
+              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Non précisé</option>
+                <option value="female">Féminin</option>
+                <option value="male">Masculin</option>
+                <option value="divers">Autre</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">L'autre personne</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Prénom (facultatif)</label>
+              <input id="compatName_b" type="text" placeholder="Son prénom" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date de naissance</label>
+              <input id="compatDate_b" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
+              <input id="compatTime_b" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_b" type="text" placeholder="p. ex. Marseille" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(facultatif, pour la formulation du texte)</span></label>
+              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Non précisé</option>
+                <option value="female">Weiblich</option>
+                <option value="male">Männlich</option>
+                <option value="divers">Autre</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Adresse e-mail (pour l'envoi)</label>
+          <input id="compatEmail" type="email" placeholder="vous@exemple.fr" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <label for="compatConsent" style="display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.6; color: #4A4239; cursor: pointer;">
+          <input type="checkbox" id="compatConsent" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #C1442E;">
+          <span>
+            Je demande expressément que la création de mon rapport commence avant l'expiration du délai légal de rétractation de 14 jours, et je reconnais que je perds mon droit de rétractation dès que le rapport a été envoyé (art. L221-28, 13° du Code de la consommation, voir <a href="/fr/retractation" target="_blank" style="color: inherit; text-decoration: underline;">Rétractation</a>). Notre garantie volontaire de 60 jours reste inchangée.
+          </span>
+        </label>
+
+        <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Calculer la compatibilité — 4,90 €
+        </button>
+        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center;">Prix TVA légale en vigueur incluse. 🔒 Paiement sécurisé par carte bancaire, PayPal et plus</p>
+        <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">Garantie satisfait ou remboursé de 60 jours — sans avoir à vous justifier (<a href="/fr/retractation" style="color: inherit; text-decoration: underline;">détails</a>). Produit numérique : livraison au format PDF par e-mail.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="width: 100%; box-sizing: border-box; padding: 40px 6vw; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
+    <div class="display" style="font-size: 16px; font-weight: 600; letter-spacing: 0.04em;">PALJA</div>
+    <p style="margin: 0; font-size: 12.5px; color: #9A9186; max-width: 520px; line-height: 1.6;">
+      Palja est proposé à des fins de divertissement et de réflexion personnelle. Il ne s'agit ni d'un diagnostic scientifique ni d'une prédiction certaine de l'avenir, et il ne remplace pas un avis médical ou psychologique.
+    </p>
+    <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; font-size: 14px;">
+      <a href="/fr/mentions-legales" style="color: #6B625A;">Mentions légales</a>
+      <a href="/fr/confidentialite" style="color: #6B625A;">Confidentialité</a>
+      <a href="/fr/cgv" style="color: #6B625A;">CGV</a>
+      <a href="/fr/retractation" style="color: #6B625A;">Rétractation</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // Paddle은 "업종 승인 거부"로 라이브 전환이 막혀서 포기하고(2026-10-03),
+  // Digistore24로 교체 중 — 테스트용으로 Jahresreport 상품(740708)만 먼저
+  // 등록해서 업종 승인 여부를 확인하는 단계다. 아직 premium/compatibility는
+  // Digistore24 상품이 없어서 빈 값으로 둔다(기존 Paddle 궁합 애드온과 같은
+  // "값 없으면 비활성" 패턴).
+  //
+  // Digistore24는 Paddle.js 같은 임베드 모달이 없고, 자체 호스팅 주문서
+  // (checkout-ds24.com)로 리다이렉트하는 방식이다.
+  //
+  // 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전엔
+  // 생년월일/출생시간/출생지 같은 개인정보를 "custom" GET 파라미터에 직접
+  // 실어서(base64url 인코딩만 — 암호화 아님) Digistore24 주문서 링크에 보냈다.
+  // 이러면 그 값이 브라우저 히스토리/리퍼러/서버 로그 등에 평문으로 남을 수
+  // 있다. 이제는 먼저 우리 서버(/orders/pending)에 주문 데이터를 보내고,
+  // 서버가 돌려준 무작위 토큰만 "custom"에 싣는다 — 실제 개인정보는 URL에
+  // 전혀 노출되지 않는다 (app.py의 _PENDING_DIGISTORE24_ORDERS 설명 참고).
+  var DIGISTORE24_PRODUCT_IDS = {
+    // 프랑스어 사이트는 결제 제공사가 확정되기 전이라 비어 있음(= 주문 불가 안내 표시).
+    paid: '', premium: '', compatibility: '',
+  };
+  var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
+
+  async function createPendingOrderToken(orderData) {
+    var resp = await fetch('/orders/pending', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+    var body = await resp.json().catch(function () { return {}; });
+    if (!resp.ok || !body.token) {
+      throw new Error(body.error || 'La commande n\'a pas pu être préparée.');
+    }
+    return body.token;
+  }
+
+  function buildDigistore24Url(productId, email, token) {
+    var params = new URLSearchParams();
+    params.set('email', email);
+    params.set('custom', token);
+    return DIGISTORE24_ORDER_FORM_BASE + productId + '?' + params.toString();
+  }
+
+  var checkoutErrorEl = document.getElementById('checkoutError');
+
+  function showCheckoutError(msg) {
+    checkoutErrorEl.textContent = msg;
+    checkoutErrorEl.style.display = 'block';
+  }
+
+  async function openCheckout(tier, btnEl) {
+    checkoutErrorEl.style.display = 'none';
+
+    var birthdate = document.getElementById('birthdate').value.trim();
+    var birthtime = document.getElementById('birthtime').value.trim();
+    var birthplace = document.getElementById('birthplace').value.trim();
+    var email = document.getElementById('email').value.trim();
+    var gender = document.getElementById('gender').value.trim();
+    var withdrawalConsent = document.getElementById('withdrawalConsent').checked;
+
+    if (!birthdate) { showCheckoutError('Veuillez d\'abord indiquer votre date de naissance ci-dessus.'); return; }
+    if (!birthplace) { showCheckoutError('Veuillez d\'abord indiquer votre lieu de naissance ci-dessus.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCheckoutError('Veuillez d\'abord indiquer une adresse e-mail valide ci-dessus.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('Pour la carte de vie premium, veuillez d\'abord choisir votre sexe ci-dessus.'); return; }
+    if (!withdrawalConsent) { showCheckoutError('Veuillez d\'abord confirmer votre consentement à l\'exécution immédiate (case ci-dessus).'); return; }
+    var productId = DIGISTORE24_PRODUCT_IDS[tier];
+    if (!productId) { showCheckoutError('Ce rapport n\'est pas encore disponible à la commande. Revenez bientôt.'); return; }
+
+    var orderData = {
+      email: email,
+      birth_date: birthdate,
+      birth_time: birthtime,
+      birth_city: birthplace,
+            withdrawal_consent: true,
+      withdrawal_consent_at: new Date().toISOString(),
+      lang: 'fr',
+    };
+    if (gender) { orderData.gender = gender; }
+
+    var originalLabel = btnEl ? btnEl.textContent : null;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Préparation …'; }
+    try {
+      var token = await createPendingOrderToken(orderData);
+      window.location.href = buildDigistore24Url(productId, email, token);
+    } catch (e) {
+      showCheckoutError(e.message || 'La commande n\'a pas pu être préparée. Veuillez réessayer.');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
+    }
+  }
+
+  document.getElementById('buyPaidBtn').addEventListener('click', function (ev) { openCheckout('paid', ev.currentTarget); });
+  document.getElementById('buyPremiumBtn').addEventListener('click', function (ev) { openCheckout('premium', ev.currentTarget); });
+
+  var compatErrorEl = document.getElementById('compatError');
+
+  function showCompatError(msg) {
+    compatErrorEl.textContent = msg;
+    compatErrorEl.style.display = 'block';
+  }
+
+  async function openCompatCheckout(ev) {
+    compatErrorEl.style.display = 'none';
+
+    var nameA = document.getElementById('compatName_a').value.trim();
+    var dateA = document.getElementById('compatDate_a').value.trim();
+    var timeA = document.getElementById('compatTime_a').value.trim();
+    var cityA = document.getElementById('compatCity_a').value.trim();
+    var genderA = document.getElementById('compatGender_a').value.trim();
+    var nameB = document.getElementById('compatName_b').value.trim();
+    var dateB = document.getElementById('compatDate_b').value.trim();
+    var timeB = document.getElementById('compatTime_b').value.trim();
+    var cityB = document.getElementById('compatCity_b').value.trim();
+    var genderB = document.getElementById('compatGender_b').value.trim();
+    var email = document.getElementById('compatEmail').value.trim();
+    var consent = document.getElementById('compatConsent').checked;
+
+    if (!dateA || !cityA) { showCompatError('Veuillez d\'abord indiquer votre date et votre lieu de naissance.'); return; }
+    if (!dateB || !cityB) { showCompatError('Veuillez d\'abord indiquer la date et le lieu de naissance de l\'autre personne.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCompatError('Veuillez indiquer une adresse e-mail valide.'); return; }
+    if (!consent) { showCompatError('Veuillez d\'abord confirmer votre consentement à l\'exécution immédiate (case ci-dessus).'); return; }
+    var productId = DIGISTORE24_PRODUCT_IDS.compatibility;
+    if (!productId) { showCompatError('Le test de compatibilité sera bientôt disponible. Revenez bientôt.'); return; }
+
+    var orderData = {
+      email: email,
+      name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA, gender_a: genderA,
+      name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB, gender_b: genderB,
+            withdrawal_consent: true,
+      withdrawal_consent_at: new Date().toISOString(),
+      lang: 'fr',
+    };
+
+    var btnEl = ev ? ev.currentTarget : null;
+    var originalLabel = btnEl ? btnEl.textContent : null;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Préparation …'; }
+    try {
+      var token = await createPendingOrderToken(orderData);
+      window.location.href = buildDigistore24Url(productId, email, token);
+    } catch (e) {
+      showCompatError(e.message || 'La commande n\'a pas pu être préparée. Veuillez réessayer.');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
+    }
+  }
+
+  document.getElementById('buyCompatBtn').addEventListener('click', openCompatCheckout);
+})();
+
+(function () {
+  // 같은 오리진에서 서빙되므로 상대경로로 호출 (CORS/CSP 문제 없음)
+  var API_BASE = '';
+
+  var btn = document.getElementById('submitBtn');
+  var errorEl = document.getElementById('errorMsg');
+  var status = 'idle';
+
+  var labels = {
+    idle: 'Recevoir mon profil Saju gratuit',
+    loading: 'Création en cours …',
+    sent: 'En route vers vous ✓',
+    error: 'Réessayer',
+  };
+
+  function setStatus(next, msg) {
+    status = next;
+    btn.textContent = labels[next] || labels.idle;
+    if (msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+    } else {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+  }
+
+  btn.addEventListener('click', async function () {
+    if (status === 'loading') return;
+
+    var birthdate = document.getElementById('birthdate').value.trim();
+    var birthtime = document.getElementById('birthtime').value.trim();
+    var birthplace = document.getElementById('birthplace').value.trim();
+    var email = document.getElementById('email').value.trim();
+
+    if (!birthdate) { setStatus('error', 'Veuillez indiquer votre date de naissance.'); return; }
+    if (!birthplace) { setStatus('error', 'Veuillez indiquer votre lieu de naissance.'); return; }
+    if (!email || email.indexOf('@') === -1) { setStatus('error', 'Veuillez indiquer une adresse e-mail valide.'); return; }
+
+    setStatus('loading');
+
+    try {
+      var res = await fetch(API_BASE + '/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          birth_date: birthdate,
+          birth_time: birthtime,
+          birth_city: birthplace,
+                    email: email,
+          lang: 'fr',
+        }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || data.ok === false) {
+        setStatus('error', data.error || 'Une erreur s\'est produite. Veuillez réessayer plus tard.');
+        return;
+      }
+      setStatus('sent');
+    } catch (err) {
+      setStatus('error', 'Connexion au serveur impossible. Veuillez réessayer plus tard.');
+    }
+  });
+})();
+</script>
+
+
+</body>
+</html>
