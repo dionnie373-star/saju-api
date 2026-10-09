@@ -68,7 +68,13 @@ class PipelineError(Exception):
 import i18n
 
 
-def _load_prompt_template(name):
+def _load_prompt_template(name, lang="de"):
+    """lang이 fr이고 prompts/fr/<name>이 있으면 프랑스어 전용 프롬프트를, 없으면 공용(독일어 기반) 템플릿."""
+    if lang == "fr":
+        fr_path = os.path.join(PROMPTS_DIR, "fr", name)
+        if os.path.exists(fr_path):
+            with open(fr_path, "r", encoding="utf-8") as f:
+                return json.load(f)
     path = os.path.join(PROMPTS_DIR, name)
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -88,9 +94,10 @@ def _build_messages(template, variables, lang, correction_note=""):
     last = len(template["messages"]) - 1
     for i, m in enumerate(template["messages"]):
         content = _fill_placeholders(m["content"], variables)
-        content = i18n.localize_prompt_text(
-            content, lang, is_first_message=(i == 0), is_last_message=(i == last)
-        )
+        if template.get("native_lang") != lang:
+            content = i18n.localize_prompt_text(
+                content, lang, is_first_message=(i == 0), is_last_message=(i == last)
+            )
         if i == last and correction_note:
             content += correction_note
         messages.append({"role": m["role"], "content": content})
@@ -110,7 +117,7 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, la
             status=500,
         )
 
-    template = _load_prompt_template(prompt_template_name)
+    template = _load_prompt_template(prompt_template_name, lang)
     messages = _build_messages(template, variables, lang)
 
     body = {
@@ -351,7 +358,7 @@ def _regenerate_with_correction(prompt_template_name, variables, correction_note
 
     한 번 더 호출한다. 실패하면(네트워크 오류 등) None을 반환한다.
     """
-    template = _load_prompt_template(prompt_template_name)
+    template = _load_prompt_template(prompt_template_name, lang)
     messages = _build_messages(template, variables, lang, correction_note)
 
     body = {
