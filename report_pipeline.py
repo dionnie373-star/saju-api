@@ -80,6 +80,18 @@ def _load_prompt_template(name, lang="de"):
         return json.load(f)
 
 
+# 내부 테스트용(/admin/test-report): 템플릿의 모델을 임시로 덮어쓴다(예: Sonnet 비교 테스트).
+MODEL_OVERRIDE = None
+
+
+def _apply_model_override(body):
+    if MODEL_OVERRIDE:
+        body["model"] = MODEL_OVERRIDE
+        body["thinking"] = {"type": "between_tools"}
+        body["max_tokens"] = max(body.get("max_tokens", 0), 12000)
+    return body
+
+
 def _fill_placeholders(text, variables):
     def repl(match):
         key = match.group(1).strip()
@@ -126,6 +138,7 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, la
         **({"thinking": template["thinking"]} if template.get("thinking") else {}),
         "messages": messages,
     }
+    body = _apply_model_override(body)
 
     try:
         resp = requests.post(
@@ -374,6 +387,7 @@ def _regenerate_with_correction(prompt_template_name, variables, correction_note
         **({"thinking": template["thinking"]} if template.get("thinking") else {}),
         "messages": messages,
     }
+    body = _apply_model_override(body)
     _api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
     try:
         resp = requests.post(

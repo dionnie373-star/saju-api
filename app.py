@@ -1367,10 +1367,15 @@ def admin_test_report():
         return jsonify({"ok": False, "error": "tier/email 확인"}), 400
     data.setdefault("withdrawal_consent", True)
     return_text = bool(data.pop("return_text", False))
+    model_override = (data.pop("model", "") or "").strip() or None
+    import report_pipeline
+    report_pipeline.MODEL_OVERRIDE = model_override
     try:
         resp, status = _fulfill_report_order(tier, data, email)
     except (CalcError, PipelineError) as e:
         return jsonify({"ok": False, "error": str(e)}), e.status
+    finally:
+        report_pipeline.MODEL_OVERRIDE = None
     if return_text:
         import report_pipeline
         resp = dict(resp)
