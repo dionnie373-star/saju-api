@@ -861,7 +861,7 @@ BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 
 def _send_email_via_brevo_api(*, to_email, subject, html_body, from_email, from_name,
-                               attachment_path=None, attachment_name=None):
+                               attachment_path=None, attachment_name=None, reply_to=None):
     """Brevo 트랜잭션 이메일 HTTP API로 발송 (포트 443, SMTP 포트 차단과 무관).
 
     Render 같은 일부 무료 호스팅은 이메일 발송용 포트(25/465/587)를 막아버려서
@@ -877,6 +877,8 @@ def _send_email_via_brevo_api(*, to_email, subject, html_body, from_email, from_
         "subject": subject,
         "htmlContent": html_body,
     }
+    if reply_to:
+        payload["replyTo"] = {"email": reply_to}
 
     if attachment_path:
         with open(attachment_path, "rb") as f:
@@ -907,7 +909,7 @@ def _send_email_via_brevo_api(*, to_email, subject, html_body, from_email, from_
         )
 
 
-def send_email(*, to_email, subject, html_body, attachment_path=None, attachment_name=None):
+def send_email(*, to_email, subject, html_body, attachment_path=None, attachment_name=None, reply_to=None):
     from_email = os.environ.get("FROM_EMAIL")
     from_name = os.environ.get("FROM_NAME", "Palja")
 
@@ -925,6 +927,7 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
             from_name=from_name,
             attachment_path=attachment_path,
             attachment_name=attachment_name,
+            reply_to=reply_to,
         )
         return
 
@@ -945,6 +948,8 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
     msg["Subject"] = subject
     msg["From"] = f"{from_name} <{from_email}>"
     msg["To"] = to_email
+    if reply_to:
+        msg["Reply-To"] = reply_to
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
     if attachment_path:

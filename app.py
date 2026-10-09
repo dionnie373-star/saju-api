@@ -841,7 +841,7 @@ def contact_send():
     body = (f"<p><b>Von:</b> {_html.escape(name) or '-'} &lt;{_html.escape(email)}&gt; ({'fr' if fr else 'de'})</p>"
             f"<p style='white-space:pre-wrap'>{_html.escape(message)}</p>")
     try:
-        send_email(to_email=owner, subject=f"[Palja Kontakt] {_html.escape(name) or email}"[:120], html_body=body)
+        send_email(to_email=owner, subject=f"[Palja Kontakt] {_html.escape(name) or email}"[:120], html_body=body, reply_to=email)
     except Exception as e:
         print(f"[contact] send failed: {type(e).__name__}", flush=True)
         return jsonify({"ok": False, "error": "Le message n'a pas pu être envoyé. Veuillez nous écrire directement par e-mail." if fr else "Die Nachricht konnte nicht gesendet werden. Bitte schreib uns direkt per E-Mail."}), 502
