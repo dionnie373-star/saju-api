@@ -502,3 +502,10 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 2. 궁합 상대방 개인정보 처리(정보 제공 의무/법적 근거) — 입력란은 이름·성별 선택으로 이미 완화함,
    그래도 상대방에게 처리방침 고지 의무가 있는지 변호사 확인 필요.
 함께 확인: Digistore24 계약 법인(Inc. vs GmbH; 독일 판매는 GmbH 담당이라는 공개 안내) → AGB의 계약 당사자 문구 수정.
+
+
+## 프랑스어 사이트 / palja.fr 계획 (2026-10-09)
+- 현재: palja.de/fr/ (noindex). app.py가 Host가 palja.fr/www.palja.fr면 같은 앱이 프랑스어 사이트를 루트로 서빙(/, /cgv, /merci …), robots는 전체 Disallow.
+- palja.fr 연결 시 할 일: Render에 커스텀 도메인 추가 + DNS, ALLOWED_ORIGIN에 https://palja.fr 추가,
+  report_pipeline.SITE_BASE_URL(이메일 링크)와 fr 페이지 og:url을 도메인별로 분리, 공개 시점에 noindex 메타와 robots Disallow 제거.
+- 프랑스어 Digistore24 상품(3개)은 독일어 승인 결과를 본 뒤 생성. 판매 페이지 URL=/fr/, 감사 페이지=/fr/merci.
