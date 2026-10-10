@@ -186,3 +186,13 @@ class DaewoonTimelineDrawingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class HeadingKeepTogetherTests(unittest.TestCase):
+    def test_h2_is_grouped_with_rule_and_next_flowable(self):
+        from reportlab.platypus import KeepTogether
+        import report_pipeline as rp
+        fl = rp._report_text_to_flowables("## Titre\n\nCorps du texte.\n\nAutre paragraphe.", lang="fr")
+        self.assertIsInstance(fl[0], KeepTogether)
+        self.assertEqual(len(fl[0]._content), 3)
+        self.assertLess(len(fl), 6)

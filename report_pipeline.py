@@ -749,7 +749,25 @@ def _report_text_to_flowables(report_text, lang="de"):
             flowables.append(Paragraph(f"„{safe}“", _PDF_STYLES["pullquote"]))
         else:
             flowables.append(Paragraph(safe, _PDF_STYLES["body"]))
-    return flowables
+    return _keep_headings_with_next(flowables)
+
+
+def _keep_headings_with_next(flowables):
+    """제목(h2)+구분선이 페이지 맨 아래에 홀로 남는 것을 막는다(2026-10-11 프랑스어
+    궁합 테스트에서 실제로 발생). 제목·구분선·바로 다음 흐름요소를 KeepTogether로 묶는다."""
+    out = []
+    i = 0
+    n = len(flowables)
+    while i < n:
+        f = flowables[i]
+        is_h2 = isinstance(f, Paragraph) and f.style.name == "PaljaH2"
+        if is_h2 and i + 2 < n and flowables[i + 1] is _H2_RULE:
+            out.append(KeepTogether([f, flowables[i + 1], flowables[i + 2]]))
+            i += 3
+        else:
+            out.append(f)
+            i += 1
+    return out
 
 
 # 축(재물운/관계운/직업운/총운)별 색 — 2026-10-10 디자인 개편: 예전엔 초록/빨강/골드를
