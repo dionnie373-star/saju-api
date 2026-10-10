@@ -144,10 +144,19 @@ class DaewoonTimelineDrawingTests(unittest.TestCase):
         facts = compute_daewoon_facts(daewoon)
         drawing = rp._build_daewoon_timeline_drawing(facts)
         self.assertEqual(drawing.__class__.__name__, "Drawing")
-        # 세그먼트(Rect, 범례 제외) 개수 == 시기 개수
-        from reportlab.graphics.shapes import Rect
+        # 세그먼트(Rect) 개수 == 시기 개수. 2026-10-10 개편으로 범례 사각형은 없어지고
+        # 축 이름은 구간 안에 직접 적는다.
+        from reportlab.graphics.shapes import Rect, String
         segment_rects = [c for c in drawing.contents if isinstance(c, Rect)]
-        self.assertEqual(len(segment_rects), len(daewoon["entries"]) + len(set(e["axis"] for e in daewoon["entries"])))
+        self.assertEqual(len(segment_rects), len(daewoon["entries"]))
+        # 오행 색(목/화/토/금/수)이 타임라인 구간에 쓰이지 않아야 한다.
+        import pdf_design
+        element_colors = {c.lower() for c in pdf_design.ELEMENT_COLORS.values()}
+        for rect in segment_rects:
+            self.assertNotIn(rect.fillColor.hexval().replace("0x", "#").lower(), element_colors)
+        texts = {c.text for c in drawing.contents if isinstance(c, String)}
+        for label in ("Stabilität", "Ressourcen", "Talent & Werk"):
+            self.assertIn(label, texts)
 
 
 if __name__ == "__main__":

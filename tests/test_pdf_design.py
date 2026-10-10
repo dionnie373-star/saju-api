@@ -47,6 +47,24 @@ class PdfDesignTests(unittest.TestCase):
             rp.build_pdf(out, title="Titel", subtitle="Untertitel", report_text="## A\n\nText")
             self.assertTrue(os.path.exists(out))
 
+    def test_send_report_falls_back_to_default_layout_when_cover_fails(self):
+        from unittest import mock
+        sent = {}
+
+        def fake_send(**kw):
+            sent["size"] = os.path.getsize(kw["attachment_path"])
+
+        ov = pdf_design.build_overview_flowables(
+            {"pillars": PILLARS}, hour_known=True, lang="de",
+            h2_style=rp._PDF_STYLES["h2"], h2_rule=rp._H2_RULE)
+        with mock.patch.object(rp, "send_email", fake_send), \
+                mock.patch.object(pdf_design, "draw_cover", side_effect=RuntimeError("boom")):
+            rp._send_report(
+                email="a@b.c", name="X", pdf_title="T", pdf_subtitle="S", report_text="## A\n\nText",
+                email_subject="s", email_html_template="{name_suffix}{geocoding_notice}",
+                pdf_filename="t.pdf", pdf_overview_flowables=ov)
+        self.assertGreater(sent["size"], 1000)
+
 
 if __name__ == "__main__":
     unittest.main()

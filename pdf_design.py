@@ -48,6 +48,7 @@ ELEMENT_NAMES = {
 STRINGS = {
     "de": {
         "overview": "Dein Profil auf einen Blick",
+        "overview_named": "Profil auf einen Blick: {name}",
         "chart_title": "Deine Fünf Elemente",
         "chart_note": "Anzahl der Elemente in deinen Säulen (Himmelsstämme und Erdzweige).",
         "pillars_title": "Deine vier Säulen",
@@ -59,10 +60,11 @@ STRINGS = {
         "footer_line": "palja.de  ·  Koreanische Saju-Lehre zur Selbstreflexion",
     },
     "fr": {
-        "overview": "Ton profil en un coup d'œil",
-        "chart_title": "Tes cinq éléments",
-        "chart_note": "Nombre d'éléments dans tes piliers (troncs célestes et branches terrestres).",
-        "pillars_title": "Tes quatre piliers",
+        "overview": "Votre profil en un coup d'œil",
+        "overview_named": "Profil en un coup d'œil : {name}",
+        "chart_title": "Vos cinq éléments",
+        "chart_note": "Nombre d'éléments dans vos piliers (troncs célestes et branches terrestres).",
+        "pillars_title": "Vos quatre piliers",
         "cols": ["Heure", "Jour", "Mois", "Année"],
         "rows": ["Tronc céleste", "Branche terrestre"],
         "unknown": "inconnue",
@@ -310,8 +312,10 @@ def build_pillars_table(pillars, *, hour_known=True, lang="de", width_mm=166):
 # ---------------------------------------------------------------------------
 
 def build_overview_flowables(calc_result, *, hour_known=True, lang="de", h2_style=None, h2_rule=None,
-                             body_style=None):
-    """calc_result: run_calculation() 결과(pillars 필요). hour_known: 출생시각을 입력했는지."""
+                             body_style=None, name=None):
+    """calc_result: run_calculation() 결과(pillars 필요). hour_known: 출생시각을 입력했는지.
+
+    name: 궁합 리포트처럼 한 문서에 여러 사람의 개요를 넣을 때 제목에 붙일 이름."""
     st = _s(lang)
     pillars = calc_result["pillars"]
     counts = count_elements(pillars, hour_known)
@@ -323,7 +327,12 @@ def build_overview_flowables(calc_result, *, hour_known=True, lang="de", h2_styl
 
     out = []
     if h2_style is not None:
-        out.append(Paragraph(st["overview"], h2_style))
+        if name:
+            from xml.sax.saxutils import escape
+            heading = st["overview_named"].format(name=escape(name))
+        else:
+            heading = st["overview"]
+        out.append(Paragraph(heading, h2_style))
         if h2_rule is not None:
             out.append(h2_rule)
     out.append(Paragraph(st["chart_title"], h3))

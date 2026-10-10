@@ -732,14 +732,18 @@ def _report_text_to_flowables(report_text):
     return flowables
 
 
-# 축(재물운/관계운/직업운/총운)별 색 — 사이트 하단의 오방색(단청) 줄무늬
-# (초록/빨강/노랑/크림/다크)에서 그대로 가져와서 웹과 PDF의 색 언어를 통일한다.
+# 축(재물운/관계운/직업운/총운)별 색 — 2026-10-10 디자인 개편: 예전엔 초록/빨강/골드를
+# 썼는데 오행 색(목/화/토)과 겹쳐 "오행 구간"으로 오해될 수 있어서, 오행 색은 오행
+# 도형·차트 전용으로 비우고 타임라인은 잉크 톤(진함→연함)으로 바꿨다. 색만으로
+# 구분하지 않도록 구간 안에 축 이름을 직접 적는다(흑백 인쇄에서도 읽힘).
+# (배경색, 글자색)
 _AXIS_COLORS = {
-    "재물운": "#C1442E",  # 테라코타
-    "관계운": "#2F6F4E",  # 녹색
-    "직업운": "#D4A017",  # 골드
-    "총운": "#8A6F5C",    # 뉴트럴 브라운
+    "재물운": ("#3B3630", "#FFFFFF"),
+    "관계운": ("#6B6258", "#FFFFFF"),
+    "직업운": ("#A79E93", "#211D1A"),
+    "총운": ("#D8D0C2", "#211D1A"),
 }
+_AXIS_FALLBACK = ("#8A8074", "#FFFFFF")
 _AXIS_LABELS_DE = {
     "재물운": "Ressourcen",
     "관계운": "Beziehung",
@@ -760,10 +764,11 @@ def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166, lang="de"):
     entries = daewoon_facts["entries"]
     n = len(entries)
     width = width_mm * mm
-    height = 30 * mm
-    bar_y = 14 * mm
-    bar_h = 6 * mm
+    height = 22 * mm
+    bar_y = 8 * mm
+    bar_h = 8 * mm
     seg_w = width / n
+    labels = i18n.FR_STRINGS["axis_labels"] if lang == "fr" else _AXIS_LABELS_DE
 
     d = Drawing(width, height)
 
@@ -771,32 +776,29 @@ def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166, lang="de"):
 
     for i, entry in enumerate(entries):
         x = i * seg_w
-        color = _AXIS_COLORS.get(entry["axis"], "#8A6F5C")
-        d.add(Rect(x, bar_y, seg_w - 1, bar_h, fillColor=HexColor(color), strokeColor=None))
+        bg, fg = _AXIS_COLORS.get(entry["axis"], _AXIS_FALLBACK)
+        d.add(Rect(x, bar_y, seg_w - 1, bar_h, fillColor=HexColor(bg), strokeColor=None))
+
+        # 축 이름을 구간 안에 직접 표기 (구간 폭에 맞게 글자 크기 축소)
+        label = labels.get(entry["axis"], entry["axis"])
+        size = 7
+        while stringWidth(label, "WorkSans", size) > seg_w - 4 and size > 4.5:
+            size -= 0.25
+        d.add(String(x + (seg_w - 1) / 2, bar_y + bar_h / 2 - size * 0.35, label, fontName="WorkSans",
+                     fontSize=size, fillColor=HexColor(fg), textAnchor="middle"))
 
         # 시작 나이 라벨 (각 구간 왼쪽 경계)
-        d.add(String(x, bar_y - 8, f"{entry['start_age']}", fontName="WorkSans", fontSize=7, fillColor=HexColor("#8A8074")))
+        d.add(String(x, bar_y - 8, f"{entry['start_age']}", fontName="WorkSans", fontSize=7, fillColor=HexColor("#786F67")))
 
         if i == current_index:
             cx = x + (seg_w - 1) / 2
             d.add(String(cx, bar_y + bar_h + 10, (i18n.FR_STRINGS["you_are_here"] if lang == "fr" else "DU BIST HIER"), fontName="WorkSans-Bold", fontSize=6.5,
-                         fillColor=HexColor("#211D1A"), textAnchor="middle"))
-            d.add(Line(cx, bar_y + bar_h + 8, cx, bar_y + bar_h + 1, strokeColor=HexColor("#211D1A"), strokeWidth=1))
+                         fillColor=HexColor("#C1442E"), textAnchor="middle"))
+            d.add(Line(cx, bar_y + bar_h + 8, cx, bar_y + bar_h + 1, strokeColor=HexColor("#C1442E"), strokeWidth=1))
 
     # 맨 끝 나이 라벨
     last = entries[-1]
-    d.add(String(width - 6, bar_y - 8, f"{last['end_age']}", fontName="WorkSans", fontSize=7, fillColor=HexColor("#8A8074")))
-
-    # 범례: 실제로 등장하는 축만, 순서대로
-    seen_axes = list(dict.fromkeys(e["axis"] for e in entries))
-    legend_y = height - 8
-    lx = 0
-    for axis in seen_axes:
-        color = _AXIS_COLORS.get(axis, "#8A6F5C")
-        d.add(Rect(lx, legend_y, 8, 8, fillColor=HexColor(color), strokeColor=None))
-        label = (i18n.FR_STRINGS["axis_labels"] if lang == "fr" else _AXIS_LABELS_DE).get(axis, axis)
-        d.add(String(lx + 12, legend_y + 1, label, fontName="WorkSans", fontSize=7.5, fillColor=HexColor("#3B3630")))
-        lx += 12 + stringWidth(label, "WorkSans", 7.5) + 16
+    d.add(String(width - 6, bar_y - 8, f"{last['end_age']}", fontName="WorkSans", fontSize=7, fillColor=HexColor("#786F67")))
 
     return d
 
@@ -1147,17 +1149,34 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
 LAST_REPORT_TEXT = ""
 
 
-def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None, lang="de"):
+def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None, lang="de",
+                 pdf_overview_flowables=None):
     global LAST_REPORT_TEXT
     LAST_REPORT_TEXT = report_text
     import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
         pdf_path = os.path.join(tmpdir, pdf_filename)
-        build_pdf(
-            pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
-            intro_flowables=pdf_intro_flowables, lang=lang,
-        )
+        if pdf_overview_flowables:
+            # 2026-10-10 디자인 개편: 표지 + "한눈에 보기". 새 디자인이 어떤 이유로든
+            # 실패해도 리포트 발송은 막지 않고 예전 레이아웃으로 다시 만든다.
+            try:
+                build_pdf(
+                    pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
+                    intro_flowables=pdf_intro_flowables, lang=lang,
+                    cover=True, overview_flowables=pdf_overview_flowables,
+                )
+            except Exception as e:  # noqa: BLE001
+                print(f"[report_pipeline] 경고: 표지/개요 PDF 생성 실패, 기본 레이아웃으로 재시도: {e!r}")
+                build_pdf(
+                    pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
+                    intro_flowables=pdf_intro_flowables, lang=lang,
+                )
+        else:
+            build_pdf(
+                pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
+                intro_flowables=pdf_intro_flowables, lang=lang,
+            )
 
         name_suffix = f" {name}" if name else ""
         geocoding_notice = _geocoding_fallback_notice_html(geocoding_notice_cities or [], lang)
@@ -1171,6 +1190,24 @@ def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_sub
             attachment_name=pdf_filename,
         )
     return {"ok": True}
+
+
+def _build_overview(calc_result, *, hour_known, lang, name=None):
+    """표지 다음 "한눈에 보기" flowable 생성. 실패하면 None(→ 예전 레이아웃)."""
+    try:
+        import pdf_design
+        return pdf_design.build_overview_flowables(
+            calc_result, hour_known=hour_known, lang=lang,
+            h2_style=_PDF_STYLES["h2"], h2_rule=_H2_RULE, name=name,
+        )
+    except Exception as e:  # noqa: BLE001 - 부가 디자인 요소, 실패해도 리포트 발송은 막지 않음
+        print(f"[report_pipeline] 경고: 개요 페이지 생성 실패, 없이 진행: {e!r}")
+        return None
+
+
+def _hour_known(payload, key="birth_time"):
+    """출생 시각을 입력했는지(빈 문자열/None이면 모름 — 계산은 정오로 가정됨)."""
+    return bool((payload.get(key) or "").strip()) or bool(payload.get("birth_datetime"))
 
 
 def run_free_signup(*, payload, calc_result):
@@ -1199,11 +1236,13 @@ def run_free_signup(*, payload, calc_result):
             email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
             email_subject=subj, email_html_template=tpl, pdf_filename=fn,
             geocoding_notice_cities=[fallback_city], lang=lang,
+            pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
         )
 
     return _send_report(
         email=email,
         name=name,
+        pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
         pdf_title="Dein Saju-Profil",
         pdf_subtitle=f"Erstellt für {name}" if name else "Dein persönliches Fünf-Elemente-Profil",
         report_text=report_text,
@@ -1290,11 +1329,13 @@ def run_paid_signup(*, payload, calc_result):
             email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
             email_subject=subj, email_html_template=tpl, pdf_filename=fn,
             geocoding_notice_cities=[fallback_city], lang=lang,
+            pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
         )
 
     return _send_report(
         email=email,
         name=name,
+        pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
         pdf_title="Dein Saju-Jahresreport",
         pdf_subtitle=f"Erstellt für {name}" if name else "Dein persönlicher Jahresreport",
         report_text=report_text,
@@ -1393,17 +1434,26 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
         if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
             fallback_cities.append(calc_result["input"].get("birth_city"))
 
+    def _compat_overview():
+        a = _build_overview(calc_result_a, hour_known=_hour_known(payload, "birth_time_a"), lang=lang, name=name_a)
+        b = _build_overview(calc_result_b, hour_known=_hour_known(payload, "birth_time_b"), lang=lang, name=name_b)
+        if not a or not b:
+            return None
+        return a + [PageBreak()] + b
+
     if lang == "fr":
         t, _st, fn, subj, tpl = _doc_strings("compatibility", lang, None)
         return _send_report(
             email=email, name=None, pdf_title=t, pdf_subtitle=f"{name_a} & {name_b}",
             report_text=report_text, email_subject=subj, email_html_template=tpl,
             pdf_filename=fn, geocoding_notice_cities=fallback_cities, lang=lang,
+            pdf_overview_flowables=_compat_overview(),
         )
 
     return _send_report(
         email=email,
         name=None,
+        pdf_overview_flowables=_compat_overview(),
         pdf_title="Eure Saju-Kompatibilität",
         pdf_subtitle=f"{name_a} & {name_b}",
         report_text=report_text,
@@ -1485,11 +1535,13 @@ def run_premium_signup(*, payload, calc_result):
             email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
             email_subject=subj, email_html_template=tpl, pdf_filename=fn,
             pdf_intro_flowables=intro_flowables, geocoding_notice_cities=[fallback_city], lang=lang,
+            pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
         )
 
     return _send_report(
         email=email,
         name=name,
+        pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
         pdf_title="Deine Saju-Lebenskarte",
         pdf_subtitle=f"Erstellt für {name}" if name else "Deine persönliche Lebenskarte",
         report_text=report_text,
