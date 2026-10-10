@@ -37,7 +37,7 @@ ACCENT = "#C1442E"
 # 상생 순서(시계 방향): 목 → 화 → 토 → 금 → 수.  ※ 오행 색/도형은 제안안(사주 전문가 확인 전)
 ELEMENT_ORDER = ["목", "화", "토", "금", "수"]
 ELEMENT_COLORS = {
-    "목": "#3F7A63", "화": "#C1442E", "토": "#B98A2E", "금": "#8C98A4", "수": "#26364F",
+    "목": "#3F7A63", "화": "#C1442E", "토": "#A97E2A", "금": "#758492", "수": "#26364F",
 }
 ELEMENT_HANJA = {"목": "木", "화": "火", "토": "土", "금": "金", "수": "水"}
 ELEMENT_NAMES = {
@@ -248,7 +248,7 @@ def build_element_chart(counts, *, lang="de", width_mm=166):
         if n > 0:
             bw = plot_w * n / vmax
             d.add(Rect(plot_x, y, bw, bar_h, fillColor=HexColor(ELEMENT_COLORS[el]),
-                       strokeColor=HexColor(INK_ICON), strokeWidth=0.5))
+                       strokeColor=None))
             vx = plot_x + bw + 2 * mm
         else:
             vx = plot_x + 2 * mm
