@@ -196,3 +196,14 @@ class HeadingKeepTogetherTests(unittest.TestCase):
         self.assertIsInstance(fl[0], KeepTogether)
         self.assertEqual(len(fl[0]._content), 3)
         self.assertLess(len(fl), 6)
+
+
+class NamedProfileHeadingTests(unittest.TestCase):
+    def test_named_profiles_use_neutral_titles(self):
+        import pdf_design
+        for lang in ("de", "fr"):
+            st = pdf_design.STRINGS[lang]
+            for k in ("chart_title_named", "chart_note_named", "pillars_title_named"):
+                self.assertIn(k, st)
+            self.assertNotIn("Deine", st["chart_title_named"] + st["pillars_title_named"])
+            self.assertNotIn("Vos", st["chart_title_named"] + st["pillars_title_named"])

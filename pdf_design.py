@@ -53,6 +53,10 @@ STRINGS = {
         "chart_title": "Deine Fünf Elemente",
         "chart_note": "Anzahl der Elemente in deinen Säulen (Himmelsstämme und Erdzweige).",
         "pillars_title": "Deine vier Säulen",
+        # 궁합 리포트(두 사람 각각의 개요): "Deine/Vos"가 누구를 가리키는지 헷갈리지 않게 중립 표현
+        "chart_title_named": "Die fünf Elemente",
+        "chart_note_named": "Anzahl der Elemente in den Säulen (Himmelsstämme und Erdzweige).",
+        "pillars_title_named": "Die vier Säulen",
         "cols": ["Stunde", "Tag", "Monat", "Jahr"],
         "rows": ["Himmelsstamm", "Erdzweig"],
         "unknown": "unbekannt",
@@ -68,6 +72,9 @@ STRINGS = {
         "chart_title": "Vos cinq éléments",
         "chart_note": "Nombre d'éléments dans vos piliers (troncs célestes et branches terrestres).",
         "pillars_title": "Vos quatre piliers",
+        "chart_title_named": "Les cinq éléments",
+        "chart_note_named": "Nombre d'éléments dans les piliers (troncs célestes et branches terrestres).",
+        "pillars_title_named": "Les quatre piliers",
         "cols": ["Heure", "Jour", "Mois", "Année"],
         "rows": ["Tronc céleste", "Branche terrestre"],
         "unknown": "inconnue",
@@ -343,10 +350,11 @@ def build_overview_flowables(calc_result, *, hour_known=True, lang="de", h2_styl
         out.append(Paragraph(heading, h2_style))
         if h2_rule is not None:
             out.append(h2_rule)
-    out.append(Paragraph(st["chart_title"], h3))
-    out.append(Paragraph(st["chart_note"], note))
+    sfx = "_named" if name else ""
+    out.append(Paragraph(st["chart_title" + sfx], h3))
+    out.append(Paragraph(st["chart_note" + sfx], note))
     out.append(build_element_chart(counts, lang=lang))
-    out.append(Paragraph(st["pillars_title"], h3))
+    out.append(Paragraph(st["pillars_title" + sfx], h3))
     out.append(build_pillars_table(pillars, hour_known=hour_known, lang=lang))
     out.append(Spacer(1, 2 * mm))
     out.append(Paragraph(st["table_note"], note))
