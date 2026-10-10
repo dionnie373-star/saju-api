@@ -65,6 +65,18 @@ class PdfDesignTests(unittest.TestCase):
                 pdf_filename="t.pdf", pdf_overview_flowables=ov)
         self.assertGreater(sent["size"], 1000)
 
+    def test_hangul_readings_are_standard_and_covered_by_font(self):
+        from fontTools.ttLib import TTFont
+        from korean_saju.saju.cheon_gan import CheonGan
+        from korean_saju.saju.ji_ji import JiJi
+        stems = "갑을병정무기경신임계"
+        branches = "자축인묘진사오미신유술해"
+        self.assertEqual("".join(g.hangul for g in CheonGan), stems)
+        self.assertEqual("".join(j.hangul for j in JiJi), branches)
+        cmap = TTFont(pdf_design._KO_FONT_PATH).getBestCmap()
+        needed = set(stems + branches + "".join(pdf_design.ELEMENT_KO.values()))
+        self.assertEqual([c for c in needed if ord(c) not in cmap], [])
+
 
 if __name__ == "__main__":
     unittest.main()

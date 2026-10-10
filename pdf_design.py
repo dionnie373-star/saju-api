@@ -56,6 +56,8 @@ STRINGS = {
         "cols": ["Stunde", "Tag", "Monat", "Jahr"],
         "rows": ["Himmelsstamm", "Erdzweig"],
         "unknown": "unbekannt",
+        "table_note": "Die Zeichen sind die koreanischen Namen der Himmelsstämme (oben) und Erdzweige (unten), "
+                      "den Bausteinen jeder Säule. Darunter steht das zugehörige Element.",
         "hour_note": "Ohne Geburtszeit wird keine Stundensäule berechnet. "
                      "Die Elementverteilung beruht dann auf den drei übrigen Säulen.",
         "footer_line": "palja.de  ·  Koreanische Saju-Lehre zur Selbstreflexion",
@@ -69,6 +71,8 @@ STRINGS = {
         "cols": ["Heure", "Jour", "Mois", "Année"],
         "rows": ["Tronc céleste", "Branche terrestre"],
         "unknown": "inconnue",
+        "table_note": "Les caractères sont les noms coréens des troncs célestes (en haut) et des branches terrestres "
+                      "(en bas), les éléments de base de chaque pilier. Dessous figure l'élément correspondant.",
         "hour_note": "Sans heure de naissance, le pilier de l'heure n'est pas calculé. "
                      "La répartition des éléments repose alors sur les trois autres piliers.",
         "footer_line": "palja.fr  ·  Le Saju coréen pour la réflexion personnelle",
@@ -344,8 +348,9 @@ def build_overview_flowables(calc_result, *, hour_known=True, lang="de", h2_styl
     out.append(build_element_chart(counts, lang=lang))
     out.append(Paragraph(st["pillars_title"], h3))
     out.append(build_pillars_table(pillars, hour_known=hour_known, lang=lang))
+    out.append(Spacer(1, 2 * mm))
+    out.append(Paragraph(st["table_note"], note))
     if not hour_known:
-        out.append(Spacer(1, 2 * mm))
         out.append(Paragraph(st["hour_note"], note))
     out.append(Spacer(1, 6 * mm))
     return out
