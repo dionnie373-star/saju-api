@@ -351,6 +351,8 @@ def _resolve_birth_datetime(payload):
 
 
 def _pillar_dict(pillar):
+    if pillar is None:  # 출생 시각 모름 → 시주 없음
+        return None
     return {
         "hanja": pillar.hanja,
         "hangul": pillar.hangul,
@@ -362,6 +364,8 @@ def _pillar_dict(pillar):
 def _count_elements(saju):
     counts = {"목": 0, "화": 0, "토": 0, "금": 0, "수": 0}
     for pillar in [saju.year_pillar, saju.month_pillar, saju.day_pillar, saju.hour_pillar]:
+        if pillar is None:  # 출생 시각 모름 → 시주 제외(3기둥, 6글자만 센다)
+            continue
         counts[pillar.cheon_gan.o_haeng.hangul] += 1
         counts[pillar.ji_ji.o_haeng.hangul] += 1
     return counts
@@ -521,11 +525,15 @@ def _build_daewoon_compact(daewoon_out):
 
 
 def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggyeok=None, yongsin=None):
+    if saju.hour_pillar is not None:
+        hour_str = f"시주 {saju.hour_pillar.hanja}({saju.hour_pillar.hangul})"
+    else:
+        hour_str = "시주 미상(출생 시각을 모름 — 시주는 없는 것으로 다룬다)"
     pillars_str = (
         f"년주 {saju.year_pillar.hanja}({saju.year_pillar.hangul}) / "
         f"월주 {saju.month_pillar.hanja}({saju.month_pillar.hangul}) / "
         f"일주 {saju.day_pillar.hanja}({saju.day_pillar.hangul}) / "
-        f"시주 {saju.hour_pillar.hanja}({saju.hour_pillar.hangul})"
+        f"{hour_str}"
     )
     counts_str = ", ".join(f"{el}{ELEMENT_HANJA[el]} {cnt}개" for el, cnt in counts.items())
     max_el = max(counts, key=counts.get)
@@ -534,7 +542,7 @@ def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggy
     lines = [
         f"이름: {name or '(미입력)'}",
         f"사주: {pillars_str}",
-        f"오행 분포: {counts_str}",
+        f"오행 분포{'' if saju.hour_pillar is not None else '(시주 없음: 3개 기둥 6글자 기준, 합계 6)'}: {counts_str}",
         f"가장 많은 오행: {max_el}({ELEMENT_HANJA[max_el]})",
         f"가장 적은/없는 오행: {', '.join(f'{e}({ELEMENT_HANJA[e]})' for e in min_els)}",
         f"일간(본인 자신): {saju.day_stem.hangul}({saju.day_stem.hanja}), 오행 {day_stem_el}({ELEMENT_HANJA[day_stem_el]})",
@@ -615,12 +623,17 @@ def run_calculation(payload):
     birth_local_dt = birth_dt
     kst_equivalent_moment = _to_kst_equivalent_moment(birth_local_dt, timezone_name)
 
+    # 출생 시각을 모르면(빈 값) 정오로 가정해 시주를 "만들어 내지" 않고 시주 없이(삼주) 계산한다.
+    # 예전에는 정오(午시) 시주가 오행 개수·프롬프트에 섞여 들어가서, PDF 차트(3기둥)와 본문 숫자가
+    # 어긋났다 (2026-10-11 수정).
+    hour_known = bool((payload.get("birth_time") or "").strip()) or bool(payload.get("birth_datetime"))
     try:
         saju = Saju.from_birth(
             kst_moment=kst_equivalent_moment,
             solar_terms=_solar_terms,
             longitude=longitude,
             yaja_si_separated=bool(yaja_si_separated),
+            hour_known=hour_known,
         )
         analysis = SajuAnalysis(saju)
     except Exception as e:

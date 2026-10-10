@@ -46,6 +46,7 @@ from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import (
     HRFlowable,
+    KeepTogether,
     PageBreak,
     Paragraph,
     SimpleDocTemplate,
@@ -587,8 +588,8 @@ _PDF_STYLES = {
     # 얻으려면 2-pass 렌더링이 필요해 지금 범위에서는 과함 - 구조를 보여주는
     # 것만으로 충분하다는 게 리뷰의 결론이었음).
     "toc_top": ParagraphStyle(
-        "PaljaTocTop", fontName="WorkSans-Bold", fontSize=11.5, leading=20,
-        textColor="#211D1A", spaceBefore=2 * mm,
+        "PaljaTocTop", fontName="WorkSans-Bold", fontSize=11.5, leading=17,
+        textColor="#211D1A", spaceBefore=1 * mm,
     ),
     "toc_sub": ParagraphStyle(
         "PaljaTocSub", fontName="WorkSans", fontSize=10, leading=16,
@@ -658,7 +659,21 @@ def _extract_toc_entries(report_text):
     return entries
 
 
-def _build_toc_flowables(report_text, *, heading="Inhalt"):
+_FR_SPACE_BEFORE_RE = re.compile(r" +([;:!?»])")
+_FR_SPACE_AFTER_RE = re.compile(r"(«) +")
+
+
+def _fr_typography(text):
+    """프랑스어 조판 규칙: ; : ! ? » 앞과 « 뒤는 줄바꿈이 안 되는 공백(nbsp)으로 잇는다.
+
+    안 그러면 질문 끝의 "?"가 다음 줄/쪽 맨 앞에 혼자 떨어진다 (2026-10-11 프리미엄 PDF 7쪽).
+    reportlab은 U+00A0을 줄바꿈 지점으로 보지 않는다.
+    """
+    text = _FR_SPACE_BEFORE_RE.sub("\u00a0\\1", text)
+    return _FR_SPACE_AFTER_RE.sub("«\u00a0", text)
+
+
+def _build_toc_flowables(report_text, *, heading="Inhalt", lang="de"):
     """목차 페이지를 flowable 리스트로 만든다. 항목이 없으면 빈 리스트 반환.
 
     정확한 페이지 번호는 2-pass 렌더링이 필요해 이번 범위에서는 넣지 않음 -
@@ -669,23 +684,28 @@ def _build_toc_flowables(report_text, *, heading="Inhalt"):
     entries = _extract_toc_entries(report_text)
     if not entries:
         return []
-    flowables = [
+    block = [
         Paragraph(heading, _PDF_STYLES["h2"]),
         _H2_RULE,
     ]
     for kind, text in entries:
+        if lang == "fr":
+            text = _fr_typography(text)
         safe = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
         style = "toc_top" if kind == "top" else "toc_sub"
-        flowables.append(Paragraph(safe, _PDF_STYLES[style]))
-    flowables.append(PageBreak())
-    return flowables
+        block.append(Paragraph(safe, _PDF_STYLES[style]))
+    # 제목+항목 전부를 한 덩어리로 묶는다: 남은 자리에 다 안 들어가면 통째로 다음 쪽으로 넘어가서,
+    # "Sommaire" 제목이 쪽 맨 아래에 혼자 남거나 마지막 항목 한 줄만 빈 쪽에 떨어지지 않는다.
+    return [KeepTogether(block), PageBreak()]
 
 
-def _report_text_to_flowables(report_text):
+def _report_text_to_flowables(report_text, lang="de"):
     """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환."""
     flowables = []
     for raw_line in report_text.split("\n"):
         line = raw_line.strip()
+        if lang == "fr" and line:
+            line = _fr_typography(line)
         if not line:
             flowables.append(Spacer(1, 2 * mm))
             continue
@@ -853,9 +873,9 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
     if intro_flowables:
         story.extend(intro_flowables)
     story.extend(_build_toc_flowables(
-        report_text, heading=(i18n.FR_STRINGS["toc_heading"] if lang == "fr" else "Inhalt")
+        report_text, heading=(i18n.FR_STRINGS["toc_heading"] if lang == "fr" else "Inhalt"), lang=lang
     ))
-    story.extend(_report_text_to_flowables(report_text))
+    story.extend(_report_text_to_flowables(report_text, lang=lang))
 
     doc.build(story, onFirstPage=first_page, onLaterPages=footer)
     return out_path

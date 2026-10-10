@@ -115,6 +115,31 @@ class TableOfContentsTests(unittest.TestCase):
         self.assertEqual(rp._build_toc_flowables("Nur ein Absatz ohne Überschriften."), [])
 
 
+class FrenchTypographyAndTocLayoutTests(unittest.TestCase):
+    def test_french_punctuation_uses_non_breaking_spaces(self):
+        out = rp._fr_typography("Que voulez-vous ? Voici : « un test » ! ok ; fin")
+        self.assertEqual(out, "Que voulez-vous\u00a0? Voici\u00a0: «\u00a0un test\u00a0»\u00a0! ok\u00a0; fin")
+
+    def test_question_mark_never_starts_a_wrapped_line_in_french(self):
+        from reportlab.platypus import Paragraph
+        text = rp._fr_typography("Que voulez-vous tenir fermement dans vos relations, et que pourriez-vous laisser s'adoucir ?")
+        for width in range(250, 330, 7):
+            p = Paragraph(text, rp._PDF_STYLES["body"])
+            p.wrap(width, 1000)
+            for line in p.blPara.lines:
+                words = line[1] if isinstance(line, tuple) else line.words
+                first = words[0] if words else ""
+                self.assertNotEqual(first, "?", f"width={width}")
+
+    def test_german_text_is_left_untouched(self):
+        flowables = rp._report_text_to_flowables("Wirklich ? Ja : nein", lang="de")
+        self.assertNotIn("\u00a0", flowables[0].text)
+
+    def test_toc_is_one_keep_together_block_followed_by_page_break(self):
+        flowables = rp._build_toc_flowables("## Eins\n\n## Zwei\n\n### 2.1 Unter", lang="fr")
+        self.assertEqual([type(f).__name__ for f in flowables], ["KeepTogether", "PageBreak"])
+
+
 class DaewoonTimelineDrawingTests(unittest.TestCase):
     """report_facts 기반 "Lebenslinie" 타임라인 그래픽이 죽지 않고 그려지는지 확인.
 

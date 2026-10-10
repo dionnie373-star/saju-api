@@ -44,6 +44,38 @@ class CalculationTests(unittest.TestCase):
         self.assertEqual(sum(result["element_counts"].values()), 8)
         self.assertTrue(set(result["element_counts"].keys()) <= FIVE_ELEMENTS)
 
+    def test_unknown_birth_time_excludes_hour_pillar_everywhere(self):
+        """출생 시각을 모르면 정오(午시) 시주를 지어내지 않는다 (2026-10-11 버그 수정).
+
+        예전에는 정오 시주가 오행 개수/프롬프트(compact)에 섞여 들어가서, 차트(3기둥)와
+        본문 숫자("Feu 3개, Eau 1개")가 서로 어긋났다.
+        """
+        result = run_calculation({
+            "name": "Alice",
+            "birth_date": "1990-01-15",
+            "birth_time": "",
+            "birth_city": "Berlin",
+        })
+        self.assertIsNone(result["pillars"]["hour"])
+        self.assertEqual(sum(result["element_counts"].values()), 6)  # 3기둥 x 2글자
+        self.assertIn("시주 미상", result["compact"])
+        self.assertNotIn("壬午", result["compact"])
+        # 차트가 쓰는 계산(pdf_design.count_elements, 시주 제외)과 항상 같은 숫자여야 한다.
+        import pdf_design
+        chart = pdf_design.count_elements(result["pillars"], hour_known=False)
+        self.assertEqual(chart, result["element_counts"])
+
+    def test_known_birth_time_keeps_four_pillars(self):
+        result = run_calculation({
+            "name": "Alice",
+            "birth_date": "1990-01-15",
+            "birth_time": "12:00",
+            "birth_city": "Berlin",
+        })
+        self.assertIsNotNone(result["pillars"]["hour"])
+        self.assertEqual(sum(result["element_counts"].values()), 8)
+        self.assertNotIn("시주 미상", result["compact"])
+
     def test_missing_birthdate_and_city_raises_calc_error(self):
         with self.assertRaises(CalcError):
             run_calculation({"name": "Nobody"})
