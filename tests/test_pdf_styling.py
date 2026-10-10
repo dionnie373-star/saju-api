@@ -207,3 +207,12 @@ class NamedProfileHeadingTests(unittest.TestCase):
                 self.assertIn(k, st)
             self.assertNotIn("Deine", st["chart_title_named"] + st["pillars_title_named"])
             self.assertNotIn("Vos", st["chart_title_named"] + st["pillars_title_named"])
+
+
+class FrNegatedScienceTests(unittest.TestCase):
+    def test_negated_disclaimer_allowed_but_claim_still_flagged(self):
+        import i18n
+        ok = "Il s'agit d'une lecture de tendances, et non d'un diagnostic de personnalité scientifiquement établi."
+        bad = "Cette méthode est scientifiquement établie."
+        self.assertFalse(any("scientifique" in x for x in i18n.fr_mechanical_issues(ok)))
+        self.assertTrue(any("scientifique" in x for x in i18n.fr_mechanical_issues(bad)))
