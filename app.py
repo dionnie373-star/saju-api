@@ -857,6 +857,17 @@ def static_image(filename):
     return send_from_directory(IMAGES_DIR, filename)
 
 
+FONTS_DIR = os.path.join(STATIC_SITE_DIR, "fonts")
+
+
+@app.route("/assets/fonts/<path:filename>", methods=["GET"])
+def static_font(filename):
+    """자체 호스팅 웹폰트(Fraunces/Work Sans, OFL). Google Fonts 서버 호출을 없애기 위함(DSGVO)."""
+    resp = send_from_directory(FONTS_DIR, filename)
+    resp.headers["Cache-Control"] = "public, max-age=2592000"
+    return resp
+
+
 @app.route("/favicon.svg", methods=["GET"])
 def favicon():
     return send_from_directory(STATIC_SITE_DIR, "favicon.svg")

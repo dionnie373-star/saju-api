@@ -11,10 +11,10 @@ import pdf_design
 import report_pipeline as rp
 
 PILLARS = {
-    "year": {"hanja": "辛未", "cheon_gan_element": "금", "ji_ji_element": "토"},
-    "month": {"hanja": "辛卯", "cheon_gan_element": "금", "ji_ji_element": "목"},
-    "day": {"hanja": "癸未", "cheon_gan_element": "수", "ji_ji_element": "토"},
-    "hour": {"hanja": "丙辰", "cheon_gan_element": "화", "ji_ji_element": "토"},
+    "year": {"hanja": "辛未", "hangul": "신미", "cheon_gan_element": "금", "ji_ji_element": "토"},
+    "month": {"hanja": "辛卯", "hangul": "신묘", "cheon_gan_element": "금", "ji_ji_element": "목"},
+    "day": {"hanja": "癸未", "hangul": "계미", "cheon_gan_element": "수", "ji_ji_element": "토"},
+    "hour": {"hanja": "丙辰", "hangul": "병진", "cheon_gan_element": "화", "ji_ji_element": "토"},
 }
 
 

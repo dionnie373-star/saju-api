@@ -1,7 +1,7 @@
-"""PDF 사주 표용 한자 글꼴 생성기.
+"""PDF 사주 표·오행 라벨용 한글 글꼴 생성기.
 
-Noto Serif CJK KR (SemiBold, SIL OFL)에서 천간 10자 + 지지 12자 + 오행 5자 + 陰陽만
-뽑아 작은 TrueType 파일(fonts/NotoSerifKR-Hanja-SemiBold.ttf)로 만든다.
+Noto Serif CJK KR (SemiBold, SIL OFL)에서 천간·지지 읽기(갑을병정무기경신임계 / 자축인묘진사오미신유술해),
+오행 단어(나무 불 흙 쇠 물), 팔자만 뽑아 작은 TrueType 파일(fonts/NotoSerifKR-Hangul-SemiBold.ttf)로 만든다.
 reportlab TTFont는 TrueType(glyf) 윤곽선만 지원하므로 CFF → TrueType 변환을 포함한다.
 
 사용: python3 tools/make_hanja_font.py [원본.ttc] [출력.ttf]
@@ -13,8 +13,8 @@ from fontTools.pens.cu2quPen import Cu2QuPen
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 
 SRC = sys.argv[1] if len(sys.argv) > 1 else "/usr/share/fonts/opentype/noto/NotoSerifCJK-SemiBold.ttc"
-OUT = sys.argv[2] if len(sys.argv) > 2 else "fonts/NotoSerifKR-Hanja-SemiBold.ttf"
-CHARS = "甲乙丙丁戊己庚辛壬癸" "子丑寅卯辰巳午未申酉戌亥" "木火土金水" "陰陽" " "
+OUT = sys.argv[2] if len(sys.argv) > 2 else "fonts/NotoSerifKR-Hangul-SemiBold.ttf"
+CHARS = "갑을병정무기경신임계" "자축인묘진사오미신유술해" "나무불흙쇠물" "팔자" " "
 
 coll = TTCollection(SRC)
 font = next(f for f in coll.fonts if f["name"].getDebugName(1).startswith("Noto Serif CJK KR"))

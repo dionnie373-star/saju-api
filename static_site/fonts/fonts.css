@@ -1,0 +1,11 @@
+/* Selbst gehostete Schriften (Fraunces, Work Sans; beide SIL Open Font License, siehe *-OFL.txt).
+   Kein Abruf von Google-Servern. Vorhandene Schnitte: Fraunces 600, Work Sans 400/700/400 kursiv.
+   Zwischenstufen (500) nutzen den nächstliegenden Schnitt. */
+@font-face { font-family: 'Fraunces'; font-style: normal; font-weight: 400 600; font-display: swap;
+  src: url('/assets/fonts/fraunces-600.woff') format('woff'); }
+@font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 400 500; font-display: swap;
+  src: url('/assets/fonts/worksans-400.woff') format('woff'); }
+@font-face { font-family: 'Work Sans'; font-style: normal; font-weight: 600 700; font-display: swap;
+  src: url('/assets/fonts/worksans-700.woff') format('woff'); }
+@font-face { font-family: 'Work Sans'; font-style: italic; font-weight: 400 500; font-display: swap;
+  src: url('/assets/fonts/worksans-400-italic.woff') format('woff'); }

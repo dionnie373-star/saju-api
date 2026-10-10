@@ -4,11 +4,11 @@
 - 한지 질감은 표지에만 깐다. 본문 페이지는 평평한 흰 바탕(인쇄/잉크 절약).
 - 오행 색은 오행 도형·차트에만 쓴다(상품/축 구분 용도 금지).
 - 차트와 표는 LLM 문장이 아니라 run_calculation()의 pillars 데이터로 코드가 그린다.
-- 한자는 모두 같은 잉크색. 오행은 색 점 + 글자로 함께 표기(색만으로 구분하지 않음).
+- 천간·지지는 한글(병, 진 등)로 표기, 모두 같은 잉크색. 오행은 색 점 + 글자로 함께 표기(색만으로 구분하지 않음).
 
 report_pipeline.build_pdf(cover=True, overview_flowables=...)가 사용한다.
 이 모듈은 report_pipeline을 import하지 않는다(순환 방지). Fraunces/WorkSans는
-report_pipeline이 먼저 등록하고, 한자 글꼴(HanjaSerif)은 여기서 등록한다.
+report_pipeline이 먼저 등록하고, 한글 글꼴(KoreanSerif)은 여기서 등록한다.
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
 
 _BASE = os.path.dirname(__file__)
-_HANJA_FONT_PATH = os.path.join(_BASE, "fonts", "NotoSerifKR-Hanja-SemiBold.ttf")
+_KO_FONT_PATH = os.path.join(_BASE, "fonts", "NotoSerifKR-Hangul-SemiBold.ttf")
 _COVER_TEXTURE_PATH = os.path.join(_BASE, "pdf_assets", "hanji_cover.jpg")
 
 INK = "#211D1A"
@@ -39,7 +39,8 @@ ELEMENT_ORDER = ["목", "화", "토", "금", "수"]
 ELEMENT_COLORS = {
     "목": "#3F7A63", "화": "#C1442E", "토": "#A97E2A", "금": "#758492", "수": "#26364F",
 }
-ELEMENT_HANJA = {"목": "木", "화": "火", "토": "土", "금": "金", "수": "水"}
+# 한자 대신 한글 오행 이름 (한자는 중국 느낌이 나서 쓰지 않는다 — 2026-10-10 결정)
+ELEMENT_KO = {"목": "나무", "화": "불", "토": "흙", "금": "쇠", "수": "물"}
 ELEMENT_NAMES = {
     "de": {"목": "Holz", "화": "Feuer", "토": "Erde", "금": "Metall", "수": "Wasser"},
     "fr": {"목": "Bois", "화": "Feu", "토": "Terre", "금": "Métal", "수": "Eau"},
@@ -76,8 +77,8 @@ STRINGS = {
 
 
 def _register_fonts():
-    if "HanjaSerif" not in pdfmetrics.getRegisteredFontNames():
-        pdfmetrics.registerFont(TTFont("HanjaSerif", _HANJA_FONT_PATH))
+    if "KoreanSerif" not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(TTFont("KoreanSerif", _KO_FONT_PATH))
 
 
 _register_fonts()
@@ -184,8 +185,11 @@ def draw_cover(canvas, doc, *, title, subtitle, lang="de"):
     gap = 5 * mm
     total = 5 * 2 * r + 4 * gap
     cx = (w - total) / 2 + r
+    canvas.setFillColor(HexColor(INK_SOFT))
     for el in ELEMENT_ORDER:
         _draw_element_icon(canvas, el, cx, cy_icons, r)
+        canvas.setFont("KoreanSerif", 10)
+        canvas.drawCentredString(cx, cy_icons - r - 5.5 * mm, ELEMENT_KO[el])
         cx += 2 * r + gap
 
     # 4) 제목, 부제 (긴 제목은 폭에 맞춰 글자 크기 축소)
@@ -195,13 +199,13 @@ def draw_cover(canvas, doc, *, title, subtitle, lang="de"):
         size -= 1
     canvas.setFillColor(HexColor(INK))
     canvas.setFont("Fraunces", size)
-    canvas.drawCentredString(w / 2, cy_icons - 24 * mm, title)
+    canvas.drawCentredString(w / 2, cy_icons - 30 * mm, title)
     canvas.setFillColor(HexColor(INK_SOFT))
     sub_size = 12.5
     while stringWidth(subtitle, "WorkSans-Italic", sub_size) > max_w and sub_size > 9:
         sub_size -= 0.5
     canvas.setFont("WorkSans-Italic", sub_size)
-    canvas.drawCentredString(w / 2, cy_icons - 34 * mm, subtitle)
+    canvas.drawCentredString(w / 2, cy_icons - 40 * mm, subtitle)
 
     # 5) 하단 얇은 선 + 한 줄
     canvas.setStrokeColor(HexColor(RULE))
@@ -224,7 +228,7 @@ def build_element_chart(counts, *, lang="de", width_mm=166):
     top_pad = 2 * mm
     bottom_pad = 7 * mm
     height = top_pad + row_h * 5 + bottom_pad
-    label_w = 30 * mm
+    label_w = 36 * mm
     plot_x = label_w + 2 * mm
     plot_w = width - plot_x - 10 * mm
     vmax = max(max(counts.values()), 4)
@@ -241,10 +245,10 @@ def build_element_chart(counts, *, lang="de", width_mm=166):
     for i, el in enumerate(ELEMENT_ORDER):
         y = height - top_pad - (i + 1) * row_h + 1.6 * mm
         bar_h = row_h - 3.2 * mm
-        # 라벨: 한자 + 독일어/프랑스어 이름 (색 점은 막대 색과 동일)
-        d.add(String(0, y + bar_h / 2 - 3.6, ELEMENT_HANJA[el], fontName="HanjaSerif", fontSize=12,
+        # 라벨: 한글 오행 이름 + 독일어/프랑스어 이름 (색 점은 막대 색과 동일)
+        d.add(String(0, y + bar_h / 2 - 3.6, ELEMENT_KO[el], fontName="KoreanSerif", fontSize=12,
                      fillColor=HexColor(INK)))
-        d.add(String(9 * mm, y + bar_h / 2 - 3, names[el], fontName="WorkSans", fontSize=9.5,
+        d.add(String(15 * mm, y + bar_h / 2 - 3, names[el], fontName="WorkSans", fontSize=9.5,
                      fillColor=HexColor(INK)))
         n = counts.get(el, 0)
         if n > 0:
@@ -273,7 +277,7 @@ def build_pillars_table(pillars, *, hour_known=True, lang="de", width_mm=166):
     head = ParagraphStyle("pl_head", fontName="WorkSans-Bold", fontSize=8.5, leading=11, textColor=HexColor(INK),
                           alignment=1)
     rowlab = ParagraphStyle("pl_row", fontName="WorkSans", fontSize=8.5, leading=11, textColor=HexColor(INK_SOFT))
-    hanja = ParagraphStyle("pl_hanja", fontName="HanjaSerif", fontSize=26, leading=30, textColor=HexColor(INK),
+    hanja = ParagraphStyle("pl_hanja", fontName="KoreanSerif", fontSize=24, leading=30, textColor=HexColor(INK),
                            alignment=1)
     dash = ParagraphStyle("pl_dash", fontName="WorkSans", fontSize=22, leading=30, textColor=HexColor("#B5ACA0"),
                           alignment=1)
@@ -284,7 +288,7 @@ def build_pillars_table(pillars, *, hour_known=True, lang="de", width_mm=166):
         p = pillars.get(key)
         if key == "hour" and (not hour_known or not p):
             return [Paragraph("–", dash), Paragraph(st["unknown"], unk)]
-        ch = p["hanja"][idx]
+        ch = p["hangul"][idx]
         el = p["cheon_gan_element" if idx == 0 else "ji_ji_element"]
         dot = f'<font color="{ELEMENT_COLORS[el]}" size="11">●</font>'
         return [Paragraph(ch, hanja), Paragraph(f"{dot}&nbsp;{names[el]}", small)]

@@ -544,14 +544,19 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 확정 방향: A안(구조적·현대적 오행 시스템) + 한지 느낌은 은은하게. B안의 붉은 기는 제외.
 
 - **웹 히어로**: 사진(궁궐 노을, 인물) 제거. 한지 타일 배경(`static_site/images/hanji-tile.webp`, 31KB) +
-  八字 낙관(SVG, 글꼴 의존 없음) + 오행 5개 도형 줄(목→화→토→금→수). 한/불 `index.html` 동일.
+  팔자 낙관(SVG, 글꼴 의존 없음) + 오행 5개 도형 줄(목→화→토→금→수). 한/불 `index.html` 동일.
   히어로 사진 3장은 삭제(git 이력에 있음). og:image는 `og-image.jpg` / `og-image-fr.jpg`.
 - **PDF**: `pdf_design.py` (표지 + 오행 막대 차트 + 사주 기둥 표). `build_pdf(cover=True, overview_flowables=...)`,
   4개 상품(무료/연간/프리미엄/궁합) 모두 연결. 실패 시 예전 레이아웃으로 폴백. 한자 글꼴
-  `fonts/NotoSerifKR-Hanja-SemiBold.ttf`(31자, 재생성: `tools/make_hanja_font.py`). 출생시각 모름이면
-  시주를 "unbekannt"로 표시하고 오행은 3개 기둥으로 센다. 본문 페이지는 평평한 흰 바탕.
+  `fonts/NotoSerifKR-Hangul-SemiBold.ttf`(한글 약 30자, 재생성: `tools/make_korean_font.py`). 출생시각 모름이면
+  시주를 "unbekannt"로 표시하고 오행은 3개 기둥으로 센다. **한자는 쓰지 않는다**(중국 느낌 → 한국 느낌 우선): 낙관 팔자, 오행 나무·불·흙·쇠·물, 사주 표는 병·진 같은 한글. 본문 페이지는 평평한 흰 바탕.
 - **색 규칙**: 오행 색은 오행 도형·차트 전용(목 #3F7A63, 화 #C1442E, 토 #A97E2A, 금 #758492, 수 #26364F).
   주홍 #C1442E는 CTA·낙관·제목 밑줄. 프리미엄 타임라인은 잉크 톤(오행 색과 분리).
 - **미확인**: 오행 순서·도형·색 배정(사주 전문가 확인), 프랑스어 문구(원어민), 실제 AI 본문이 붙은 PDF(첫 테스트 구매에서 확인).
 - **법적 메모**: 사이트가 Google Fonts를 구글 서버에서 불러온다(개인정보처리방침에 고지는 되어 있음). 독일에서는
   동의 없는 Google Fonts 로딩이 경고장(Abmahnung) 사유가 된 판례가 있어, 글꼴 자체 호스팅(woff2)을 권장.
+
+- **자체 호스팅 글꼴(2026-10-10)**: Google Fonts 호출 제거. `static_site/fonts/*.woff`(Fraunces 600, Work Sans 400/700/400 italic, 라틴 부분집합) +
+  `fonts.css`, 서빙 경로 `/assets/fonts/`. 없는 중간 굵기(500)는 가장 가까운 파일로 대체됨. 개인정보처리방침(DE/FR) 문구 수정.
+- **개인정보 메모**: `index.html` 하단 Digistore24 Trusted Badge 스크립트(승인 요건)가 페이지 로드 시 digistore24.com에 접속한다. 방침에 고지했다.
+  배지가 쿠키를 심는지는 미확인 → 쿠키를 심는다면 동의 배너(TDDDG §25)가 필요. Digistore24에 문의 필요.
