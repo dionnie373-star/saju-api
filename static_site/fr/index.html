@@ -416,8 +416,10 @@
   // 서버가 돌려준 무작위 토큰만 "custom"에 싣는다 — 실제 개인정보는 URL에
   // 전혀 노출되지 않는다 (app.py의 _PENDING_DIGISTORE24_ORDERS 설명 참고).
   var DIGISTORE24_PRODUCT_IDS = {
-    // 프랑스어 사이트는 결제 제공사가 확정되기 전이라 비어 있음(= 주문 불가 안내 표시).
-    paid: '', premium: '', compatibility: '',
+    // Digistore24 프랑스어 상품 (초안 상태 — 승인 요청 전까지는 테스트 결제만 가능).
+    paid: '746476',          // Palja FR Rapport annuel - EUR 9,90
+    premium: '746480',       // Palja FR Carte de vie premium - EUR 24,90
+    compatibility: '746481', // Palja FR Test de compatibilite - EUR 4,90
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
 

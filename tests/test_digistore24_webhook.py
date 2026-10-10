@@ -293,8 +293,11 @@ class Digistore24WebhookTests(unittest.TestCase):
         token = self._create_pending_order(_valid_paid_order_data())  # gender 없음
         form = _base_form("ds24_premium_no_gender", premium_product_id, "kunde@example.com", token)
         resp = self._post_webhook(form)
-        self.assertEqual(resp.status_code, 400)
-        self.assertIn("gender", resp.get_data(as_text=True))
+        # 이 테스트는 premium tier가 비활성이라 계속 skip돼 왔다. 실제 동작: gender 없는
+        # premium 주문은 fulfill 단계에서 PipelineError → 502(Digistore24 재시도용) +
+        # unmark(재처리 가능) + 운영자 알림. 프론트가 premium엔 gender를 강제한다.
+        self.assertEqual(resp.status_code, 502)
+        self.assertFalse(orders_store.is_marked_processed("digistore24", "ds24_premium_no_gender"))
 
 
 class PendingOrderEndpointTests(unittest.TestCase):

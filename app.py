@@ -1412,6 +1412,19 @@ _ds24_compat_id = os.environ.get("DIGISTORE24_PRODUCT_ID_COMPATIBILITY")
 if _ds24_compat_id:
     DIGISTORE24_PRODUCT_TIER_MAP[_ds24_compat_id] = "compatibility"
 
+# 프랑스어 사이트(palja.fr)용 Digistore24 상품 (2026-10-10 생성, 아직 승인 요청 전).
+# 독일어 상품을 복제해 언어/판매·감사 페이지만 바꾼 것 — 가격은 동일(EUR, 부가세 포함).
+#   746476 -> Palja FR Rapport annuel (9,90 EUR)
+#   746480 -> Palja FR Carte de vie premium (24,90 EUR)
+#   746481 -> Palja FR Test de compatibilite (4,90 EUR)
+for _fr_id, _fr_tier in (
+    (os.environ.get("DIGISTORE24_PRODUCT_ID_PAID_FR", "746476"), "paid"),
+    (os.environ.get("DIGISTORE24_PRODUCT_ID_PREMIUM_FR", "746480"), "premium"),
+    (os.environ.get("DIGISTORE24_PRODUCT_ID_COMPATIBILITY_FR", "746481"), "compatibility"),
+):
+    if _fr_id:
+        DIGISTORE24_PRODUCT_TIER_MAP[_fr_id] = _fr_tier
+
 _DIGISTORE24_PROVIDER = "digistore24"
 
 # 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전에는

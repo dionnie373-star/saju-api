@@ -576,3 +576,12 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - 남은 위험(사용자 판단 필요): ①GDPR 27조 EU 대리인(한국 사업자, 상시 제공이라 면제 불확실) ②Digistore24가 계약 상대(MoR/재판매자)인지에 따른 CGV 문구 정합 ③LCEN: 호스팅사 전화번호 미기재 ④"relecture juridique 없음" 배너는 유지(진실한 고지) — 제거는 사용자 결정 ⑤독일어 AGB §7/§8/§327은 별도 점검 예정.
 - DE AGB 자체 점검(2026-10-10): §1 MoR/Vertragspartner 병기, §2 PDF 호환성·DRM 없음(Art. 246a EGBGB 정보), §5 면책 문구에 "zu vertreten" 제한 추가(§309 Nr.7 BGB 위험 제거). §7/§8/§9는 §327h BGB·§309 기준으로 유지(큰 문제 없음).
 - 사용자 결정(2026-10-10): 변호사 검토 없이 운영, GDPR 27조 EU 대표자 지정 안 함(위험 감수). → 경고 배너는 중립 문구("일반 정보이며 개별 법률 자문을 대체하지 않음")로 교체. 매출 증가·민원 발생 시 재검토.
+
+
+## Digistore24 프랑스어 상품 (2026-10-10)
+독일어 상품을 복제해 언어=French, 판매 페이지=https://palja.fr/, 감사 페이지=https://palja.fr/merci 로 설정. 승인 요청은 **아직 안 보냄**(상태 New).
+- 746476 Palja FR Rapport annuel — 9,90 € (EUR, 부가세 포함)
+- 746480 Palja FR Carte de vie premium — 24,90 €
+- 746481 Palja FR Test de compatibilite — 4,90 €
+`app.py`의 DIGISTORE24_PRODUCT_TIER_MAP에 3개 ID 추가(env `DIGISTORE24_PRODUCT_ID_*_FR`로 덮어쓰기 가능), `static_site/fr/index.html`에 ID 반영.
+남은 일: 복제본의 가격 24,90/4,90 확인, 주문서/감사 페이지 문구 점검, Test Pay, 승인 요청(사용자 확인 후), FR_PUBLIC=1.
