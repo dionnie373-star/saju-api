@@ -560,3 +560,13 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
   `fonts.css`, 서빙 경로 `/assets/fonts/`. 없는 중간 굵기(500)는 가장 가까운 파일로 대체됨. 개인정보처리방침(DE/FR) 문구 수정.
 - **개인정보 메모**: `index.html` 하단 Digistore24 Trusted Badge 스크립트(승인 요건)가 페이지 로드 시 digistore24.com에 접속한다. 방침에 고지했다.
   배지가 쿠키를 심는지는 미확인 → 쿠키를 심는다면 동의 배너(TDDDG §25)가 필요. Digistore24에 문의 필요.
+
+
+## 🇫🇷 palja.fr 런칭 준비 완료 (2026-10-10, 도메인 구매만 남음)
+- 코드: palja.fr 호스트에서 fr 페이지의 og:url/og:image/CGV 문구/내부 링크를 palja.fr 기준으로 자동 치환(`_serve_fr_html`).
+- 공개 스위치: Render 환경변수 `FR_PUBLIC=1` → noindex 제거 + canonical + robots Allow + sitemap(palja.fr). 미설정이면 비공개 유지(Disallow). /merci는 항상 noindex.
+- 체크리스트 3·4번(og/canonical, noindex)은 코드로 처리됨. 도메인 구매 후 할 일:
+  1. Render Custom Domains에 palja.fr, www.palja.fr + INWX DNS 레코드
+  2. 환경변수 `FR_SITE_BASE_URL=https://palja.fr`, `ALLOWED_ORIGIN=https://palja.de,https://palja.fr`
+  3. 접속 확인 후 (원어민 교정·Digistore24 프랑스어 상품 준비되면) `FR_PUBLIC=1`
+- 테스트: tests/test_fr_host.py (총 135개)

@@ -743,7 +743,7 @@ def landing_page():
     되어 이 제한이 사라진다.
     """
     if _is_fr_host():
-        return send_from_directory(FR_SITE_DIR, "index.html")
+        return _serve_fr_html("index.html")
     return send_from_directory(STATIC_SITE_DIR, "index.html")
 
 
@@ -776,7 +776,7 @@ def legal_page(page):
         fr_filename = _FR_PAGES.get(page)
         if not fr_filename:
             return jsonify({"ok": False, "error": "Not found"}), 404
-        return send_from_directory(FR_SITE_DIR, fr_filename)
+        return _serve_fr_html(fr_filename)
     filename = _LEGAL_PAGES.get(page)
     if not filename:
         return jsonify({"ok": False, "error": "Not found"}), 404
@@ -800,6 +800,32 @@ FR_HOSTS = ("palja.fr", "www.palja.fr")  # 프랑스어 전용 도메인(예정)
 
 def _is_fr_host():
     return (request.host or "").split(":")[0].lower() in FR_HOSTS
+
+
+def _fr_public():
+    """FR_PUBLIC=1(Render 환경변수)이면 palja.fr를 검색 노출 상태로 공개한다."""
+    return os.environ.get("FR_PUBLIC", "").strip() in ("1", "true", "yes")
+
+
+def _serve_fr_html(filename):
+    """프랑스어 페이지를 서빙. palja.fr 호스트에서는 URL을 palja.fr 기준으로 바꾸고,
+    FR_PUBLIC=1이면 noindex 메타도 제거한다(파일 자체는 palja.de/fr/ 파일럿용 그대로)."""
+    import re as _re
+    path = os.path.join(FR_SITE_DIR, filename)
+    with open(path, encoding="utf-8") as f:
+        html = f.read()
+    if _is_fr_host():
+        html = html.replace("https://palja.de/fr/", "https://palja.fr/")
+        html = html.replace("https://palja.de/images/", "https://palja.fr/images/")
+        html = html.replace("via le site palja.de", "via le site palja.fr")
+        html = html.replace('href="/fr/', 'href="/')
+        if _fr_public() and filename != "merci.html":
+            html = _re.sub(r'<meta name="robots" content="noindex[^>]*>(<!--.*?-->)?', "", html)
+            canon = "https://palja.fr/" + ("" if filename == "index.html" else filename[:-5])
+            html = html.replace("</head>", f'<link rel="canonical" href="{canon}">\n</head>', 1)
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
 
 
 
@@ -876,14 +902,22 @@ def favicon():
 @app.route("/robots.txt", methods=["GET"])
 def robots_txt():
     if _is_fr_host():
-        # 프랑스어 사이트(palja.fr)는 공개 전까지 검색 노출 금지. 공개할 때 이 줄과
-        # static_site/fr/*.html의 noindex 메타를 같이 제거할 것.
+        # palja.fr: 공개 전(FR_PUBLIC 미설정)에는 검색 노출 금지. FR_PUBLIC=1이면 허용 + sitemap.
+        if _fr_public():
+            return Response("User-agent: *\nAllow: /\nDisallow: /merci\n\nSitemap: https://palja.fr/sitemap.xml\n",
+                            mimetype="text/plain")
         return Response("User-agent: *\nDisallow: /\n", mimetype="text/plain")
     return send_from_directory(STATIC_SITE_DIR, "robots.txt")
 
 
 @app.route("/sitemap.xml", methods=["GET"])
 def sitemap_xml():
+    if _is_fr_host():
+        urls = ["", "mentions-legales", "cgv", "confidentialite", "retractation", "contact"]
+        body = "".join(f"<url><loc>https://palja.fr/{u}</loc></url>" for u in urls)
+        return Response('<?xml version="1.0" encoding="UTF-8"?>'
+                        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + body + "</urlset>",
+                        mimetype="application/xml")
     return send_from_directory(STATIC_SITE_DIR, "sitemap.xml")
 
 
