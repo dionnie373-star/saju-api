@@ -5,18 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Palja — Koreanische Saju-Selbstreflexion</title>
 <meta name="description" content="Dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Lehre — kostenlos, in wenigen Minuten, direkt in deinem Postfach. Plus Jahresreport, Premium-Lebenskarte und Kompatibilitäts-Check.">
-<!-- TODO: palja.de 도메인이 라이브되면 og:url과 og:image를 https://palja.de 기준으로 갱신할 것
-     (report_pipeline.py의 SITE_BASE_URL 상수와 동일한 시점에 같이 바꿀 것). -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Palja">
 <meta property="og:title" content="Palja — Koreanische Saju-Selbstreflexion">
 <meta property="og:description" content="Dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Lehre — kostenlos, in wenigen Minuten, direkt in deinem Postfach.">
-<meta property="og:image" content="https://palja-api.onrender.com/images/hero-palace-sunset.jpg">
-<meta property="og:url" content="https://palja-api.onrender.com/">
+<meta property="og:image" content="https://palja.de/images/og-image.jpg">
+<meta property="og:url" content="https://palja.de/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Palja — Koreanische Saju-Selbstreflexion">
 <meta name="twitter:description" content="Dein persönliches Fünf-Elemente-Profil nach der koreanischen Saju-Lehre — kostenlos, in wenigen Minuten, direkt in deinem Postfach.">
-<meta name="twitter:image" content="https://palja-api.onrender.com/images/hero-palace-sunset.jpg">
+<meta name="twitter:image" content="https://palja.de/images/og-image.jpg">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,23 +27,14 @@
   input:focus { outline: 2px solid #C1442E; outline-offset: 2px; }
   button:focus-visible { outline: 2px solid #211D1A; outline-offset: 2px; }
   ::placeholder { color: #A79E93; }
-  /* 히어로 배경 사진(object-fit: cover)은 컨테이너 높이가 콘텐츠(문구+가입폼 카드)에
-     따라 결정되는데, 노트북 폭(예: 1440px)처럼 폼 카드가 문구 옆에 나란히 붙어
-     컨테이너가 매우 낮고 넓어지는 경우 사진이 극단적으로 세로 크롭되어 인물이
-     통째로 잘려나가는 문제가 있었다. 최소 높이를 줘서 항상 인물/궁궐이 보이게 한다. */
-  .hero-pad { min-height: 560px; }
-  @media (max-width: 900px) {
-    .hero-pad { min-height: 480px; }
-  }
   @media (max-width: 640px) {
     .hero-content-pad { padding-top: 20px !important; padding-bottom: 56px !important; }
     .hero-gap { gap: 32px !important; }
+    .nav-label { display: none; }
+    .el-row { gap: 6px !important; flex-wrap: nowrap !important; }
+    .el-row svg[width="44"] { width: 36px; height: 36px; }
     .cmpTable th, .cmpTable td { padding: 10px 8px !important; font-size: 12.5px !important; }
     .cmpTable th:not(:first-child) { width: auto !important; }
-    /* 모바일에서는 한 컬럼으로 쌓이면서 히어로 사진의 밝은 부분(하늘) 위에
-       텍스트가 걸치는 경우가 생겨, 데스크탑용 대각선 그라데이션 대신
-       전체를 고르게 어둡게 덮는 오버레이로 교체해 대비를 확보한다. */
-    .hero-overlay-diag { background: linear-gradient(180deg, rgba(18,11,4,0.62) 0%, rgba(18,11,4,0.72) 100%) !important; }
   }
 </style>
 </head>
@@ -53,39 +42,34 @@
 
 <div style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch;">
 
-  <!-- Hero: 노을 진 궁궐을 내려다보는 갓 쓴 인물 (실사 이미지) -->
-  <div class="hero-pad" style="position: relative; width: 100%; box-sizing: border-box; overflow: hidden; background: #1A1006;">
+  <!-- Hero (2026-10-10 개편): 사진 없이 단순하게. 은은한 한지 질감 + 八字 낙관 + 오행 5개 도형.
+       오행 색은 이 도형 줄과 PDF 차트 전용. 주홍(#C1442E)은 CTA와 낙관에만 쓴다. -->
+  <div class="hero-pad" style="position: relative; width: 100%; box-sizing: border-box; background: #F6F2E8 url('/images/hanji-tile.webp') repeat; background-size: 576px auto; border-bottom: 1px solid #E6DFD2;">
 
-    <img src="/images/hero-palace-sunset.jpg" alt="" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 38% 44%; display: block;">
-
-    <div class="hero-overlay-diag" style="position: absolute; inset: 0; background: linear-gradient(100deg, rgba(20,12,4,0.88) 0%, rgba(24,15,6,0.62) 32%, rgba(24,15,6,0.18) 56%, rgba(24,15,6,0.05) 72%); pointer-events: none;"></div>
-    <div style="position: absolute; inset: 0; background: linear-gradient(0deg, rgba(15,9,3,0.55) 0%, rgba(15,9,3,0) 30%); pointer-events: none;"></div>
-
-    <div style="position: relative; z-index: 1; display: flex; flex-direction: column;">
-
-      <div style="width: 100%; box-sizing: border-box; padding: 28px 6vw; display: flex; justify-content: space-between; align-items: center;">
-        <div class="display" style="font-size: 22px; font-weight: 600; letter-spacing: 0.04em; color: #F3EFE4;">PALJA</div>
-        <div style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #C9C3B4;">Koreanische Saju-Tradition</div>
+    <div style="width: 100%; box-sizing: border-box; padding: 28px 6vw; display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <svg class="seal" width="30" height="30" viewBox="0 0 32 32" role="img" aria-label="八字" style="flex-shrink:0;"><rect width="32" height="32" rx="3" fill="#C1442E"/><path transform="translate(9.25 2.2) scale(0.0135)" fill="#FFFFFF" d="M306 290C283 567 195 803 32 932L44 943C256 829 368 612 415 342C438 341 449 330 452 318ZM279 130 288 158H583C615 510 682 771 873 934C889 894 926 856 970 844L976 832C754 705 654 452 612 177C655 174 687 165 701 148L595 69L554 130Z"/><path transform="translate(9.25 16.3) scale(0.0135)" fill="#FFFFFF" d="M449 462V583H43L51 612H449V838C449 853 444 858 426 858C401 858 271 850 271 850V864C328 872 355 883 375 899C393 913 399 935 404 966C530 954 548 913 548 844V612H934C948 612 958 607 961 596C921 560 857 509 857 509L799 583H548V500C570 497 580 489 583 474L574 473C641 446 707 408 759 375C779 374 791 371 799 363L702 278L647 334H222L231 363H637C610 397 572 438 534 470ZM155 117C158 179 121 240 87 264C59 280 42 308 55 337C71 371 118 373 145 349C173 326 193 280 191 217H816C803 250 786 289 772 315L782 322C827 301 888 264 923 235C944 233 954 231 963 224L869 134L815 188H548V73C574 69 583 59 584 45L449 34V188H188C185 166 179 142 170 117Z"/></svg>
+        <div class="display" style="font-size: 22px; font-weight: 600; letter-spacing: 0.08em; color: #211D1A;">PALJA</div>
       </div>
+      <div class="nav-label" style="font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #5E564E;">Koreanische Saju-Tradition</div>
+    </div>
 
-      <div class="hero-content-pad" style="width: 100%; box-sizing: border-box; padding: 32px 6vw 96px; display: flex; justify-content: center;">
-        <div class="hero-gap" style="width: 100%; max-width: 1100px; display: flex; gap: 64px; flex-wrap: wrap; align-items: flex-start;">
+    <div class="hero-content-pad" style="width: 100%; box-sizing: border-box; padding: 32px 6vw 80px; display: flex; justify-content: center;">
+      <div class="hero-gap" style="width: 100%; max-width: 1100px; display: flex; gap: 64px; flex-wrap: wrap; align-items: flex-start;">
 
-          <div style="flex: 1 1 420px; min-width: 320px; display: flex; flex-direction: column; gap: 24px; padding-top: 12px;">
-            <h1 class="display" style="margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 500; line-height: 1.15; color: #F8F4E9; text-wrap: balance; text-shadow: 0 2px 10px rgba(0,0,0,0.45);">
-              Entdecke die koreanische Kunst der Selbstreflexion.
-            </h1>
-            <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #D8D2C2; max-width: 480px; text-shadow: 0 1px 6px rgba(0,0,0,0.4);">
-              Dein persönliches Fünf-Elemente-Profil nach der jahrhundertealten koreanischen Saju-Lehre —
+        <div style="flex: 1 1 420px; min-width: 300px; display: flex; flex-direction: column; gap: 24px; padding-top: 12px;">
+          <h1 class="display" style="margin: 0; font-size: clamp(32px, 4vw, 48px); font-weight: 500; line-height: 1.15; color: #211D1A; text-wrap: balance;">
+            Entdecke die koreanische Kunst der Selbstreflexion.
+          </h1>
+          <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #4A4239; max-width: 480px;">
+            Dein persönliches Fünf-Elemente-Profil nach der jahrhundertealten koreanischen Saju-Lehre —
               kostenlos, in wenigen Minuten, direkt in deinem Postfach.
-            </p>
-            <div style="display: flex; gap: 12px; align-items: center; margin-top: 8px;">
-              <img src="/images/hero-fans-man.jpg" alt="" aria-hidden="true" width="36" height="36" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: 50% 15%; border: 2px solid rgba(243,239,228,0.7); flex-shrink: 0;">
-              <span style="font-size: 14px; color: #C9C3B4; text-shadow: 0 1px 4px rgba(0,0,0,0.5);">Basiert auf deinen Geburtsdaten und den Regeln der traditionellen koreanischen Saju-Lehre.</span>
-            </div>
-          </div>
+          </p>
+          <div class="el-row" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#3F7A63"/><path d="M22 11 L32 29 L12 29 Z" fill="#fff"/></svg><div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 1000 1000" aria-hidden="true"><path transform="translate(0 0)" fill="#211D1A" d="M845 192 781 271H545V77C572 73 580 63 582 49L447 35V271H47L55 300H392C329 500 199 714 32 853L44 864C222 759 358 613 447 444V964H466C504 964 545 940 545 928V308C610 552 724 736 876 845C892 798 927 767 966 761L970 750C809 672 647 503 562 300H931C946 300 957 295 959 284C916 246 845 192 845 192Z"/></svg><span style="font-size:12px;color:#5E564E;">Holz</span></div></div><span aria-hidden="true" style="color:#A79E93;font-size:14px;margin-top:-22px;">→</span><div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#C1442E"/><path d="M22 10 C24 17 31 20 29.5 27 C28.5 32 15.5 32 14.5 27 C13 20 20 17 22 10 Z" fill="#fff"/></svg><div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 1000 1000" aria-hidden="true"><path transform="translate(0 0)" fill="#211D1A" d="M229 216C236 331 183 426 128 463C101 482 87 513 104 543C124 575 175 574 209 540C262 493 307 385 243 215ZM802 215C759 294 671 418 590 505C550 395 532 262 524 100V84C548 80 558 70 560 55L419 41C418 451 442 739 32 947L42 964C427 824 500 610 517 331C547 641 630 846 879 963C891 911 924 881 972 873L974 862C773 791 659 683 596 522C708 459 819 368 888 302C911 307 920 302 926 292Z"/></svg><span style="font-size:12px;color:#5E564E;">Feuer</span></div></div><span aria-hidden="true" style="color:#A79E93;font-size:14px;margin-top:-22px;">→</span><div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#A97E2A"/><rect x="13" y="13" width="18" height="18" fill="#fff"/></svg><div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 1000 1000" aria-hidden="true"><path transform="translate(0 0)" fill="#211D1A" d="M96 392 104 421H446V884H35L43 913H938C953 913 963 908 966 897C922 858 850 804 850 804L786 884H547V421H881C896 421 906 416 909 405C866 367 796 313 796 313L733 392H547V79C573 75 581 65 584 50L446 37V392Z"/></svg><span style="font-size:12px;color:#5E564E;">Erde</span></div></div><span aria-hidden="true" style="color:#A79E93;font-size:14px;margin-top:-22px;">→</span><div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#758492"/><circle cx="22" cy="22" r="8.5" fill="none" stroke="#fff" stroke-width="3.4"/></svg><div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 1000 1000" aria-hidden="true"><path transform="translate(0 0)" fill="#211D1A" d="M216 632 204 637C234 693 266 772 266 840C349 923 452 745 216 632ZM688 626C663 709 628 804 601 861L615 870C669 826 731 759 781 693C803 695 816 687 820 676ZM530 103C596 256 740 378 894 458C902 420 933 378 976 368L978 352C816 298 638 213 547 90C577 88 591 82 593 69L437 30C389 172 193 379 25 481L31 494C225 413 432 251 530 103ZM52 903 60 931H924C939 931 950 926 953 915C909 877 839 823 839 823L778 903H540V592H881C895 592 905 587 908 576C868 541 803 491 803 491L745 564H540V411H711C725 411 735 406 738 395C700 362 640 317 640 316L586 382H251L259 411H442V564H100L109 592H442V903Z"/></svg><span style="font-size:12px;color:#5E564E;">Metall</span></div></div><span aria-hidden="true" style="color:#A79E93;font-size:14px;margin-top:-22px;">→</span><div style="display:flex;flex-direction:column;align-items:center;gap:6px;"><svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="22" fill="#26364F"/><path d="M11 18 C15 13 19 13 22 18 C25 23 29 23 33 18 M11 26 C15 21 19 21 22 26 C25 31 29 31 33 26" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg><div style="display:flex;align-items:center;gap:4px;"><svg width="15" height="15" viewBox="0 0 1000 1000" aria-hidden="true"><path transform="translate(0 0)" fill="#211D1A" d="M825 212C788 278 714 381 646 458C603 378 568 284 548 169V78C573 74 581 65 583 51L450 37V832C450 847 444 853 426 853C401 853 280 844 280 844V859C336 867 361 878 379 894C397 910 404 933 407 965C532 953 548 911 548 839V245C604 570 721 738 884 866C898 821 930 788 970 782L974 771C859 711 743 623 658 479C752 423 845 350 905 296C928 301 937 296 943 286ZM46 325 55 354H293C259 543 174 736 25 859L34 871C247 755 345 561 392 367C415 366 424 362 432 353L340 272L287 325Z"/></svg><span style="font-size:12px;color:#5E564E;">Wasser</span></div></div></div>
+          <span style="font-size: 14px; line-height: 1.6; color: #5E564E; max-width: 480px;">Basiert auf deinen Geburtsdaten und den Regeln der traditionellen koreanischen Saju-Lehre.</span>
+        </div>
 
-      <div style="flex: 1 1 380px; min-width: 300px; max-width: 440px; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);">
+      <div style="flex: 1 1 380px; min-width: 300px; max-width: 440px; background: #FFFDF9; border: 1px solid #E6DFD2; border-radius: 12px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 8px 28px rgba(33, 29, 26, 0.08);">
         <h2 class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Dein kostenloses Saju-Profil</h2>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -139,18 +123,8 @@
         </p>
       </div>
 
-        </div>
       </div>
     </div>
-  </div>
-
-  <!-- Saekdong stripe -->
-  <div style="width: 100%; height: 6px; display: flex;">
-    <div style="flex: 1; background: #2F6F4E;"></div>
-    <div style="flex: 1; background: #C1442E;"></div>
-    <div style="flex: 1; background: #D4A017;"></div>
-    <div style="flex: 1; background: #F1ECE1; border-top: 1px solid #E4DCD1; border-bottom: 1px solid #E4DCD1; box-sizing: border-box;"></div>
-    <div style="flex: 1; background: #201C1A;"></div>
   </div>
 
   <!-- Wie es funktioniert -->
@@ -197,16 +171,16 @@
 
       <div style="display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
         <figure style="margin: 0; flex: 0 1 320px; max-width: 320px;">
-          <img src="/images/pdf-preview-cover.jpg" alt="Titel- und Inhaltsseite eines echten Palja-Jahresreports" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
-          <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Titel &amp; Inhaltsverzeichnis</figcaption>
+          <img src="/images/pdf-preview-cover.jpg" alt="Titelseite eines Palja-Reports mit den fünf Elementen" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Titelseite</figcaption>
         </figure>
         <figure style="margin: 0; flex: 0 1 320px; max-width: 320px;">
-          <img src="/images/pdf-preview-body.jpg" alt="Beispielseite eines echten Palja-Jahresreports mit monatlichen Kapiteln" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
-          <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Eines der zwölf Monatskapitel</figcaption>
+          <img src="/images/pdf-preview-body.jpg" alt="Beispielseite eines Palja-Reports mit Elemente-Diagramm und den vier Säulen" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Deine Fünf Elemente und vier Säulen</figcaption>
         </figure>
       </div>
 
-      <p style="margin: 0; font-size: 13px; color: #A79E93; font-style: italic;">Beispielhafter, nicht personenbezogener Report zur Veranschaulichung von Stil und Tiefe.</p>
+      <p style="margin: 0; font-size: 13px; color: #A79E93; font-style: italic;">Beispielhafte, nicht personenbezogene Daten zur Veranschaulichung von Aufbau und Stil.</p>
       <p style="margin: 0; font-size: 14px; color: #8A8074;">So beginnt dein Report — er begleitet dich anschließend Monat für Monat.</p>
     </div>
   </div>
