@@ -819,7 +819,8 @@ def _draw_branded_footer(canvas, doc, *, title):
     canvas.restoreState()
 
 
-def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de"):
+def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
+              cover=False, overview_flowables=None):
     """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
 
     intro_flowables: 표지(제목/부제) 바로 다음, 본문 텍스트 전에 끼워 넣을
@@ -832,10 +833,21 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
         topMargin=24 * mm, bottomMargin=20 * mm,
         title=title,
     )
-    story = [
-        Paragraph(title, _PDF_STYLES["title"]),
-        Paragraph(subtitle, _PDF_STYLES["subtitle"]),
-    ]
+    footer = functools.partial(_draw_branded_footer, title=title.upper())
+    if cover:
+        # 2026-10-10 디자인 개편: 1페이지는 한지 질감 전면 표지(코드로 그림),
+        # 2페이지부터 평평한 흰 바탕. 표지가 제목/부제를 이미 보여주므로 본문에서는 생략.
+        import pdf_design
+        first_page = functools.partial(pdf_design.draw_cover, title=title, subtitle=subtitle, lang=lang)
+        story = [PageBreak()]
+        if overview_flowables:
+            story.extend(overview_flowables)
+    else:
+        first_page = footer
+        story = [
+            Paragraph(title, _PDF_STYLES["title"]),
+            Paragraph(subtitle, _PDF_STYLES["subtitle"]),
+        ]
     if intro_flowables:
         story.extend(intro_flowables)
     story.extend(_build_toc_flowables(
@@ -843,8 +855,7 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
     ))
     story.extend(_report_text_to_flowables(report_text))
 
-    footer = functools.partial(_draw_branded_footer, title=title.upper())
-    doc.build(story, onFirstPage=footer, onLaterPages=footer)
+    doc.build(story, onFirstPage=first_page, onLaterPages=footer)
     return out_path
 
 
