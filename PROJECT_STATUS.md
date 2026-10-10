@@ -570,3 +570,7 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
   2. 환경변수 `FR_SITE_BASE_URL=https://palja.fr`, `ALLOWED_ORIGIN=https://palja.de,https://palja.fr`
   3. 접속 확인 후 (원어민 교정·Digistore24 프랑스어 상품 준비되면) `FR_PUBLIC=1`
 - 테스트: tests/test_fr_host.py (총 135개)
+
+## 프랑스어 법률 문서 자체 점검 (2026-10-10, 변호사 검토 아님)
+- 수정: CGV(MoR 병기, TTC 표기, 필수 특성/호환성 정보, L224-25-1 적합성 보증 조문, 준거법=소비자 거주국법·관할=거주지, 조정인 플레이스홀더 제거), mentions légales(médiation 문구 확정), confidentialité(한국 적정성 결정 2022/254, 필수 제공 정보·자동결정 없음 고지).
+- 남은 위험(사용자 판단 필요): ①GDPR 27조 EU 대리인(한국 사업자, 상시 제공이라 면제 불확실) ②Digistore24가 계약 상대(MoR/재판매자)인지에 따른 CGV 문구 정합 ③LCEN: 호스팅사 전화번호 미기재 ④"relecture juridique 없음" 배너는 유지(진실한 고지) — 제거는 사용자 결정 ⑤독일어 AGB §7/§8/§327은 별도 점검 예정.
