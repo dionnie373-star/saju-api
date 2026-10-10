@@ -1,0 +1,10 @@
+NotoSerifKR-Hanja-SemiBold.ttf
+
+Derived from Noto Serif CJK KR SemiBold (Copyright 2014-2021 Adobe, with Reserved
+Font Name 'Source'), licensed under the SIL Open Font License, Version 1.1.
+Source: https://github.com/notofonts/noto-cjk
+License text: https://openfontlicense.org
+
+Modification: subset to 31 characters (heavenly stems, earthly branches, five
+elements, yin/yang, space) and converted from CFF to TrueType outlines.
+Rebuild with: python3 tools/make_hanja_font.py
