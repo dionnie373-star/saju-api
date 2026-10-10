@@ -585,3 +585,11 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - 746481 Palja FR Test de compatibilite — 4,90 €
 `app.py`의 DIGISTORE24_PRODUCT_TIER_MAP에 3개 ID 추가(env `DIGISTORE24_PRODUCT_ID_*_FR`로 덮어쓰기 가능), `static_site/fr/index.html`에 ID 반영.
 남은 일: 복제본의 가격 24,90/4,90 확인, 주문서/감사 페이지 문구 점검, Test Pay, 승인 요청(사용자 확인 후), FR_PUBLIC=1.
+
+### Digistore24 프랑스어 상품 승인 요청 (2026-10-10 밤)
+- 746476 / 746480 / 746481 모두 "지금 승인 요청"(pending)으로 저장 완료. 독일어 3개는 10/03부터 심사 중.
+- 요청 전에 fr/index.html·fr/merci.html에 Digistore24 Trusted Badge 스크립트(독일어와 동일한 ID 48337/48338)를 추가함 (커밋 c6a8cbf).
+- 체크리스트 항목 확인: 테스트 구매 3종 완료, 반품 정책 60일(계정 설정 "60 Tage Geld-zurück-Garantie", 전 상품 적용)과 판매 페이지 문구 일치, 가격 일치.
+- Anthropic API 크레딧 소진으로 서비스가 한 번 중단됨 → US$25 충전, 자동 충전 OFF, 월 지출 한도 US$40으로 설정.
+- 남은 일: 프리미엄·궁합 PDF 메일 도착/프랑스어 확인, 프랑스어 원어민 교정 후 FR_PUBLIC=1 설정, 승인 결과 확인.
+- 참고: 배지 문구가 독일어로 표시됨(Digistore24 배지 언어 설정 확인 필요).
