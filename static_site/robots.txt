@@ -1,5 +1,3 @@
-# TODO: palja.de 도메인이 라이브되면 아래 URL을 https://palja.de 기준으로 갱신할 것
-# (index.html의 og:url/og:image, report_pipeline.py의 SITE_BASE_URL과 같은 시점에).
 User-agent: *
 Allow: /
 # 프랑스어 파일럿 사이트는 공개 전까지 검색 노출 금지
