@@ -221,3 +221,30 @@ class SpanishNoFalsePositiveTests(unittest.TestCase):
     def test_still_blocks_claims(self):
         self.assertTrue(i18n.es_mechanical_issues("Esto garantiza resultados."))
         self.assertTrue(i18n.es_mechanical_issues("Tu carta revela tu verdad."))
+
+
+class SpanishPaidPromptTests(unittest.TestCase):
+    def test_template_loaded_for_es_only(self):
+        es = rp._load_prompt_template("paid_report_prompt.json", "es")
+        de = rp._load_prompt_template("paid_report_prompt.json", "de")
+        fr = rp._load_prompt_template("paid_report_prompt.json", "fr")
+        self.assertEqual(es["native_lang"], "es")
+        self.assertNotEqual(es["messages"][0]["content"], de["messages"][0]["content"])
+        self.assertNotEqual(es["messages"][0]["content"], fr["messages"][0]["content"])
+        self.assertEqual(fr["native_lang"], "fr")
+
+    def test_placeholders_and_language(self):
+        es = rp._load_prompt_template("paid_report_prompt.json", "es")
+        msgs = rp._build_messages(es, {"computed_facts": "F", "compact": "C", "monthly_compact": "M"}, "es")
+        text = msgs[0]["content"]
+        self.assertNotIn("{{", text)
+        for needle in ("[HECHOS CALCULADOS]", "Madera", "tú", "8 etapas de vida de diez años", "9,90 €"):
+            self.assertIn(needle, text)
+        # native_lang == lang 이므로 변환 블록이 중복으로 붙지 않는다
+        self.assertNotIn("언어 전환 지시", text)
+        self.assertNotIn("독일어", text)
+
+    def test_other_templates_still_use_override(self):
+        t = rp._load_prompt_template("free_report_prompt.json", "es")
+        text = rp._build_messages(t, {"compact": "C"}, "es")[0]["content"]
+        self.assertIn("스페인어", text)
