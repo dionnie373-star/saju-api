@@ -283,7 +283,7 @@ ES_BANNED_REGEXES = [
     (re.compile(r"\blos estudios (?:demuestran|muestran|prueban)\b", re.IGNORECASE), "los estudios demuestran"),
     (re.compile(r"\bestad[ií]sticamente significativ", re.IGNORECASE), "estadísticamente significativo"),
     (re.compile(r"\bvalidad[oa]s?\b", re.IGNORECASE), "validado"),
-    (re.compile(r"\b(?:revela|revelan|demuestra|demuestran|prueba|pruebas|garantiza|garantizan)\b", re.IGNORECASE),
+    (re.compile(r"\b(?:revela|revelan|demuestra|demuestran|garantiza|garantizan)\b", re.IGNORECASE),
      "revela/demuestra/garantiza"),
     (re.compile(r"\boportunidad única\b|\búltima oportunidad\b|\bmomento ideal\b|\bmomento decisivo\b|\bpor primera vez\b|\bcon el corazón acelerado\b", re.IGNORECASE),
      "표현 금지(희소성/긴박감/범위 밖 단정)"),
@@ -294,7 +294,7 @@ ES_BANNED_REGEXES = [
         re.IGNORECASE), "독자(tú)를 성별 일치 형용사/분사로 묘사('estás preparado' 등)"),
 ]
 # "tú"로 쓰기로 했으므로 격식/복수 2인칭이 나오면 걸러낸다.
-ES_FORMAL_RE = re.compile(r"\b(?:usted|ustedes|vosotros|vosotras|vuestro|vuestra|vuestros|vuestras|os\s+(?:sentís|encontráis)|vos)\b", re.IGNORECASE)
+ES_FORMAL_RE = re.compile(r"\b(?:usted|ustedes|vosotros|vosotras|vuestro|vuestra|vuestros|vuestras|os\s+(?:sentís|encontráis)|vos|tenéis|sois|podéis|queréis|diferenciáis)\b", re.IGNORECASE)
 # 금(金) = Metal. "Oro"(금속 이름) 사용 금지.
 ES_WRONG_ELEMENT_RE = re.compile(r"\belemento\s+Oro\b|\bel\s+Oro\b")
 ES_ENGLISH_LEAK_RE = re.compile(
@@ -304,7 +304,7 @@ ES_ENGLISH_LEAK_RE = re.compile(
 )
 ES_GERMAN_LEAK_RE = re.compile(r"\b(?:Holz|Feuer|Erde|Metall|Wasser|Dein|Deine|Jahresreport)\b")
 ES_FRENCH_LEAK_RE = re.compile(r"\b(?:vous|votre|vos|Bois|Feu|Terre|Métal|Eau|rapport annuel)\b")
-ES_GERMAN_STOPWORDS_RE = FR_GERMAN_STOPWORDS_RE
+ES_GERMAN_STOPWORDS_RE = re.compile(r"\b(?:und|der|die|nicht|dein|deine|deinen|ein|eine|mit|auch|wird|ist)\b")
 ES_NEGATED_SCIENCE_RE = re.compile(
     r"\b(?:no|ni|sin)\b[^.!?\n]{0,80}?\b(?:con base científica|científicamente (?:comprobad[oa]s?|probad[oa]s?|demostrad[oa]s?|establecid[oa]s?)|base científica)\b",
     re.IGNORECASE)

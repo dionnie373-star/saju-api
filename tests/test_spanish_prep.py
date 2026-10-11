@@ -204,3 +204,20 @@ class SpanishHostModeTests(unittest.TestCase):
     def test_email_links_use_domain(self):
         import report_pipeline as rp
         self.assertEqual(rp._lang_url("es/aviso-legal", "es"), "https://example-es.test/aviso-legal")
+
+
+class SpanishNoFalsePositiveTests(unittest.TestCase):
+    """자연스러운 스페인어 문장이 불필요한 재생성을 일으키지 않아야 한다."""
+
+    def test_common_words_pass(self):
+        text = (
+            "Si te pones a prueba con calma, verás que das pasos pequeños. "
+            "Tú me das ideas y también las pruebas en tu día a día. "
+            "Esa pregunta puede ser un punto de partida para ti. "
+            "Cuando estás con otras personas, ¿qué parte de ti se sienta a escuchar?"
+        )
+        self.assertEqual(i18n.es_mechanical_issues(text), [])
+
+    def test_still_blocks_claims(self):
+        self.assertTrue(i18n.es_mechanical_issues("Esto garantiza resultados."))
+        self.assertTrue(i18n.es_mechanical_issues("Tu carta revela tu verdad."))
