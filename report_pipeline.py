@@ -117,7 +117,47 @@ def _build_messages(template, variables, lang, correction_note=""):
     return messages
 
 
-def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, lang="de"):
+# Anthropic API 일시 오류(429 속도제한, 500/502/503, 529 과부하)는 잠깐 뒤 다시 하면 대부분 성공한다.
+# 이전에는 한 번 실패하면 주문 전체(리포트 생성 전 과정)를 처음부터 다시 돌려야 했다.
+_RETRYABLE_STATUS = {429, 500, 502, 503, 529}
+ANTHROPIC_HTTP_ATTEMPTS = 4
+ANTHROPIC_RETRY_BASE_SECONDS = 5  # 5, 10, 20초 (retry-after 헤더가 있으면 그 값, 최대 60초)
+# thinking이 켜진 Sonnet 리포트는 비스트리밍 응답이 90초를 넘길 수 있어 읽기 타임아웃을 넉넉히 잡는다.
+ANTHROPIC_GENERATION_TIMEOUT = 280
+
+
+def _post_anthropic(headers, body, timeout):
+    """requests.post + 일시 오류 재시도. 마지막 응답(또는 마지막 예외)을 그대로 돌려준다/던진다."""
+    import time as _t
+    last_exc = None
+    resp = None
+    for attempt in range(1, ANTHROPIC_HTTP_ATTEMPTS + 1):
+        try:
+            resp = requests.post(ANTHROPIC_API_URL, headers=headers, json=body, timeout=timeout)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            last_exc, resp = e, None
+        else:
+            if resp.status_code not in _RETRYABLE_STATUS:
+                return resp
+            last_exc = None
+        if attempt == ANTHROPIC_HTTP_ATTEMPTS:
+            break
+        delay = ANTHROPIC_RETRY_BASE_SECONDS * (2 ** (attempt - 1))
+        if resp is not None:
+            try:
+                delay = max(delay, min(60, float(resp.headers.get("retry-after", 0))))
+            except (TypeError, ValueError):
+                pass
+        print(f"[report_pipeline] Anthropic 일시 오류(시도 {attempt}/{ANTHROPIC_HTTP_ATTEMPTS}, "
+              f"status={getattr(resp, 'status_code', None)} exc={type(last_exc).__name__ if last_exc else None}) "
+              f"- {delay:.0f}초 후 재시도")
+        _t.sleep(delay)
+    if last_exc is not None:
+        raise last_exc
+    return resp
+
+
+def call_claude(prompt_template_name, variables, *, api_key=None, timeout=ANTHROPIC_GENERATION_TIMEOUT, lang="de"):
     """prompts/*.json 템플릿을 불러와 변수({{compact}} 등)를 채운 뒤 Claude를 호출.
 
     성공 시 생성된 독일어 리포트 텍스트(str)를 반환한다.
@@ -142,15 +182,14 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=90, la
     body = _apply_model_override(body)
 
     try:
-        resp = requests.post(
-            ANTHROPIC_API_URL,
-            headers={
+        resp = _post_anthropic(
+            {
                 "x-api-key": api_key,
                 "anthropic-version": ANTHROPIC_VERSION,
                 "content-type": "application/json",
             },
-            json=body,
-            timeout=timeout,
+            body,
+            timeout,
         )
     except requests.RequestException as e:
         raise PipelineError(f"Claude API 호출 중 네트워크 오류: {e}") from e
@@ -391,15 +430,14 @@ def _regenerate_with_correction(prompt_template_name, variables, correction_note
     body = _apply_model_override(body)
     _api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
     try:
-        resp = requests.post(
-            ANTHROPIC_API_URL,
-            headers={
+        resp = _post_anthropic(
+            {
                 "x-api-key": _api_key,
                 "anthropic-version": ANTHROPIC_VERSION,
                 "content-type": "application/json",
             },
-            json=body,
-            timeout=90,
+            body,
+            ANTHROPIC_GENERATION_TIMEOUT,
         )
         if resp.status_code != 200:
             return None

@@ -194,3 +194,36 @@ class StripSchicksalSentencesTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AnthropicRetryTests(unittest.TestCase):
+    def setUp(self):
+        self._base = rp.ANTHROPIC_RETRY_BASE_SECONDS
+        rp.ANTHROPIC_RETRY_BASE_SECONDS = 0
+
+    def tearDown(self):
+        rp.ANTHROPIC_RETRY_BASE_SECONDS = self._base
+
+    def _resp(self, status):
+        r = MagicMock()
+        r.status_code = status
+        r.headers = {}
+        return r
+
+    def test_retries_overloaded_then_succeeds(self):
+        with patch("report_pipeline.requests.post", side_effect=[self._resp(529), self._resp(429), self._resp(200)]) as m:
+            r = rp._post_anthropic({}, {}, 5)
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(m.call_count, 3)
+
+    def test_does_not_retry_client_errors(self):
+        with patch("report_pipeline.requests.post", side_effect=[self._resp(400)]) as m:
+            r = rp._post_anthropic({}, {}, 5)
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(m.call_count, 1)
+
+    def test_gives_up_after_max_attempts(self):
+        with patch("report_pipeline.requests.post", return_value=self._resp(529)) as m:
+            r = rp._post_anthropic({}, {}, 5)
+        self.assertEqual(r.status_code, 529)
+        self.assertEqual(m.call_count, rp.ANTHROPIC_HTTP_ATTEMPTS)
