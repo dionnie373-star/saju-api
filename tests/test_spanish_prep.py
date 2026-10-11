@@ -146,7 +146,7 @@ class SpanishSiteTests(unittest.TestCase):
             self.assertIn(pid, body)
         for pid in ("746476", "746480", "746481"):
             self.assertNotIn(pid, body)
-        self.assertIn("trusted-badge/48337", body)
+        self.assertIn("trusted-badge/48515", body)
 
     def test_unknown_page_404(self):
         self.assertEqual(self.c.get("/es/nope").status_code, 404)
