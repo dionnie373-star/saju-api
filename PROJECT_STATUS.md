@@ -605,3 +605,9 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - 확인됨(문제 없음): DB(DATABASE_URL) 설정됨, Render Starter(상시 가동, Frankfurt), 멱등성/재시도/실패 알림 구조, 법적 페이지·감사 페이지·환불 문구(DE/FR), palja.de 메일 인증(Brevo DKIM+DMARC p=none).
 - 수정: 고객 메일 링크 onrender.com→palja.de, sitemap/robots 도메인, 실결제 IPN 거부·서명 실패 시 운영자 알림, Anthropic 429/5xx/529 재시도+타임아웃 280초, DE/FR 면책 문구 부정형 허용(과학적 표현 금지어 오탐).
 - 판단 필요(사용자): 연락처가 개인 Gmail, 프랑스 소비자 조정관(médiateur) 문구, 환불은 수동(메일 접수→Digistore24에서 처리), API 잔액 알림 설정, FR_PUBLIC, 독일어 실주문 미검증.
+
+## 스페인어(es) 사전 준비 — es-prep 브랜치 (2026-10-11, main 미병합·미배포)
+- 언어 레지스트리화: i18n.PROMPT_BLOCKS/STRINGS/MECHANICAL_ISSUES/DESTINY_RE, pdf_design STRINGS/ELEMENT_NAMES, app._LANG_DEFAULT_LOCATION/_MSG. de/fr 동작 불변(기존 151 테스트 통과).
+- 스페인어 결정(사용자 확인 필요): 호칭 tú(비격식 단수, español neutro), 오행 Madera/Fuego/Tierra/Metal/Agua, 기본 위치 Madrid, PDF 푸터 palja.es(도메인 미정).
+- /es/ 페이지 7개(index, aviso-legal, condiciones, privacidad, desistimiento, contacto, gracias): 전부 noindex 초안, 원어민/법률 검토 전. Digistore24 상품 ID·Trust Badge 비어 있음(상품 생성 후 채움).
+- 공개 전 필요: Digistore24 ES 상품 3개 + 승인, ES 상품 ID를 index.html·app.py 티어 맵에 연결, 도메인(palja.es?) + 호스트 라우팅, 실제 ES 주문 테스트, og-image(현재 fr 이미지 재사용), 법적 문구 검토.
