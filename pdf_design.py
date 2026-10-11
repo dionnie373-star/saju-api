@@ -101,7 +101,7 @@ STRINGS = {
                       "(abajo), los elementos básicos de cada pilar. Debajo figura el elemento correspondiente.",
         "hour_note": "Sin la hora de nacimiento no se calcula el pilar de la hora. "
                      "La distribución de elementos se basa entonces en los otros tres pilares.",
-        "footer_line": "palja.es  ·  El Saju coreano para la reflexión personal",
+        "footer_line": (os.environ.get("ES_DOMAIN", "").strip() or "palja.de/es") + "  ·  El Saju coreano para la reflexión personal",
     },
 }
 

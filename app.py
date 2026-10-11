@@ -812,6 +812,8 @@ def landing_page():
     """
     if _is_fr_host():
         return _serve_fr_html("index.html")
+    if _is_es_host():
+        return _serve_es_html("index.html")
     return send_from_directory(STATIC_SITE_DIR, "index.html")
 
 
@@ -839,6 +841,11 @@ _LEGAL_PAGES = {
 
 @app.route("/<page>", methods=["GET"])
 def legal_page(page):
+    if _is_es_host():
+        es_filename = _ES_PAGES.get(page)
+        if not es_filename:
+            return jsonify({"ok": False, "error": "Not found"}), 404
+        return _serve_es_html(es_filename)
     if _is_fr_host():
         # palja.fr(예정): 같은 앱을 프랑스어 사이트의 루트로 서빙한다.
         fr_filename = _FR_PAGES.get(page)
@@ -925,6 +932,43 @@ _ES_PAGES = {
 ES_SITE_DIR = os.path.join(STATIC_SITE_DIR, "es")
 
 
+def _es_domain():
+    """스페인어 사이트 도메인(Render 환경변수 ES_DOMAIN, 예: palja.es). 미설정이면 호스트 모드 꺼짐."""
+    return os.environ.get("ES_DOMAIN", "").strip().lower().removeprefix("www.")
+
+
+def _is_es_host():
+    d = _es_domain()
+    if not d:
+        return False
+    return (request.host or "").split(":")[0].lower() in (d, "www." + d)
+
+
+def _es_public():
+    """ES_PUBLIC=1이면 스페인어 도메인을 검색 노출 상태로 공개한다(기본은 noindex 유지)."""
+    return os.environ.get("ES_PUBLIC", "").strip() in ("1", "true", "yes")
+
+
+def _serve_es_html(filename):
+    """스페인어 페이지를 서빙. ES_DOMAIN 호스트에서는 URL을 그 도메인 기준으로 바꾸고,
+    ES_PUBLIC=1이면 noindex 메타도 제거한다(감사 페이지 제외)."""
+    import re as _re
+    with open(os.path.join(ES_SITE_DIR, filename), encoding="utf-8") as f:
+        html = f.read()
+    d = _es_domain()
+    if d and _is_es_host():
+        html = html.replace("https://palja.de/es/", f"https://{d}/")
+        html = html.replace("https://palja.de/images/", f"https://{d}/images/")
+        html = html.replace('href="/es/', 'href="/')
+        if _es_public() and filename != "gracias.html":
+            html = _re.sub(r'<meta name="robots" content="noindex[^>]*>(<!--.*?-->)?', "", html)
+            canon = f"https://{d}/" + ("" if filename == "index.html" else filename[:-5])
+            html = html.replace("</head>", f'<link rel="canonical" href="{canon}">\n</head>', 1)
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
+
+
 @app.route("/es", methods=["GET"])
 def es_redirect():
     return redirect("/es/")
@@ -936,7 +980,7 @@ def es_page(page):
     filename = _ES_PAGES.get(page)
     if not filename:
         return jsonify({"ok": False, "error": "Not found"}), 404
-    return send_from_directory(ES_SITE_DIR, filename)
+    return _serve_es_html(filename)
 
 
 _MSG = {
@@ -1025,6 +1069,12 @@ def favicon():
 
 @app.route("/robots.txt", methods=["GET"])
 def robots_txt():
+    if _is_es_host():
+        if _es_public():
+            d = _es_domain()
+            return Response(f"User-agent: *\nAllow: /\nDisallow: /gracias\n\nSitemap: https://{d}/sitemap.xml\n",
+                            mimetype="text/plain")
+        return Response("User-agent: *\nDisallow: /\n", mimetype="text/plain")
     if _is_fr_host():
         # palja.fr: 공개 전(FR_PUBLIC 미설정)에는 검색 노출 금지. FR_PUBLIC=1이면 허용 + sitemap.
         if _fr_public():
@@ -1036,6 +1086,13 @@ def robots_txt():
 
 @app.route("/sitemap.xml", methods=["GET"])
 def sitemap_xml():
+    if _is_es_host():
+        d = _es_domain()
+        urls = ["", "aviso-legal", "condiciones", "privacidad", "desistimiento", "contacto"]
+        body = "".join(f"<url><loc>https://{d}/{u}</loc></url>" for u in urls)
+        return Response('<?xml version="1.0" encoding="UTF-8"?>'
+                        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + body + "</urlset>",
+                        mimetype="application/xml")
     if _is_fr_host():
         urls = ["", "mentions-legales", "cgv", "confidentialite", "retractation", "contact"]
         body = "".join(f"<url><loc>https://palja.fr/{u}</loc></url>" for u in urls)

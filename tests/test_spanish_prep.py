@@ -153,3 +153,54 @@ class SpanishSiteTests(unittest.TestCase):
         r = self.c.post("/kontakt/senden", json={"lang": "es", "email": "bad", "message": "x"})
         self.assertEqual(r.status_code, 400)
         self.assertIn("correo", r.get_json()["error"])
+
+
+class SpanishHostModeTests(unittest.TestCase):
+    def setUp(self):
+        import os, app
+        self.os = os
+        self.old = {k: os.environ.get(k) for k in ("ES_DOMAIN", "ES_PUBLIC")}
+        os.environ["ES_DOMAIN"] = "example-es.test"
+        os.environ.pop("ES_PUBLIC", None)
+        self.c = app.app.test_client()
+
+    def tearDown(self):
+        for k, v in self.old.items():
+            if v is None:
+                self.os.environ.pop(k, None)
+            else:
+                self.os.environ[k] = v
+
+    def get(self, path):
+        return self.c.get(path, headers={"Host": "example-es.test"})
+
+    def test_root_is_spanish_and_noindex(self):
+        r = self.get("/")
+        body = r.get_data(as_text=True)
+        self.assertIn('lang="es"', body)
+        self.assertIn("noindex", body)
+        self.assertIn('href="/aviso-legal"', body)
+        self.assertNotIn('href="/es/', body)
+
+    def test_legal_and_404(self):
+        self.assertEqual(self.get("/privacidad").status_code, 200)
+        self.assertEqual(self.get("/impressum").status_code, 404)
+
+    def test_robots_closed_until_public(self):
+        self.assertIn("Disallow: /\n", self.get("/robots.txt").get_data(as_text=True))
+        self.os.environ["ES_PUBLIC"] = "1"
+        r = self.get("/robots.txt").get_data(as_text=True)
+        self.assertIn("Allow: /", r)
+        self.assertIn("https://example-es.test/sitemap.xml", r)
+        body = self.get("/").get_data(as_text=True)
+        self.assertNotIn('content="noindex', body)
+        self.assertIn('rel="canonical" href="https://example-es.test/"', body)
+        self.assertIn("noindex", self.get("/gracias").get_data(as_text=True))
+
+    def test_german_host_unaffected(self):
+        r = self.c.get("/", headers={"Host": "palja.de"})
+        self.assertNotIn('lang="es"', r.get_data(as_text=True))
+
+    def test_email_links_use_domain(self):
+        import report_pipeline as rp
+        self.assertEqual(rp._lang_url("es/aviso-legal", "es"), "https://example-es.test/aviso-legal")

@@ -1085,6 +1085,8 @@ SITE_BASE_URL = "https://palja.de"  # 2026-10-11: palja.de 라이브(예전 onre
 # 바뀐다. 미설정이면 파일럿 경로(<SITE_BASE_URL>/fr/...)를 그대로 쓴다.
 def _lang_url(path, lang="fr"):
     base = os.environ.get(f"{lang.upper()}_SITE_BASE_URL", "").strip().rstrip("/")
+    if not base and lang == "es" and os.environ.get("ES_DOMAIN", "").strip():
+        base = "https://" + os.environ["ES_DOMAIN"].strip().lower().removeprefix("www.")
     path = path.lstrip("/")
     if base:
         if path.startswith(f"{lang}/"):
