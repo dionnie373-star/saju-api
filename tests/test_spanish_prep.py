@@ -140,8 +140,10 @@ class SpanishSiteTests(unittest.TestCase):
         for w in ("Veuillez", "Paiement", "Rétractation", "Bitte", "Datenschutz", "votre ", "/fr/"):
             self.assertNotIn(w, body, w)
 
-    def test_no_live_product_ids(self):
+    def test_es_product_ids_and_no_foreign_ids(self):
         body = self.c.get("/es/").get_data(as_text=True)
+        for pid in ("746748", "746751", "746753"):
+            self.assertIn(pid, body)
         for pid in ("746476", "746480", "746481"):
             self.assertNotIn(pid, body)
         self.assertNotIn("trusted-badge", body)
@@ -251,9 +253,11 @@ class SpanishPaidPromptTests(unittest.TestCase):
 
 
 class SpanishProductMapTests(unittest.TestCase):
-    def test_no_es_ids_by_default(self):
+    def test_es_default_ids(self):
         import app
         self.assertNotIn("", app.DIGISTORE24_PRODUCT_TIER_MAP)
+        m = app.DIGISTORE24_PRODUCT_TIER_MAP
+        self.assertEqual((m["746748"], m["746751"], m["746753"]), ("paid", "premium", "compatibility"))
 
     def test_es_env_maps_tiers(self):
         import importlib, os
