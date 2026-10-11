@@ -1590,6 +1590,9 @@ def digistore24_webhook():
     return Response(f"ERROR: {msg}", status=status, mimetype="text/plain")
 
 
+_LAST_SIG_ALERT_AT = 0.0
+
+
 def _digistore24_webhook_impl():
     """Digistore24 IPN(Instant Payment Notification) 웹훅.
 
@@ -1609,6 +1612,18 @@ def _digistore24_webhook_impl():
         # sha_sign 자체는 빼고 나머지 필드만 남긴다.
         safe_form = {k: v for k, v in request.form.items() if k.lower() != "sha_sign"}
         app.logger.warning("[digistore24 거부] reason=signature_mismatch form=%r", safe_form)
+        # 비밀번호(DIGISTORE24_SHA_PASSPHRASE)가 바뀌었거나 틀리면 모든 실결제가 조용히 거부된다.
+        # 스팸 방지를 위해 10분에 한 번만 알린다.
+        global _LAST_SIG_ALERT_AT
+        if time.time() - _LAST_SIG_ALERT_AT > 600:
+            _LAST_SIG_ALERT_AT = time.time()
+            _alert_owner(
+                "[Palja] Digistore24 결제 알림 서명 검증 실패",
+                f"order_id: {request.form.get('order_id', '')}\nproduct_id: {request.form.get('product_id', '')}\n"
+                f"api_mode: {request.form.get('api_mode', '')}\n\n"
+                "서명이 맞지 않습니다. Render의 DIGISTORE24_SHA_PASSPHRASE가 Digistore24 연동(IPN)의 "
+                "비밀번호와 같은지 확인하세요. 외부의 위조 요청일 수도 있습니다.",
+            )
         return jsonify({"ok": False, "error": "서명 검증 실패"}), 401
 
     event = request.form.get("event", "")
@@ -1635,6 +1650,18 @@ def _digistore24_webhook_impl():
         # (또는 실사용자 데이터가 여기 섞이기 시작하면) 이 로깅은 제거할 것.
         safe_form = {k: v for k, v in request.form.items() if k.lower() != "sha_sign"}
         app.logger.warning("[digistore24 거부] reason=%s form=%r", reason, safe_form)
+        # 실제(비테스트) 결제가 거부되면 고객은 돈을 냈는데 PDF를 못 받는다 — 로그만 남기면
+        # 아무도 모르므로 운영자에게 메일로 알린다. Digistore24 자체 테스트 IPN(api_mode=test)은
+        # 토큰이 없어서 항상 여기로 오므로 제외한다.
+        if request.form.get("api_mode", "") != "test":
+            _alert_owner(
+                f"[Palja] 결제 알림 거부({reason}) - {request.form.get('order_id', '?')}",
+                f"reason: {reason}\norder_id: {request.form.get('order_id', '')}\n"
+                f"product_id: {request.form.get('product_id', '')}\n"
+                f"고객 이메일: {request.form.get('email', '')}\n\n"
+                "결제는 됐을 수 있지만 자동 처리가 거부되었습니다. Digistore24 주문 내역을 확인하고 "
+                "필요하면 고객에게 직접 안내하거나 /admin/test-report로 수동 발송하세요.",
+            )
 
     product_id = request.form.get("product_id", "")
     tier = DIGISTORE24_PRODUCT_TIER_MAP.get(product_id)

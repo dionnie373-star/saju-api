@@ -5,4 +5,4 @@ Allow: /
 # 프랑스어 파일럿 사이트는 공개 전까지 검색 노출 금지
 Disallow: /fr/
 
-Sitemap: https://palja-api.onrender.com/sitemap.xml
+Sitemap: https://palja.de/sitemap.xml

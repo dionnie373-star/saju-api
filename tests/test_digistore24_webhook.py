@@ -357,3 +357,44 @@ class PendingOrderEndpointTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Digistore24RejectionAlertTests(unittest.TestCase):
+    """실결제가 거부되면 운영자 알림이 가고, 테스트 IPN(api_mode=test)은 조용해야 한다."""
+
+    def setUp(self):
+        app_module.app.config["TESTING"] = True
+        orders_store.reset_for_tests()
+        self.alerts = []
+        self._orig_alert = app_module._alert_owner
+        app_module._alert_owner = lambda subject, body: self.alerts.append(subject)
+        self.client = app_module.app.test_client()
+
+    def tearDown(self):
+        app_module._alert_owner = self._orig_alert
+        orders_store.reset_for_tests()
+
+    def _post(self, **extra):
+        form = _base_form("alert_" + extra.get("order", "x"), PAID_PRODUCT_ID, "k@example.com", "no_such_token")
+        form.pop("sha_sign")
+        form.update({k: v for k, v in extra.items() if k != "order"})
+        form["sha_sign"] = _sign(form)
+        return self.client.post("/webhooks/digistore24", data=form)
+
+    def test_real_order_with_unknown_token_alerts_owner(self):
+        resp = self._post(order="real", api_mode="live")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(len(self.alerts), 1)
+        self.assertIn("pending_token_not_found", self.alerts[0])
+
+    def test_test_mode_ipn_does_not_alert(self):
+        self._post(order="test", api_mode="test")
+        self.assertEqual(self.alerts, [])
+
+    def test_bad_signature_alerts_once(self):
+        app_module._LAST_SIG_ALERT_AT = 0.0
+        form = _base_form("sig1", PAID_PRODUCT_ID, "k@example.com", "t")
+        form["sha_sign"] = "BAD"
+        self.client.post("/webhooks/digistore24", data=form)
+        self.client.post("/webhooks/digistore24", data=form)
+        self.assertEqual(len(self.alerts), 1)

@@ -1033,7 +1033,7 @@ def send_email(*, to_email, subject, html_body, attachment_path=None, attachment
 # TODO: palja.de 도메인이 라이브되면 이 값을 "https://palja.de"로 업데이트할 것.
 # (다른 곳에도 SITE_BASE_URL 같은 공용 상수가 없어서, 우선 이 파일 안에서만 쓰는
 # 로컬 상수로 둔다.)
-SITE_BASE_URL = "https://palja-api.onrender.com"
+SITE_BASE_URL = "https://palja.de"  # 2026-10-11: palja.de 라이브(예전 onrender.com 링크가 고객 메일에 남아 있었음)
 
 # 프랑스어 사이트 주소. palja.fr 도메인 연결 후 Render 환경변수
 # FR_SITE_BASE_URL=https://palja.fr 로 설정하면 메일 링크가 루트 기준(palja.fr/mentions-legales)으로
