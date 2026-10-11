@@ -391,6 +391,17 @@ class Digistore24RejectionAlertTests(unittest.TestCase):
         self._post(order="test", api_mode="test")
         self.assertEqual(self.alerts, [])
 
+    def test_test_mode_without_token_returns_200(self):
+        # 토큰 없는 test 주문에 400을 주면 Digistore24가 IPN을 자동 비활성화한다.
+        form = _base_form("tt_notoken", PAID_PRODUCT_ID, "k@example.com", "")
+        form.pop("sha_sign")
+        form["api_mode"] = "test"
+        form["custom"] = ""
+        form["sha_sign"] = _sign(form)
+        resp = self.client.post("/webhooks/digistore24", data=form)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(self.alerts, [])
+
     def test_bad_signature_alerts_once(self):
         app_module._LAST_SIG_ALERT_AT = 0.0
         form = _base_form("sig1", PAID_PRODUCT_ID, "k@example.com", "t")

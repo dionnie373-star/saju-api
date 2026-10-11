@@ -1867,6 +1867,12 @@ def _digistore24_webhook_impl():
     pending_token = (request.form.get("custom") or "").strip()
     pending_entry = orders_store.get_pending_order(pending_token)
     if not pending_entry or not isinstance(pending_entry.get("data"), dict):
+        if request.form.get("api_mode", "") == "test" and not pending_token:
+            # Digistore24 테스트 결제(TEST PAY)/테스트 IPN은 토큰 없이 직접 결제창으로 들어오면
+            # 항상 토큰이 없다. 여기서 400을 주면 "연결이 에러만 낸다"며 IPN이 자동 비활성화되어
+            # (2026-10-12 재발) 실결제까지 막히므로, 테스트 주문은 200으로 무시한다(발송 없음).
+            app.logger.info("[digistore24 무시] test 주문, 토큰 없음 order=%s", order_id)
+            return jsonify({"ok": True, "ignored": "test_order_without_token"})
         _log_rejected_request("pending_token_not_found")
         _unmark_order()
         return jsonify({

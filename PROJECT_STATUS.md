@@ -633,3 +633,8 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 ### 스페인어 보고서 실물 검수 (2026-10-12)
 - 정식 경로(palja.es 폼 → Digistore24 TEST PAY)로 연간/프리미엄/궁합 3종 테스트 주문 → 모두 스페인어 PDF 메일 수신 확인(연간 12쪽, 프리미엄 11쪽, 궁합 6쪽). 문법·톤·사실 일치 양호.
 - 발견·수정(프롬프트 보강, i18n.py ES override): 궁합이 두 사람에게 "ustedes/Tomen/sus"(라틴아메리카식 격식체)를 씀 → 3인칭/이름으로 쓰도록 금지 / 프리미엄의 "Si tuviera que quedarse", "Agua se acompañaba" 문법 오류 → 정관사·가정문 규칙 추가. 수정 후 재생성 검증은 아직 안 함(다음 실주문 때 확인).
+
+### IPN 자동 비활성화 재발 (2026-10-12)
+- 원인: 직접 결제창으로 한 TEST PAY 테스트 주문(토큰 없음)에 서버가 400을 반복 → Digistore24가 IPN 353269를 자동 비활성화.
+- 수정: api_mode=test + 토큰 없음이면 200(ignored)으로 응답(app.py, 테스트 추가). 실결제(live) 토큰 누락은 기존대로 400+운영자 알림.
+- 후속: Digistore24에서 IPN 353269 ACTIVE=YES로 재활성화 필요(배포 후).
