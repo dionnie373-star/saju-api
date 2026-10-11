@@ -600,3 +600,8 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - 검증: 프랑스어 궁합 Test Pay 실주문 → 본문 숫자와 차트 일치, 빈 페이지 없음(6p). 독일어 실주문 검증은 하지 않음(단위 테스트만).
 - 프랑스어 원어민 교정은 하지 않기로 함(FR_PUBLIC은 미설정 유지).
 - 미해결: paid_report_prompt 자동 재생성 금지어 검증 경고, Digistore24 배지 독일어 표시, 승인 결과 대기(FR 3개·DE 3개), 티켓 #3916303.
+
+## 승인 대비 전체 점검 (2026-10-11)
+- 확인됨(문제 없음): DB(DATABASE_URL) 설정됨, Render Starter(상시 가동, Frankfurt), 멱등성/재시도/실패 알림 구조, 법적 페이지·감사 페이지·환불 문구(DE/FR), palja.de 메일 인증(Brevo DKIM+DMARC p=none).
+- 수정: 고객 메일 링크 onrender.com→palja.de, sitemap/robots 도메인, 실결제 IPN 거부·서명 실패 시 운영자 알림, Anthropic 429/5xx/529 재시도+타임아웃 280초, DE/FR 면책 문구 부정형 허용(과학적 표현 금지어 오탐).
+- 판단 필요(사용자): 연락처가 개인 Gmail, 프랑스 소비자 조정관(médiateur) 문구, 환불은 수동(메일 접수→Digistore24에서 처리), API 잔액 알림 설정, FR_PUBLIC, 독일어 실주문 미검증.

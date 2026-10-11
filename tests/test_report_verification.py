@@ -227,3 +227,11 @@ class AnthropicRetryTests(unittest.TestCase):
             r = rp._post_anthropic({}, {}, 5)
         self.assertEqual(r.status_code, 529)
         self.assertEqual(m.call_count, rp.ANTHROPIC_HTTP_ATTEMPTS)
+
+
+class GermanNegatedScienceTests(unittest.TestCase):
+    def test_negated_disclaimer_ok_claim_flagged(self):
+        ok = "Das ist keine wissenschaftliche Diagnose, sondern eine Einladung zur Selbstreflexion. " * 3
+        bad = "Diese Methode ist wissenschaftlich belegt. " * 3
+        self.assertFalse(any("wissenschaftlich" in x for x in rp.check_mechanical_rules(ok, min_words=0)))
+        self.assertTrue(any("wissenschaftlich" in x for x in rp.check_mechanical_rules(bad, min_words=0)))

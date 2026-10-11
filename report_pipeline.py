@@ -306,6 +306,10 @@ _WRONG_COLLOCATION_RE = re.compile(r"\bLeistungen\s+gebracht\b")
 _AWKWARD_BEDARF_RE = re.compile(r"\bBedarf\s+nach\b")
 
 
+_NEGATED_SCIENCE_DE_RE = re.compile(
+    r"\b(?:kein\w*|nicht|ohne)\b[^.!?\n]{0,60}?\bwissenschaftlich\w*", re.IGNORECASE)
+
+
 def check_mechanical_rules(report_text, *, min_words, lang="de"):
     """LLM 판단이 필요 없는, 코드로 100% 정확하게 확인 가능한 규칙들을 검사한다.
 
@@ -326,8 +330,11 @@ def check_mechanical_rules(report_text, *, min_words, lang="de"):
         if word_count < min_words:
             issues.append(f"분량 미달: {word_count}단어 (최소 {min_words}단어 요구)")
         return issues
+    # 면책 문구의 부정형("keine wissenschaftliche Diagnose")은 과학적 근거를 암시하는 게 아니라 선을 긋는
+    # 문장이다 — 사이트 푸터도 같은 문장을 쓴다. 프랑스어와 동일하게 부정형만 검사에서 제외한다.
+    banned_scan_text = _NEGATED_SCIENCE_DE_RE.sub(" ", report_text)
     for word in _BANNED_WORDS:
-        if word in report_text:
+        if word in banned_scan_text:
             issues.append(f"금지 단어 '{word}' 포함됨")
     if _WRONG_ELEMENT_WORD_RE.search(report_text):
         issues.append("'Gold'라는 단어 사용됨 - 금(金)은 반드시 'Metall'로 써야 함")
