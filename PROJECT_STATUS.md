@@ -628,3 +628,4 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 ### Trusted Badge 스페인어 전용 교체 (2026-10-12)
 - ES 판매페이지 배지 48515, 감사페이지 배지 48516 (스페인어, 소득 면책 문구 OFF)로 교체. DE 배지 48337/48338은 독일어+면책 ON 그대로(FR 페이지도 아직 사용 중).
 - 정정: ES/FR 유료 리포트 메일에는 이미 철회권 소멸 확인 문장(i18n.py `withdrawal_confirmation`, `_fr_email_template`)이 들어가 있음. 이전 grep이 report_pipeline.py만 봐서 놓침. 추가 작업 불필요.
+- FR 페이지 배지도 프랑스어 전용으로 교체(판매 48517, 감사 48518, 소득 면책 OFF). DE 페이지만 독일어 배지 48337/48338 유지.
