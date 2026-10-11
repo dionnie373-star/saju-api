@@ -44,6 +44,7 @@ ELEMENT_KO = {"목": "나무", "화": "불", "토": "흙", "금": "쇠", "수": 
 ELEMENT_NAMES = {
     "de": {"목": "Holz", "화": "Feuer", "토": "Erde", "금": "Metall", "수": "Wasser"},
     "fr": {"목": "Bois", "화": "Feu", "토": "Terre", "금": "Métal", "수": "Eau"},
+    "es": {"목": "Madera", "화": "Fuego", "토": "Tierra", "금": "Metal", "수": "Agua"},
 }
 
 STRINGS = {
@@ -84,6 +85,24 @@ STRINGS = {
                      "La répartition des éléments repose alors sur les trois autres piliers.",
         "footer_line": "palja.fr  ·  Le Saju coréen pour la réflexion personnelle",
     },
+    "es": {
+        "overview": "Tu perfil de un vistazo",
+        "overview_named": "Perfil de un vistazo: {name}",
+        "chart_title": "Tus cinco elementos",
+        "chart_note": "Número de elementos en tus pilares (troncos celestes y ramas terrestres).",
+        "pillars_title": "Tus cuatro pilares",
+        "chart_title_named": "Los cinco elementos",
+        "chart_note_named": "Número de elementos en los pilares (troncos celestes y ramas terrestres).",
+        "pillars_title_named": "Los cuatro pilares",
+        "cols": ["Hora", "Día", "Mes", "Año"],
+        "rows": ["Tronco celeste", "Rama terrestre"],
+        "unknown": "desconocida",
+        "table_note": "Los caracteres son los nombres coreanos de los troncos celestes (arriba) y de las ramas terrestres "
+                      "(abajo), los elementos básicos de cada pilar. Debajo figura el elemento correspondiente.",
+        "hour_note": "Sin la hora de nacimiento no se calcula el pilar de la hora. "
+                     "La distribución de elementos se basa entonces en los otros tres pilares.",
+        "footer_line": (os.environ.get("ES_DOMAIN", "").strip() or "palja.de/es") + "  ·  El Saju coreano para la reflexión personal",
+    },
 }
 
 
@@ -96,11 +115,11 @@ _register_fonts()
 
 
 def _s(lang):
-    return STRINGS["fr" if lang == "fr" else "de"]
+    return STRINGS.get(lang, STRINGS["de"])
 
 
 def _names(lang):
-    return ELEMENT_NAMES["fr" if lang == "fr" else "de"]
+    return ELEMENT_NAMES.get(lang, ELEMENT_NAMES["de"])
 
 
 # ---------------------------------------------------------------------------

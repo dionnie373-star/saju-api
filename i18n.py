@@ -1,6 +1,6 @@
-"""언어별(독일어 de / 프랑스어 fr) 리포트 설정.
+"""언어별(독일어 de / 프랑스어 fr / 스페인어 es) 리포트 설정.
 
-report_pipeline이 lang 값("de"|"fr")에 따라 가져다 쓰는 순수 데이터 모듈이다.
+report_pipeline이 lang 값("de"|"fr"|"es")에 따라 가져다 쓰는 순수 데이터 모듈이다.
 독일어(de)는 기존 report_pipeline의 상수/템플릿을 그대로 쓰고(회귀 방지),
 여기에는 "프랑스어" 설정만 둔다.
 
@@ -13,7 +13,7 @@ report_pipeline이 lang 값("de"|"fr")에 따라 가져다 쓰는 순수 데이�
 
 import re
 
-SUPPORTED_LANGS = ("de", "fr")
+SUPPORTED_LANGS = ("de", "fr", "es")
 
 
 def normalize_lang(value):
@@ -57,18 +57,20 @@ _FR_PROMPT_CLOSING = """
 def localize_prompt_text(text, lang, *, is_first_message=True, is_last_message=True):
     """프롬프트 메시지 본문을 lang에 맞게 변환한다. de는 그대로.
 
-    fr: "독일어"라는 지시어를 "프랑스어"로 치환하고(출력 언어 지시가 본문 끝의
+    fr/es: "독일어"라는 지시어를 해당 언어명으로 치환하고(출력 언어 지시가 본문 끝의
     "순수 독일어 텍스트만 출력하세요"에도 있어서, 앞쪽 override만으로는 모델이
     독일어로 출력하는 것이 실측으로 확인됨), 첫 메시지 앞에 override, 마지막
     메시지 끝에 최종 확인 블록을 붙인다.
     """
-    if lang != "fr":
+    blocks = PROMPT_BLOCKS.get(lang)
+    if not blocks:
         return text
-    text = text.replace("독일어", "프랑스어")
+    override, closing, lang_name_ko = blocks
+    text = text.replace("독일어", lang_name_ko)
     if is_first_message:
-        text = _FR_PROMPT_OVERRIDE + text
+        text = override + text
     if is_last_message:
-        text = text + _FR_PROMPT_CLOSING
+        text = text + closing
     return text
 
 
@@ -230,3 +232,195 @@ FR_STRINGS = {
         "Pour toute question, écrivez-nous à dionnie373@gmail.com."
     ),
 }
+
+
+# ===========================================================================
+# 스페인어(es) — 2026-10-11 사전 준비(es-prep 브랜치). 공개 전 원어민/법률 검토 필수.
+# 설계 결정(사용자 확인 필요):
+#  - 호칭은 독일어(du)와 같은 결의 비격식 "tú". 복수 2인칭(vosotros/ustedes)과 voseo는
+#    스페인/중남미 어느 쪽으로도 치우치지 않도록 쓰지 않는다("español neutro").
+#  - 오행: Madera / Fuego / Tierra / Metal / Agua.
+# ===========================================================================
+
+_ES_PROMPT_OVERRIDE = """\
+[언어 전환 지시 — 최우선. 아래 본문의 "독일어" 관련 모든 문구보다 이 블록이 우선합니다]
+이 리포트는 독일어가 아니라 **스페인어**로 작성합니다. 아래 본문에 나오는 "독일어", 독일어 예시 문장/소제목/용어는 전부 같은 의도의 스페인어로 바꿔서 적용하세요.
+- 출력 언어: 스페인어 원어민 카피라이터 수준의 자연스러운 "중립 스페인어(español neutro)". 스페인 전용 또는 특정 중남미 국가 전용 속어/어휘는 피하세요. 영어/한국어 직역투, 존재하지 않는 신조어, 어색한 관청체, 이중부정 금지(독일어 때와 동일).
+- 호칭: 반드시 "tú"(2인칭 단수 비격식)로 서술하세요. "usted/ustedes/vosotros/vuestro/vos"는 쓰지 마세요. 본문의 "du" 규칙은 "tú" 규칙으로 읽으세요. 궁합 리포트에서 두 사람을 함께 가리킬 때는 이름을 쓰거나 "ambos"/"los dos"로 쓰고 "vosotros"는 쓰지 마세요. 주어 대명사 "tú"는 강조할 때만 쓰고 평소엔 동사 활용으로 충분합니다(스페인어 자연스러움).
+- 오행 이름은 반드시 이 다섯 단어만: "Madera"(목), "Fuego"(화), "Tierra"(토), "Metal"(금), "Agua"(수). 금(金)을 "Oro"라고 쓰지 마세요. (본문의 Holz/Feuer/Erde/Metall/Wasser/Gold 규칙을 이 단어들로 읽으세요.)
+- 한국 전통 표기: 기본은 "coreana"(예: "tradición coreana del Saju"). "china"로 한정하지 마세요. 역사적 정확성이 필요할 때만 "de Asia Oriental"를 보조로 쓰세요. "BaZi" 대신 "Saju"(예: "informe anual Saju")를 기본으로 쓰세요.
+- 금지 단어(본문의 Schicksal 등 독일어 금지어 대신 이것을 적용): "destino"(및 "destinos" — 부정문 "no es el destino"에서도 쓰지 말고 "camino de vida", "año", "etapa"로 대체), "fatalidad", "empírico", "científico/científica/científicamente", "los estudios demuestran/muestran", "estadísticamente significativo", "validado/validada"(과학적 검증 암시), "revela/demuestra/garantiza"(단정).
+- 독일어에만 해당하는 문법/연어 규칙(Leistungen erbracht, Bedarf nach/an, kein/nicht ein 등)은 스페인어에 적용되지 않으므로 무시하세요. 대신 스페인어에서 어색한 영어식 직역(예: "hacer sentido", "aplicar a un trabajo", "realizar un esfuerzo" 남발)을 피하세요.
+- 성별 일치: 독자의 성별을 모르므로 "contento/contenta", "preparado/preparada", "cansado/cansada"처럼 성별에 따라 형태가 달라지는 형용사/분사로 독자를 직접 묘사하지 마세요(성별 중립 표현으로 우회: "te sientes con ganas de…", "tienes energía para…"). 궁합 리포트에서 성별 정보가 "keine Angabe"이면 이름을 반복해 쓰세요.
+- 문장 부호: 의문문/감탄문은 반드시 역물음표/역느낌표로 여는 스페인어 규칙("¿…?", "¡…!")을 지키세요. 따옴표는 큰따옴표(" ")를 쓰세요.
+- 월 이름은 스페인어 소문자가 아닌 챕터 소제목에서는 대문자 시작("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")으로 쓰세요. 챕터 소제목은 예를 들어 "Enero — Recursos que quieren mostrarse"처럼 그 달 축에 맞게 스페인어로 쓰세요.
+- 본문의 독일어 예시 소제목은 다음 스페인어로 대응하세요: "Dein Jahr auf einen Blick" → "Tu año de un vistazo"; "Monate, in denen vieles leichter fließen kann" → "Los meses en que todo puede fluir con más facilidad"; "Monate für mehr Achtsamkeit" → "Los meses para prestar más atención".
+- 상품명: Jahresreport → "informe anual", Lebenskarte → "mapa de vida", Kompatibilitäts-Check → "test de compatibilidad". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 스페인어로, 구간 개수는 "8 etapas de vida de diez años"라고 쓰세요.
+- 무료 리포트의 유료 리포트 구매 유도 블록은 다음 스페인어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Tu informe anual Saju 2027 — 9,90 €", 그다음 "Lo que te espera:" 아래 불릿 5개(Tu eje personal para 2027 / 12 capítulos mensuales con impulsos Saju personalizados / Preguntas de reflexión sobre amor, trabajo y crecimiento personal / Tus fortalezas personales y posibles tensiones internas / Una brújula anual con preguntas concretas para tus propias decisiones), 마무리 문장 "Un informe de reflexión personal basado en la tradición Saju — ni un diagnóstico de personalidad con base científica, ni una predicción segura del futuro." (금액은 소수점 쉼표 "9,90 €".)
+- 마지막 면책 문구는 스페인어로: "Este contenido se ofrece con fines de entretenimiento y reflexión personal; no sustituye el consejo médico ni psicológico."
+- 분량 기준(단어 수)은 스페인어 단어 기준으로 동일하게 적용합니다(스페인어도 독일어보다 단어 수가 많아지는 경향이 있으니 기준 미달이 되지 않도록 하세요).
+- 출력은 순수 스페인어 텍스트만. 한글/한자/독일어/프랑스어/영어 단어(예: "Holz", "Feuer", "Du", "dein", "vous", "your")가 섞이지 않게 하세요.
+
+--- 아래부터 원래 지시문 ---
+"""
+
+_ES_PROMPT_CLOSING = """
+
+[최종 확인 — 가장 중요, 출력 직전에 반드시 지킬 것]
+위 지시문에는 독일어 예시가 많지만, 실제 출력은 **처음부터 끝까지 스페인어**여야 합니다. 제목·소제목·본문·불릿·면책 문구 전부 스페인어이고, 호칭은 "tú", 오행은 Madera/Fuego/Tierra/Metal/Agua 입니다. 독일어 단어(und, der, die, das, ist, nicht, dein, Jahr, Energie 등)가 하나라도 섞이면 안 됩니다. 순수 스페인어 텍스트만 출력하세요.
+"""
+
+PROMPT_BLOCKS = {
+    "fr": (_FR_PROMPT_OVERRIDE, _FR_PROMPT_CLOSING, "프랑스어"),
+    "es": (_ES_PROMPT_OVERRIDE, _ES_PROMPT_CLOSING, "스페인어"),
+}
+
+ES_DESTINO_RE = re.compile(r"\bdestinos?\b|\bfatalidad(?:es)?\b|\bdestinad[oa]s?\b", re.IGNORECASE)
+ES_BANNED_REGEXES = [
+    (ES_DESTINO_RE, "destino/fatalidad"),
+    (re.compile(r"\bemp[ií]ric[oa]s?\b|\bempíricamente\b", re.IGNORECASE), "empírico"),
+    (re.compile(r"\bcient[ií]fic(?:o|a|os|as|amente)\b", re.IGNORECASE), "científico"),
+    (re.compile(r"\blos estudios (?:demuestran|muestran|prueban)\b", re.IGNORECASE), "los estudios demuestran"),
+    (re.compile(r"\bestad[ií]sticamente significativ", re.IGNORECASE), "estadísticamente significativo"),
+    (re.compile(r"\bvalidad[oa]s?\b", re.IGNORECASE), "validado"),
+    (re.compile(r"\b(?:revela|revelan|demuestra|demuestran|garantiza|garantizan)\b", re.IGNORECASE),
+     "revela/demuestra/garantiza"),
+    (re.compile(r"\boportunidad única\b|\búltima oportunidad\b|\bmomento ideal\b|\bmomento decisivo\b|\bpor primera vez\b|\bcon el corazón acelerado\b", re.IGNORECASE),
+     "표현 금지(희소성/긴박감/범위 밖 단정)"),
+    (re.compile(r"\b(?:fuego|tierra|madera|metal|agua)\s+(?:del\s+)?cielo\b", re.IGNORECASE), "천간/지지 직역('Fuego del cielo' 등)"),
+    # 독자(tú)를 성별 일치 형용사/분사로 묘사: "estás preparado", "te sientes cansada"
+    (re.compile(
+        r"\b(?:est[aá]s|eres|ser[aá]s|estar[aá]s|te sientes|te notas|te encuentras|quedas)\s+(?:(?:más|menos|muy|bastante|algo|siempre|a veces|tan|demasiado)\s+)?[\wáéíóúüñ]+(?:ado|ada|ido|ida|ados|adas|idos|idas|oso|osa|ivo|iva)\b",
+        re.IGNORECASE), "독자(tú)를 성별 일치 형용사/분사로 묘사('estás preparado' 등)"),
+]
+# "tú"로 쓰기로 했으므로 격식/복수 2인칭이 나오면 걸러낸다.
+ES_FORMAL_RE = re.compile(r"\b(?:usted|ustedes|vosotros|vosotras|vuestro|vuestra|vuestros|vuestras|os\s+(?:sentís|encontráis)|vos|tenéis|sois|podéis|queréis|diferenciáis)\b", re.IGNORECASE)
+# 금(金) = Metal. "Oro"(금속 이름) 사용 금지.
+ES_WRONG_ELEMENT_RE = re.compile(r"\belemento\s+Oro\b|\bel\s+Oro\b")
+ES_ENGLISH_LEAK_RE = re.compile(
+    r"\b(?:deepened|deepen|growing|moving|feeling|the|with|your|and|because|which|while|between|energy|flow|"
+    r"journey|focused|mindful|gentle|healing)\b",
+    re.IGNORECASE,
+)
+ES_GERMAN_LEAK_RE = re.compile(r"\b(?:Holz|Feuer|Erde|Metall|Wasser|Dein|Deine|Jahresreport)\b")
+ES_FRENCH_LEAK_RE = re.compile(r"\b(?:vous|votre|vos|Bois|Feu|Terre|Métal|Eau|rapport annuel)\b")
+ES_GERMAN_STOPWORDS_RE = re.compile(r"\b(?:und|der|die|nicht|dein|deine|deinen|ein|eine|mit|auch|wird|ist)\b")
+ES_NEGATED_SCIENCE_RE = re.compile(
+    r"\b(?:no|ni|sin)\b[^.!?\n]{0,80}?\b(?:con base científica|científicamente (?:comprobad[oa]s?|probad[oa]s?|demostrad[oa]s?|establecid[oa]s?)|base científica)\b",
+    re.IGNORECASE)
+
+
+def es_mechanical_issues(report_text):
+    issues = []
+    report_text = ES_NEGATED_SCIENCE_RE.sub(" ", report_text)
+    german_hits = ES_GERMAN_STOPWORDS_RE.findall(report_text)
+    if len(german_hits) >= 3:
+        issues.append(
+            f"리포트가 스페인어가 아니라 독일어로 작성됨(독일어 단어 {len(german_hits)}개 감지) — "
+            f"전체를 순수 스페인어로 다시 작성해야 함"
+        )
+    for rx, label in ES_BANNED_REGEXES:
+        if rx.search(report_text):
+            issues.append(f"금지 단어 '{label}' 포함됨")
+    if ES_WRONG_ELEMENT_RE.search(report_text):
+        issues.append("'Oro'라는 단어로 금(金)을 표현함 - 반드시 'Metal'로 써야 함")
+    formal = ES_FORMAL_RE.findall(report_text)
+    if formal:
+        issues.append(
+            f"격식/복수 2인칭(usted/vosotros 등) {len(formal)}회 사용됨 - 스페인어 리포트는 "
+            f"반드시 'tú' 단수 비격식만 써야 함"
+        )
+    eng = {m.lower() for m in ES_ENGLISH_LEAK_RE.findall(report_text)}
+    if eng:
+        issues.append(f"영어 단어가 섞여 있음: {', '.join(sorted(eng))} — 전부 스페인어로 바꿔야 함")
+    if ES_GERMAN_LEAK_RE.search(report_text):
+        issues.append("독일어 단어(Holz/Feuer/Erde/Metall/Wasser/Dein 등)가 섞여 있음 - 전부 스페인어로 바꿔야 함")
+    if ES_FRENCH_LEAK_RE.search(report_text):
+        issues.append("프랑스어 단어(vous/votre/Bois/Feu 등)가 섞여 있음 - 전부 스페인어로 바꿔야 함")
+    return issues
+
+
+ES_STRINGS = {
+    "toc_heading": "Contenido",
+    "you_are_here": "ESTÁS AQUÍ",
+    "lifemap_heading": "Tu mapa de vida de un vistazo",
+    "axis_labels": {
+        "재물운": "Recursos",
+        "관계운": "Relaciones",
+        "직업운": "Talentos y obra",
+        "총운": "Estabilidad",
+    },
+    "free": {
+        "pdf_title": "Tu perfil Saju",
+        "subtitle_named": "Elaborado para {name}",
+        "subtitle_anon": "Tu perfil personal de los cinco elementos",
+        "filename": "Palja-Perfil.pdf",
+        "subject": "Tu perfil Saju gratuito está listo ✨",
+        "intro": (
+            "tu perfil personal de los cinco elementos, según la tradición coreana del Saju, "
+            "ya está listo: lo encontrarás adjunto a este correo en formato PDF."
+        ),
+    },
+    "paid": {
+        "pdf_title": "Tu informe anual Saju",
+        "subtitle_named": "Elaborado para {name}",
+        "subtitle_anon": "Tu informe anual personal",
+        "filename": "Palja-Informe-anual.pdf",
+        "subject": "Tu informe anual de Palja está listo 📖",
+        "intro": (
+            "gracias por tu compra. Tu informe anual personal, según la tradición coreana "
+            "del Saju, con los 12 meses en detalle, va adjunto a este correo en formato PDF."
+        ),
+    },
+    "premium": {
+        "pdf_title": "Tu mapa de vida Saju",
+        "subtitle_named": "Elaborado para {name}",
+        "subtitle_anon": "Tu mapa de vida personal",
+        "filename": "Palja-Mapa-de-vida.pdf",
+        "subject": "Tu mapa de vida de Palja está listo 🧭",
+        "intro": (
+            "gracias por tu compra. Tu mapa de vida personal, según la tradición coreana "
+            "del Saju, con tus etapas de diez años, va adjunto a este correo en formato PDF."
+        ),
+    },
+    "compatibility": {
+        "pdf_title": "Tu compatibilidad Saju",
+        "filename": "Palja-Compatibilidad.pdf",
+        "subject": "Tu compatibilidad Saju está lista 💫",
+        "intro": "gracias por tu compra. Tu análisis de compatibilidad Saju va adjunto a este correo en formato PDF.",
+    },
+    "hello": "Hola{name_suffix},",
+    "disclaimer": (
+        "Palja se ofrece con fines de entretenimiento y reflexión personal; "
+        "no sustituye el consejo médico ni psicológico."
+    ),
+    "withdrawal_confirmation": (
+        "Confirmación: has solicitado expresamente que comencemos la ejecución del contrato antes de que "
+        "venza el plazo de desistimiento y reconoces que pierdes tu derecho de desistimiento en cuanto se "
+        "entregue este informe. Nuestra garantía voluntaria de 60 días se mantiene sin cambios."
+    ),
+    "promo": "¿Quieres saber cuánto conectas con otra persona?",
+    "promo_link": "→ Test de compatibilidad Saju (4,90 €)",
+    "footer_questions": "¿Alguna duda? Escríbenos a",
+    "footer_links": [
+        ("es/aviso-legal", "Aviso legal"),
+        ("es/privacidad", "Privacidad"),
+        ("es/desistimiento", "Desistimiento"),
+    ],
+    "promo_anchor": "compatibilidad",
+    "geo_notice": (
+        "Nota: no pudimos identificar con certeza el lugar de nacimiento {cities}. "
+        "Para el cálculo usamos de forma aproximada las coordenadas de Madrid. "
+        "En casos poco frecuentes, esto puede influir ligeramente en la hora considerada. "
+        "Si tienes dudas, escríbenos a dionnie373@gmail.com."
+    ),
+}
+FR_STRINGS["promo_anchor"] = "compatibilite"
+
+# lang → 문구 사전 (de는 report_pipeline/pdf_design의 기존 상수를 그대로 쓴다)
+STRINGS = {"fr": FR_STRINGS, "es": ES_STRINGS}
+
+# lang → 면책 부정형/금지어 검사 함수, "숙명" 계열 정규식과 라벨
+MECHANICAL_ISSUES = {"fr": fr_mechanical_issues, "es": es_mechanical_issues}
+DESTINY_RE = {"fr": FR_DESTIN_RE, "es": ES_DESTINO_RE}
+DESTINY_LABEL = {"de": "Schicksal", "fr": "destin", "es": "destino"}
