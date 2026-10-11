@@ -117,3 +117,39 @@ class SpanishLocationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SpanishSiteTests(unittest.TestCase):
+    def setUp(self):
+        import app
+        self.c = app.app.test_client()
+
+    def test_pages_served_and_noindex(self):
+        for p in ("", "aviso-legal", "condiciones", "privacidad", "desistimiento", "contacto", "gracias"):
+            r = self.c.get("/es/" + p)
+            self.assertEqual(r.status_code, 200, p)
+            body = r.get_data(as_text=True)
+            self.assertIn('lang="es"', body)
+            self.assertIn("noindex", body, p)
+
+    def test_no_french_or_german_leftovers_in_index(self):
+        import re
+        body = self.c.get("/es/").get_data(as_text=True)
+        body = re.sub(r"<svg.*?</svg>", "", body, flags=re.S)
+        body = re.sub(r"//[^\n]*", "", body)
+        for w in ("Veuillez", "Paiement", "Rétractation", "Bitte", "Datenschutz", "votre ", "/fr/"):
+            self.assertNotIn(w, body, w)
+
+    def test_no_live_product_ids(self):
+        body = self.c.get("/es/").get_data(as_text=True)
+        for pid in ("746476", "746480", "746481"):
+            self.assertNotIn(pid, body)
+        self.assertNotIn("trusted-badge", body)
+
+    def test_unknown_page_404(self):
+        self.assertEqual(self.c.get("/es/nope").status_code, 404)
+
+    def test_contact_and_signup_messages_es(self):
+        r = self.c.post("/kontakt/senden", json={"lang": "es", "email": "bad", "message": "x"})
+        self.assertEqual(r.status_code, 400)
+        self.assertIn("correo", r.get_json()["error"])

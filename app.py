@@ -911,6 +911,34 @@ def fr_page(page):
     return send_from_directory(FR_SITE_DIR, filename)
 
 
+# 스페인어 사이트(/es/) — es-prep 사전 준비. 전 페이지 noindex 초안이며, Digistore24 스페인어 상품이
+# 없어서 유료 버튼은 "곧 이용 가능" 안내를 보인다(무료 프로필 /signup lang=es만 동작).
+_ES_PAGES = {
+    "": "index.html",
+    "aviso-legal": "aviso-legal.html",
+    "condiciones": "condiciones.html",
+    "privacidad": "privacidad.html",
+    "desistimiento": "desistimiento.html",
+    "contacto": "contacto.html",
+    "gracias": "gracias.html",
+}
+ES_SITE_DIR = os.path.join(STATIC_SITE_DIR, "es")
+
+
+@app.route("/es", methods=["GET"])
+def es_redirect():
+    return redirect("/es/")
+
+
+@app.route("/es/", defaults={"page": ""}, methods=["GET"])
+@app.route("/es/<page>", methods=["GET"])
+def es_page(page):
+    filename = _ES_PAGES.get(page)
+    if not filename:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return send_from_directory(ES_SITE_DIR, filename)
+
+
 _MSG = {
     "contact_invalid": {
         "de": "Bitte gib eine gültige E-Mail-Adresse und eine Nachricht an.",
