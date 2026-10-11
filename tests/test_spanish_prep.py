@@ -248,3 +248,28 @@ class SpanishPaidPromptTests(unittest.TestCase):
         t = rp._load_prompt_template("free_report_prompt.json", "es")
         text = rp._build_messages(t, {"compact": "C"}, "es")[0]["content"]
         self.assertIn("스페인어", text)
+
+
+class SpanishProductMapTests(unittest.TestCase):
+    def test_no_es_ids_by_default(self):
+        import app
+        self.assertNotIn("", app.DIGISTORE24_PRODUCT_TIER_MAP)
+
+    def test_es_env_maps_tiers(self):
+        import importlib, os
+        import app
+        keys = ("DIGISTORE24_PRODUCT_ID_PAID_ES", "DIGISTORE24_PRODUCT_ID_PREMIUM_ES",
+                "DIGISTORE24_PRODUCT_ID_COMPATIBILITY_ES")
+        old = {k: os.environ.get(k) for k in keys}
+        try:
+            os.environ[keys[0]], os.environ[keys[1]], os.environ[keys[2]] = "900001", "900002", "900003"
+            importlib.reload(app)
+            m = app.DIGISTORE24_PRODUCT_TIER_MAP
+            self.assertEqual((m["900001"], m["900002"], m["900003"]), ("paid", "premium", "compatibility"))
+        finally:
+            for k, v in old.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+            importlib.reload(app)

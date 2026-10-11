@@ -1596,6 +1596,18 @@ for _fr_id, _fr_tier in (
     if _fr_id:
         DIGISTORE24_PRODUCT_TIER_MAP[_fr_id] = _fr_tier
 
+# 스페인어 사이트용 Digistore24 상품(es-prep, 2026-10-11): 아직 상품이 없어서 기본값 없음.
+# 상품 생성 후 Render 환경변수로 넣는다(언어는 주문 payload의 lang=es가 결정하므로 티어만 매핑).
+#   DIGISTORE24_PRODUCT_ID_PAID_ES / _PREMIUM_ES / _COMPATIBILITY_ES
+for _es_env, _es_tier in (
+    ("DIGISTORE24_PRODUCT_ID_PAID_ES", "paid"),
+    ("DIGISTORE24_PRODUCT_ID_PREMIUM_ES", "premium"),
+    ("DIGISTORE24_PRODUCT_ID_COMPATIBILITY_ES", "compatibility"),
+):
+    _es_id = os.environ.get(_es_env, "").strip()
+    if _es_id:
+        DIGISTORE24_PRODUCT_TIER_MAP[_es_id] = _es_tier
+
 _DIGISTORE24_PROVIDER = "digistore24"
 
 # 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전에는
