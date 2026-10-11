@@ -612,3 +612,11 @@ Digistore24 입점이 확정되면 곧바로 사용자에게 아래 두 가지�
 - /es/ 페이지 7개(index, aviso-legal, condiciones, privacidad, desistimiento, contacto, gracias): 전부 noindex 초안, 원어민/법률 검토 전. Digistore24 상품 ID·Trust Badge 비어 있음(상품 생성 후 채움).
 - 공개 전 필요: Digistore24 ES 상품 3개 + 승인, ES 상품 ID를 index.html·app.py 티어 맵에 연결, 도메인(palja.es?) + 호스트 라우팅, 실제 ES 주문 테스트, og-image(현재 fr 이미지 재사용), 법적 문구 검토.
 - (2026-10-11 밤 추가) 스페인어 유료 연간 리포트 전용 프롬프트 prompts/es/paid_report_prompt.json (프랑스어와 동일 구조; 프리미엄/궁합은 FR처럼 공용 프롬프트+언어 전환 블록). 호스트 라우팅은 Render 환경변수 ES_DOMAIN(도메인), ES_PUBLIC=1(공개), ES 상품 ID는 DIGISTORE24_PRODUCT_ID_PAID_ES / _PREMIUM_ES / _COMPATIBILITY_ES. og-image-es.jpg 추가.
+
+## Digistore24 스페인어 상품 생성 (2026-10-12)
+FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감사 페이지 https://palja.es/gracias 로 설정. 승인 요청은 **아직 안 함**(Don't request approval yet).
+- 746748 Palja ES Informe anual — 9,90 € / 746751 Palja ES Mapa de vida premium — 24,90 € / 746753 Palja ES Test de compatibilidad — 4,90 €
+- 주문서 상품 설명(TinyMCE)을 스페인어로 교체 완료. ⚠ Chrome 자동번역이 켜진 상태에서 저장하면 입력한 텍스트가 한국어로 번역돼 저장됨 → 번역 안 된 상태에서 저장하고 재조회로 검증할 것.
+- 코드: app.py 기본 ID 맵 + static_site/es/index.html에 ID 반영(커밋 d0b0426). Trusted Badge는 아직 없음.
+- 남은 일: 실주문 테스트(구매자 정보·결제는 사용자), 스페인어 PDF 품질 확인, 승인 요청(사용자 확인 후), 원어민/법률 검토, ES_PUBLIC=1.
+- palja.es DNS는 INWX(@ A 216.24.57.1, www CNAME palja-api.onrender.com), Render 인증·인증서 완료. 발신 메일은 palja.de(Brevo 인증됨) 공용이라 별도 인증 불필요.
