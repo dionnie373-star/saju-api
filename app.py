@@ -37,6 +37,7 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from flask import Flask, request, jsonify, send_from_directory, redirect, Response
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+import i18n
 import orders_store
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
@@ -193,6 +194,59 @@ for _k, (_lon, _tz) in _FR_CITIES.items():
     KNOWN_CITY_LONGITUDE.setdefault(_k, _lon)
     KNOWN_CITY_TIMEZONE.setdefault(_k, _tz)
 
+# 스페인어권(스페인 + 중남미 주요 도시) — 스페인어 사이트(lang="es")용(2026-10-11 사전 준비).
+# 동명 도시(valencia, córdoba 등)는 스페인 쪽을 우선하고, 나머지는 지오코딩 API가 처리한다.
+# 시간대는 IANA 이름이라 과거 서머타임/표준시 변경도 zoneinfo가 알아서 반영한다.
+_ES_CITIES = {
+    "madrid": (-3.7038, "Europe/Madrid"), "barcelona": (2.1734, "Europe/Madrid"),
+    "valencia": (-0.3763, "Europe/Madrid"), "sevilla": (-5.9845, "Europe/Madrid"),
+    "seville": (-5.9845, "Europe/Madrid"), "zaragoza": (-0.8891, "Europe/Madrid"),
+    "málaga": (-4.4214, "Europe/Madrid"), "malaga": (-4.4214, "Europe/Madrid"),
+    "murcia": (-1.1307, "Europe/Madrid"), "palma": (2.6502, "Europe/Madrid"),
+    "bilbao": (-2.9350, "Europe/Madrid"), "alicante": (-0.4810, "Europe/Madrid"),
+    "córdoba": (-4.7794, "Europe/Madrid"), "cordoba": (-4.7794, "Europe/Madrid"),
+    "valladolid": (-4.7245, "Europe/Madrid"), "vigo": (-8.7207, "Europe/Madrid"),
+    "gijón": (-5.6611, "Europe/Madrid"), "gijon": (-5.6611, "Europe/Madrid"),
+    "granada": (-3.5986, "Europe/Madrid"), "a coruña": (-8.4115, "Europe/Madrid"),
+    "vitoria": (-2.6727, "Europe/Madrid"), "pamplona": (-1.6432, "Europe/Madrid"),
+    "san sebastián": (-1.9812, "Europe/Madrid"), "san sebastian": (-1.9812, "Europe/Madrid"),
+    "santander": (-3.8044, "Europe/Madrid"), "toledo": (-4.0273, "Europe/Madrid"),
+    "las palmas de gran canaria": (-15.4363, "Atlantic/Canary"), "las palmas": (-15.4363, "Atlantic/Canary"),
+    "santa cruz de tenerife": (-16.2546, "Atlantic/Canary"),
+    "ciudad de méxico": (-99.1332, "America/Mexico_City"), "ciudad de mexico": (-99.1332, "America/Mexico_City"),
+    "méxico": (-99.1332, "America/Mexico_City"), "mexico city": (-99.1332, "America/Mexico_City"),
+    "guadalajara": (-103.3496, "America/Mexico_City"), "monterrey": (-100.3161, "America/Monterrey"),
+    "puebla": (-98.2063, "America/Mexico_City"), "tijuana": (-117.0382, "America/Tijuana"),
+    "buenos aires": (-58.3816, "America/Argentina/Buenos_Aires"),
+    "rosario": (-60.6505, "America/Argentina/Buenos_Aires"),
+    "bogotá": (-74.0721, "America/Bogota"), "bogota": (-74.0721, "America/Bogota"),
+    "medellín": (-75.5636, "America/Bogota"), "medellin": (-75.5636, "America/Bogota"),
+    "cali": (-76.5320, "America/Bogota"), "lima": (-77.0428, "America/Lima"),
+    "santiago": (-70.6693, "America/Santiago"), "santiago de chile": (-70.6693, "America/Santiago"),
+    "caracas": (-66.9036, "America/Caracas"), "quito": (-78.4678, "America/Guayaquil"),
+    "guayaquil": (-79.8891, "America/Guayaquil"), "montevideo": (-56.1645, "America/Montevideo"),
+    "asunción": (-57.5759, "America/Asuncion"), "asuncion": (-57.5759, "America/Asuncion"),
+    "la paz": (-68.1193, "America/La_Paz"), "san josé": (-84.0907, "America/Costa_Rica"),
+    "san jose": (-84.0907, "America/Costa_Rica"), "panamá": (-79.5199, "America/Panama"),
+    "ciudad de panamá": (-79.5199, "America/Panama"), "la habana": (-82.3666, "America/Havana"),
+    "santo domingo": (-69.9312, "America/Santo_Domingo"), "san juan": (-66.1057, "America/Puerto_Rico"),
+    "guatemala": (-90.5069, "America/Guatemala"), "ciudad de guatemala": (-90.5069, "America/Guatemala"),
+    "san salvador": (-89.2182, "America/El_Salvador"), "tegucigalpa": (-87.2068, "America/Tegucigalpa"),
+    "managua": (-86.2362, "America/Managua"),
+}
+DEFAULT_LONGITUDE_ES = -3.7038  # 마드리드 (스페인어 사이트에서 도시를 못 찾았을 때의 최종 대비값)
+DEFAULT_TIMEZONE_ES = "Europe/Madrid"
+
+for _k, (_lon, _tz) in _ES_CITIES.items():
+    KNOWN_CITY_LONGITUDE.setdefault(_k, _lon)
+    KNOWN_CITY_TIMEZONE.setdefault(_k, _tz)
+
+# lang → (기본 경도, 기본 시간대). de는 기존 DEFAULT_LONGITUDE/DEFAULT_TIMEZONE.
+_LANG_DEFAULT_LOCATION = {
+    "fr": (DEFAULT_LONGITUDE_FR, DEFAULT_TIMEZONE_FR),
+    "es": (DEFAULT_LONGITUDE_ES, DEFAULT_TIMEZONE_ES),
+}
+
 
 
 def _lookup_location(city_name, lang="de"):
@@ -229,8 +283,9 @@ def _lookup_location(city_name, lang="de"):
     except Exception:
         pass
 
-    if lang == "fr":
-        return DEFAULT_LONGITUDE_FR, DEFAULT_TIMEZONE_FR, "default_fallback"
+    if lang in _LANG_DEFAULT_LOCATION:
+        lon, tz = _LANG_DEFAULT_LOCATION[lang]
+        return lon, tz, "default_fallback"
     return DEFAULT_LONGITUDE, DEFAULT_TIMEZONE, "default_fallback"
 
 
@@ -601,8 +656,8 @@ def run_calculation(payload):
         raise CalcError(f"생년월일시를 해석할 수 없습니다: {e}") from e
 
     longitude_source = "provided"
-    lang = "fr" if payload.get("lang") == "fr" else "de"
-    timezone_name = timezone_override or (DEFAULT_TIMEZONE_FR if lang == "fr" else DEFAULT_TIMEZONE)
+    lang = i18n.normalize_lang(payload.get("lang"))
+    timezone_name = timezone_override or _LANG_DEFAULT_LOCATION.get(lang, (None, DEFAULT_TIMEZONE))[1]
     if longitude is not None:
         try:
             longitude = float(longitude)
@@ -856,6 +911,34 @@ def fr_page(page):
     return send_from_directory(FR_SITE_DIR, filename)
 
 
+_MSG = {
+    "contact_invalid": {
+        "de": "Bitte gib eine gültige E-Mail-Adresse und eine Nachricht an.",
+        "fr": "Veuillez indiquer une adresse e-mail valide et un message.",
+        "es": "Indica una dirección de correo válida y un mensaje.",
+    },
+    "too_many": {
+        "de": "Zu viele Anfragen. Bitte versuche es später erneut.",
+        "fr": "Trop de demandes. Veuillez réessayer plus tard.",
+        "es": "Demasiadas solicitudes. Inténtalo de nuevo más tarde.",
+    },
+    "contact_failed": {
+        "de": "Die Nachricht konnte nicht gesendet werden. Bitte schreib uns direkt per E-Mail.",
+        "fr": "Le message n'a pas pu être envoyé. Veuillez nous écrire directement par e-mail.",
+        "es": "No se pudo enviar el mensaje. Escríbenos directamente por correo electrónico.",
+    },
+    "signup_recent": {
+        "de": "Für diese E-Mail-Adresse wurde bereits vor Kurzem ein kostenloses Profil angefordert. Bitte schau in deinem Postfach nach oder versuche es in ein paar Minuten erneut.",
+        "fr": "Un profil gratuit a déjà été demandé récemment pour cette adresse e-mail. Vérifiez votre boîte de réception ou réessayez dans quelques minutes.",
+        "es": "Ya se solicitó un perfil gratuito para este correo hace poco. Revisa tu bandeja de entrada o inténtalo de nuevo en unos minutos.",
+    },
+}
+
+
+def _msg(key, lang):
+    return _MSG[key].get(lang) or _MSG[key]["de"]
+
+
 @app.route("/kontakt/senden", methods=["POST"])
 def contact_send():
     """문의 양식 → 운영자 이메일로 전달. 허니팟 + IP/이메일 레이트리밋."""
@@ -863,27 +946,27 @@ def contact_send():
         p = request.get_json(force=True, silent=False) or {}
     except Exception:
         return jsonify({"ok": False, "error": "Invalid request."}), 400
-    fr = p.get("lang") == "fr"
+    lang = i18n.normalize_lang(p.get("lang")) if p.get("lang") else "de"
     if (p.get("website") or "").strip():  # 허니팟: 봇은 채운다 → 성공처럼 응답하고 버림
         return jsonify({"ok": True})
     name = (p.get("name") or "").strip()[:100]
     email = (p.get("email") or "").strip()[:200]
     message = (p.get("message") or "").strip()[:3000]
     if "@" not in email or "\n" in email or "\r" in email or len(message) < 5:
-        return jsonify({"ok": False, "error": "Veuillez indiquer une adresse e-mail valide et un message." if fr else "Bitte gib eine gültige E-Mail-Adresse und eine Nachricht an."}), 400
+        return jsonify({"ok": False, "error": _msg("contact_invalid", lang)}), 400
     if _rate_limited("contact_ip", _client_ip(), max_count=5, window_seconds=3600) or \
        _rate_limited("contact_email", email.lower(), max_count=3, window_seconds=3600):
-        return jsonify({"ok": False, "error": "Trop de demandes. Veuillez réessayer plus tard." if fr else "Zu viele Anfragen. Bitte versuche es später erneut."}), 429
+        return jsonify({"ok": False, "error": _msg("too_many", lang)}), 429
     import html as _html
     from report_pipeline import send_email
     owner = os.environ.get("CONTACT_TO_EMAIL", "dionnie373@gmail.com")
-    body = (f"<p><b>Von:</b> {_html.escape(name) or '-'} &lt;{_html.escape(email)}&gt; ({'fr' if fr else 'de'})</p>"
+    body = (f"<p><b>Von:</b> {_html.escape(name) or '-'} &lt;{_html.escape(email)}&gt; ({lang})</p>"
             f"<p style='white-space:pre-wrap'>{_html.escape(message)}</p>")
     try:
         send_email(to_email=owner, subject=f"[Palja Kontakt] {_html.escape(name) or email}"[:120], html_body=body, reply_to=email)
     except Exception as e:
         print(f"[contact] send failed: {type(e).__name__}", flush=True)
-        return jsonify({"ok": False, "error": "Le message n'a pas pu être envoyé. Veuillez nous écrire directement par e-mail." if fr else "Die Nachricht konnte nicht gesendet werden. Bitte schreib uns direkt per E-Mail."}), 502
+        return jsonify({"ok": False, "error": _msg("contact_failed", lang)}), 502
     return jsonify({"ok": True})
 
 
@@ -1036,21 +1119,11 @@ def signup():
         return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
 
     # 같은 이메일로는 10분에 1번, 같은 IP로는 1시간에 5번까지만 허용.
-    _fr = payload.get("lang") == "fr"
+    _lang = i18n.normalize_lang(payload.get("lang"))
     if _rate_limited("signup_email", email.lower(), max_count=1, window_seconds=600):
-        if _fr:
-            return jsonify({"ok": False, "error": "Un profil gratuit a déjà été demandé récemment pour cette adresse e-mail. Vérifiez votre boîte de réception ou réessayez dans quelques minutes."}), 429
-        return jsonify({
-            "ok": False,
-            "error": "Für diese E-Mail-Adresse wurde bereits vor Kurzem ein kostenloses Profil angefordert. Bitte schau in deinem Postfach nach oder versuche es in ein paar Minuten erneut.",
-        }), 429
+        return jsonify({"ok": False, "error": _msg("signup_recent", _lang)}), 429
     if _rate_limited("signup_ip", _client_ip(), max_count=5, window_seconds=3600):
-        if _fr:
-            return jsonify({"ok": False, "error": "Trop de demandes. Veuillez réessayer plus tard."}), 429
-        return jsonify({
-            "ok": False,
-            "error": "Zu viele Anfragen. Bitte versuche es später erneut.",
-        }), 429
+        return jsonify({"ok": False, "error": _msg("too_many", _lang)}), 429
 
     try:
         calc_result = run_calculation(payload)

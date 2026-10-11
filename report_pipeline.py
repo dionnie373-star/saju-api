@@ -71,8 +71,8 @@ import i18n
 
 def _load_prompt_template(name, lang="de"):
     """lang이 fr이고 prompts/fr/<name>이 있으면 프랑스어 전용 프롬프트를, 없으면 공용(독일어 기반) 템플릿."""
-    if lang == "fr":
-        fr_path = os.path.join(PROMPTS_DIR, "fr", name)
+    if lang != "de":
+        fr_path = os.path.join(PROMPTS_DIR, lang, name)
         if os.path.exists(fr_path):
             with open(fr_path, "r", encoding="utf-8") as f:
                 return json.load(f)
@@ -321,8 +321,8 @@ def check_mechanical_rules(report_text, *, min_words, lang="de"):
     반환값: 문제 문자열 리스트(비어있으면 통과).
     """
     issues = []
-    if lang == "fr":
-        issues.extend(i18n.fr_mechanical_issues(report_text))
+    if lang != "de":
+        issues.extend(i18n.MECHANICAL_ISSUES[lang](report_text))
         hanja_matches = _HANJA_RE.findall(report_text)
         if hanja_matches:
             issues.append(f"한자/CJK 문자 포함됨: {''.join(sorted(set(hanja_matches)))[:20]}")
@@ -546,8 +546,8 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
     # 여기서 결정론적으로 제거한다. 이후 mechanical 이슈 목록에서도 이제는
     # 해소된 "Schicksal" 관련 항목을 걷어내서, 아래 경고 로그가 실제로 남은
     # 문제만 정확히 보여주게 한다.
-    _destiny_re = i18n.FR_DESTIN_RE if lang == "fr" else _SCHICKSAL_WORD_RE
-    _destiny_label = "destin" if lang == "fr" else "Schicksal"
+    _destiny_re = i18n.DESTINY_RE.get(lang, _SCHICKSAL_WORD_RE)
+    _destiny_label = i18n.DESTINY_LABEL[lang]
     if _destiny_re.search(report_text):
         report_text = _strip_schicksal_sentences(report_text, _destiny_re)
         validation["issues"] = [
@@ -851,7 +851,7 @@ def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166, lang="de"):
     bar_y = 8 * mm
     bar_h = 8 * mm
     seg_w = width / n
-    labels = i18n.FR_STRINGS["axis_labels"] if lang == "fr" else _AXIS_LABELS_DE
+    labels = i18n.STRINGS[lang]["axis_labels"] if lang != "de" else _AXIS_LABELS_DE
 
     d = Drawing(width, height)
 
@@ -875,7 +875,7 @@ def _build_daewoon_timeline_drawing(daewoon_facts, *, width_mm=166, lang="de"):
 
         if i == current_index:
             cx = x + (seg_w - 1) / 2
-            d.add(String(cx, bar_y + bar_h + 10, (i18n.FR_STRINGS["you_are_here"] if lang == "fr" else "DU BIST HIER"), fontName="WorkSans-Bold", fontSize=6.5,
+            d.add(String(cx, bar_y + bar_h + 10, (i18n.STRINGS[lang]["you_are_here"] if lang != "de" else "DU BIST HIER"), fontName="WorkSans-Bold", fontSize=6.5,
                          fillColor=HexColor("#C1442E"), textAnchor="middle"))
             d.add(Line(cx, bar_y + bar_h + 8, cx, bar_y + bar_h + 1, strokeColor=HexColor("#C1442E"), strokeWidth=1))
 
@@ -936,7 +936,7 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
     if intro_flowables:
         story.extend(intro_flowables)
     story.extend(_build_toc_flowables(
-        report_text, heading=(i18n.FR_STRINGS["toc_heading"] if lang == "fr" else "Inhalt"), lang=lang
+        report_text, heading=(i18n.STRINGS[lang]["toc_heading"] if lang != "de" else "Inhalt"), lang=lang
     ))
     story.extend(_report_text_to_flowables(report_text, lang=lang))
 
@@ -1083,14 +1083,18 @@ SITE_BASE_URL = "https://palja.de"  # 2026-10-11: palja.de 라이브(예전 onre
 # 프랑스어 사이트 주소. palja.fr 도메인 연결 후 Render 환경변수
 # FR_SITE_BASE_URL=https://palja.fr 로 설정하면 메일 링크가 루트 기준(palja.fr/mentions-legales)으로
 # 바뀐다. 미설정이면 파일럿 경로(<SITE_BASE_URL>/fr/...)를 그대로 쓴다.
-def _fr_url(path):
-    base = os.environ.get("FR_SITE_BASE_URL", "").strip().rstrip("/")
+def _lang_url(path, lang="fr"):
+    base = os.environ.get(f"{lang.upper()}_SITE_BASE_URL", "").strip().rstrip("/")
     path = path.lstrip("/")
     if base:
-        if path.startswith("fr/"):
-            path = path[3:]
+        if path.startswith(f"{lang}/"):
+            path = path[len(lang) + 1:]
         return f"{base}/{path}"
     return f"{SITE_BASE_URL}/{path}"
+
+
+def _fr_url(path):
+    return _lang_url(path, "fr")
 
 _COMPATIBILITY_PROMO_HTML = f"""\
   <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; padding: 14px 16px; border-radius: 8px;">
@@ -1131,11 +1135,11 @@ def _geocoding_fallback_notice_html(birth_cities, lang="de"):
         city_text = f'"{cities[0]}"'
     else:
         city_text = ", ".join(f'"{c}"' for c in cities)
-    if lang == "fr":
+    if lang != "de":
         return (
             '  <p style="font-size: 13px; line-height: 1.6; color: #6B4F2A; background: #FBF2E4; '
             'padding: 10px 14px; border-radius: 6px; margin: 16px 0;">\n    '
-            + i18n.FR_STRINGS["geo_notice"].format(cities=city_text)
+            + i18n.STRINGS[lang]["geo_notice"].format(cities=city_text)
             + "\n  </p>\n"
         )
     return f"""\
@@ -1148,16 +1152,17 @@ def _geocoding_fallback_notice_html(birth_cities, lang="de"):
 """
 
 
-def _fr_email_template(kind):
-    """프랑스어 이메일 HTML 템플릿({name_suffix}, {geocoding_notice} 자리표시자 포함)."""
-    t = i18n.FR_STRINGS
+def _fr_email_template(kind, lang="fr"):
+    """fr/es 이메일 HTML 템플릿({name_suffix}, {geocoding_notice} 자리표시자 포함)."""
+    t = i18n.STRINGS[lang]
+    _fr_url = lambda p: _lang_url(p, lang)
     promo = ""
     if kind in ("free", "paid", "premium"):
         promo = (
             '  <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; '
             'padding: 14px 16px; border-radius: 8px;">\n'
             f'    {t["promo"]}\n'
-            f'    <a href="{_fr_url("fr/#compatibilite")}" style="color: #A9784F;">{t["promo_link"]}</a>\n'
+            f'    <a href="{_fr_url(lang + "/#" + t["promo_anchor"])}" style="color: #A9784F;">{t["promo_link"]}</a>\n'
             "  </p>\n"
         )
     confirm = ""
@@ -1198,13 +1203,13 @@ def _fr_email_template(kind):
 
 def _doc_strings(kind, lang, name):
     """(pdf_title, pdf_subtitle, filename, email_subject, email_template) — lang별 문구 묶음."""
-    if lang == "fr":
-        s = i18n.FR_STRINGS[kind]
+    if lang != "de":
+        s = i18n.STRINGS[lang][kind]
         if kind == "compatibility":
             subtitle = None
         else:
             subtitle = s["subtitle_named"].format(name=name) if name else s["subtitle_anon"]
-        return s["pdf_title"], subtitle, s["filename"], s["subject"], _fr_email_template(kind)
+        return s["pdf_title"], subtitle, s["filename"], s["subject"], _fr_email_template(kind, lang)
     raise ValueError("de는 각 run_* 함수의 기존 상수를 그대로 쓴다")
 
 
@@ -1313,7 +1318,7 @@ def run_free_signup(*, payload, calc_result):
     if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
         fallback_city = calc_result["input"].get("birth_city")
 
-    if lang == "fr":
+    if lang != "de":
         t, st, fn, subj, tpl = _doc_strings("free", lang, name)
         return _send_report(
             email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
@@ -1406,7 +1411,7 @@ def run_paid_signup(*, payload, calc_result):
     if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
         fallback_city = calc_result["input"].get("birth_city")
 
-    if lang == "fr":
+    if lang != "de":
         t, st, fn, subj, tpl = _doc_strings("paid", lang, name)
         return _send_report(
             email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
@@ -1524,7 +1529,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
             return None
         return a + [PageBreak()] + b
 
-    if lang == "fr":
+    if lang != "de":
         t, _st, fn, subj, tpl = _doc_strings("compatibility", lang, None)
         return _send_report(
             email=email, name=None, pdf_title=t, pdf_subtitle=f"{name_a} & {name_b}",
@@ -1597,7 +1602,7 @@ def run_premium_signup(*, payload, calc_result):
         try:
             intro_flowables = [
                 Paragraph(
-                    i18n.FR_STRINGS["lifemap_heading"] if lang == "fr" else "Deine Lebenskarte auf einen Blick",
+                    i18n.STRINGS[lang]["lifemap_heading"] if lang != "de" else "Deine Lebenskarte auf einen Blick",
                     _PDF_STYLES["h2"],
                 ),
                 _H2_RULE,
@@ -1612,7 +1617,7 @@ def run_premium_signup(*, payload, calc_result):
     if calc_result.get("input", {}).get("longitude_source") == "default_fallback":
         fallback_city = calc_result["input"].get("birth_city")
 
-    if lang == "fr":
+    if lang != "de":
         t, st, fn, subj, tpl = _doc_strings("premium", lang, name)
         return _send_report(
             email=email, name=name, pdf_title=t, pdf_subtitle=st, report_text=report_text,
