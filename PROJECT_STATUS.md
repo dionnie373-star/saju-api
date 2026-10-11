@@ -620,3 +620,7 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 코드: app.py 기본 ID 맵 + static_site/es/index.html에 ID 반영(커밋 d0b0426). Trusted Badge는 아직 없음.
 - 남은 일: 실주문 테스트(구매자 정보·결제는 사용자), 스페인어 PDF 품질 확인, 승인 요청(사용자 확인 후), 원어민/법률 검토, ES_PUBLIC=1.
 - palja.es DNS는 INWX(@ A 216.24.57.1, www CNAME palja-api.onrender.com), Render 인증·인증서 완료. 발신 메일은 palja.de(Brevo 인증됨) 공용이라 별도 인증 불필요.
+
+### 스페인어 법률 점검 (2026-10-12, AI 검토 — 변호사 자문 아님)
+- 수정: ES 약관 §5(잘못된 주소 면책 → 재발송 약속), §8(경과실 책임 제한 문구 삭제: TRLGDCU 불공정약관 위험).
+- 남은 위험(사용자 판단): ①art. 103 m 3요건 중 "사업자의 확인서(art. 98.7)" — 우리 메일엔 없음, Digistore24 주문확인 메일이 대신하는지 미확인 ②Digistore24 상품 설정에서 "0일 철회권(서비스 제공 후 환불 방지)" 설정이 "권한 없음"으로 비활성 → 14일 내 환불 요청을 Digistore24가 막아주지 않을 수 있음(60일 보증이 있어 실무 영향은 작음) ③Trusted Badge가 쿠키를 심으면 LSSI art. 22.2 동의 필요(미확인, Digistore24 문의) ④GDPR art. 27 EU 대리인 ⑤조항 번호(115 bis 이하 등) 변호사 확인 필요 ⑥원어민 교정.
