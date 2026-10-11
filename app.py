@@ -1488,7 +1488,7 @@ def create_pending_order():
     # 실제 결제는 아니지만, 서버 메모리를 무한정 채우는 악용(봇이 계속 POST만
     # 반복)은 막아야 한다 — /signup보다는 느슨하게(아직 Claude 호출/메일 발송
     # 비용이 발생하는 단계가 아니므로) 설정.
-    if _rate_limited("pending_order_ip", _client_ip(), max_count=20, window_seconds=3600):
+    if _rate_limited("pending_order_ip", _client_ip(), max_count=60, window_seconds=3600):
         return jsonify({"ok": False, "error": "Zu viele Anfragen. Bitte versuche es später erneut."}), 429
 
     orders_store.sweep_expired_pending_orders(_PENDING_ORDER_TTL_SECONDS)
@@ -1590,6 +1590,22 @@ def digistore24_webhook():
     return Response(f"ERROR: {msg}", status=status, mimetype="text/plain")
 
 
+_IPN_LOG_SAFE_KEYS = (
+    "event", "api_mode", "order_id", "product_id", "product_name", "pay_method", "order_date_time",
+    "amount", "currency", "language", "buyer_language", "billing_status", "transaction_id",
+    "custom_key", "function_call",
+)
+
+
+def _ipn_safe_log_form(form):
+    """거부된 IPN을 로그에 남길 때 개인정보(이름/주소/이메일)는 빼고 진단에 필요한 필드만 남긴다."""
+    out = {k: form.get(k) for k in _IPN_LOG_SAFE_KEYS if form.get(k) not in (None, "")}
+    out["custom_present"] = bool((form.get("custom") or "").strip())
+    em = (form.get("email") or "")
+    out["email_domain"] = em.split("@")[-1] if "@" in em else ""
+    return out
+
+
 _LAST_SIG_ALERT_AT = 0.0
 
 
@@ -1610,7 +1626,7 @@ def _digistore24_webhook_impl():
         # 임시 진단용 로깅(2026-10-04, orders_store 교체 시점에 Digistore24가
         # "이 연결은 에러만 낸다"며 자동 비활성화한 원인을 찾기 위해 추가) —
         # sha_sign 자체는 빼고 나머지 필드만 남긴다.
-        safe_form = {k: v for k, v in request.form.items() if k.lower() != "sha_sign"}
+        safe_form = _ipn_safe_log_form(request.form)
         app.logger.warning("[digistore24 거부] reason=signature_mismatch form=%r", safe_form)
         # 비밀번호(DIGISTORE24_SHA_PASSPHRASE)가 바뀌었거나 틀리면 모든 실결제가 조용히 거부된다.
         # 스팸 방지를 위해 10분에 한 번만 알린다.
@@ -1648,7 +1664,7 @@ def _digistore24_webhook_impl():
         # 폼 필드를 전부 남긴다 — 이 reject 경로는 정상적인 결제라면 절대
         # 타지 않아야 하는 경로라 평소엔 로그가 거의 안 쌓인다. 원인 파악 후
         # (또는 실사용자 데이터가 여기 섞이기 시작하면) 이 로깅은 제거할 것.
-        safe_form = {k: v for k, v in request.form.items() if k.lower() != "sha_sign"}
+        safe_form = _ipn_safe_log_form(request.form)
         app.logger.warning("[digistore24 거부] reason=%s form=%r", reason, safe_form)
         # 실제(비테스트) 결제가 거부되면 고객은 돈을 냈는데 PDF를 못 받는다 — 로그만 남기면
         # 아무도 모르므로 운영자에게 메일로 알린다. Digistore24 자체 테스트 IPN(api_mode=test)은

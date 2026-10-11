@@ -341,7 +341,7 @@ class PendingOrderEndpointTests(unittest.TestCase):
         self.assertNotEqual(t1, t2)
 
     def test_rate_limit_blocks_excessive_requests_from_same_ip(self):
-        for i in range(20):
+        for i in range(60):
             resp = self.client.post(
                 "/orders/pending", json=_valid_paid_order_data(),
                 headers={"X-Forwarded-For": "5.5.5.5"},
