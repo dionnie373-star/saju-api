@@ -31,7 +31,7 @@
 1. **라이브 상품/가격 3종 생성** (Paddle 대시보드, live 모드)
    - Jahresreport — EUR 9.90 (샌드박스 `pri_01m3f98f0s27hjx0xy4bc9em4d`와 동일 스펙)
    - Premium-Lebenskarte — EUR 24.90 (샌드박스 `pri_01m3f9bjxx7sgpr1wvm5g8k61r`)
-   - Kompatibilitäts-Check — EUR 4.90 (샌드박스 `pri_01m3g7k8hqa7dggxxj8x5vnh1n`)
+   - Kompatibilitäts-Check — EUR 9.90 (샌드박스 `pri_01m3g7k8hqa7dggxxj8x5vnh1n`)
    - (`paddle:catalog-setup` 스킬로 MCP/Node SDK 시도, 안 되면 대시보드 수기 안내)
 2. **라이브 웹훅 destination 등록**, `transaction.completed` 구독,
    URL은 그대로 `https://palja-api.onrender.com/webhooks/paddle`
@@ -50,7 +50,7 @@
    - `PADDLE_PRICE_IDS` (paid/premium/compatibility) → 라이브 price ID 3개
    - `Paddle.Environment.set('sandbox')` → 이 줄 제거 (라이브가 기본값)
 6. **실제 라이브 결제 1건 직접 테스트** (사용자 본인 카드로 최소 금액,
-   예: Kompatibilitäts-Check 4.90€) — 웹훅 200 확인 + 실제 이메일/PDF 수신
+   예: Kompatibilitäts-Check 9.90€) — 웹훅 200 확인 + 실제 이메일/PDF 수신
    확인까지 완료해야 "라이브 전환 완료"로 간주.
 7. `PROJECT_STATUS.md`의 "Paddle 라이브 계정 전환" 섹션을 완료로 갱신.
 

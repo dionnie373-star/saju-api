@@ -218,7 +218,7 @@ FR_STRINGS = {
         "que ce rapport a été fourni. Notre garantie volontaire de 60 jours reste inchangée."
     ),
     "promo": "Envie de savoir à quel point vous vous accordez avec quelqu'un d'autre ?",
-    "promo_link": "→ Test de compatibilité Saju (4,90 €)",
+    "promo_link": "→ Test de compatibilité Saju (9,90 €)",
     "footer_questions": "Une question ? Écrivez-nous à",
     "footer_links": [
         ("fr/mentions-legales", "Mentions légales"),
@@ -401,7 +401,7 @@ ES_STRINGS = {
         "entregue este informe. Nuestra garantía voluntaria de 60 días se mantiene sin cambios."
     ),
     "promo": "¿Quieres saber cuánto conectas con otra persona?",
-    "promo_link": "→ Test de compatibilidad Saju (4,90 €)",
+    "promo_link": "→ Test de compatibilidad Saju (9,90 €)",
     "footer_questions": "¿Alguna duda? Escríbenos a",
     "footer_links": [
         ("es/aviso-legal", "Aviso legal"),

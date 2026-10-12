@@ -1101,7 +1101,7 @@ def _fr_url(path):
 _COMPATIBILITY_PROMO_HTML = f"""\
   <p style="font-size: 13px; line-height: 1.6; color: #3B3630; background: #F7F3EC; padding: 14px 16px; border-radius: 8px;">
     Neugierig, wie gut du mit jemand anderem zusammenpasst?
-    <a href="{SITE_BASE_URL}/#kompatibilitaet" style="color: #A9784F;">→ Saju-Kompatibilitäts-Check (4,90 €)</a>
+    <a href="{SITE_BASE_URL}/#kompatibilitaet" style="color: #A9784F;">→ Saju-Kompatibilitäts-Check (9,90 €)</a>
   </p>
 """
 

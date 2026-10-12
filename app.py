@@ -1234,7 +1234,7 @@ def signup():
 # 계속 샌드박스 값으로 두고, 승인 나면 이 세 환경변수를 라이브 ID로 교체할 것).
 #   PADDLE_PRICE_ID_PAID          -> Palja Jahresreport (Paid), EUR 9.90
 #   PADDLE_PRICE_ID_PREMIUM       -> Palja Lebenskarte (Premium), EUR 24.90
-#   COMPATIBILITY_PADDLE_PRICE_ID -> Palja Kompatibilitäts-Check, EUR 4.90
+#   COMPATIBILITY_PADDLE_PRICE_ID -> Palja Kompatibilitäts-Check, EUR 9.90
 PADDLE_PRICE_TIER_MAP = {}
 
 _paid_price_id = os.environ.get("PADDLE_PRICE_ID_PAID", "pri_01m3f98f0s27hjx0xy4bc9em4d")
@@ -1568,7 +1568,7 @@ def paddle_webhook():
 # 그냥 비활성 상태로 남는다 (Paddle의 궁합 애드온과 같은 패턴).
 #   DIGISTORE24_PRODUCT_ID_PAID          -> Palja Jahresreport, EUR 9.90 (상품ID 740708, 승인 대기중)
 #   DIGISTORE24_PRODUCT_ID_PREMIUM       -> Palja Lebenskarte, EUR 24.90 (상품ID 740939, 승인 대기중)
-#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 4.90 (상품ID 740941, 승인 대기중)
+#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 9.90 (상품ID 740941, 승인 대기중)
 DIGISTORE24_PRODUCT_TIER_MAP = {}
 
 _ds24_paid_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PAID", "740708")
@@ -1587,7 +1587,7 @@ if _ds24_compat_id:
 # 독일어 상품을 복제해 언어/판매·감사 페이지만 바꾼 것 — 가격은 동일(EUR, 부가세 포함).
 #   746476 -> Palja FR Rapport annuel (9,90 EUR)
 #   746480 -> Palja FR Carte de vie premium (24,90 EUR)
-#   746481 -> Palja FR Test de compatibilite (4,90 EUR)
+#   746481 -> Palja FR Test de compatibilite (9,90 EUR)
 for _fr_id, _fr_tier in (
     (os.environ.get("DIGISTORE24_PRODUCT_ID_PAID_FR", "746476"), "paid"),
     (os.environ.get("DIGISTORE24_PRODUCT_ID_PREMIUM_FR", "746480"), "premium"),
@@ -1599,7 +1599,7 @@ for _fr_id, _fr_tier in (
 # 스페인어 사이트용 Digistore24 상품(2026-10-12 생성, 승인 요청 전 상태):
 #   746748 -> Palja ES Informe anual (9,90 EUR)
 #   746751 -> Palja ES Mapa de vida premium (24,90 EUR)
-#   746753 -> Palja ES Test de compatibilidad (4,90 EUR)
+#   746753 -> Palja ES Test de compatibilidad (9,90 EUR)
 # 환경변수로 덮어쓸 수 있다(언어는 주문 payload의 lang=es가 결정하므로 티어만 매핑).
 #   DIGISTORE24_PRODUCT_ID_PAID_ES / _PREMIUM_ES / _COMPATIBILITY_ES
 for _es_env, _es_default, _es_tier in (
