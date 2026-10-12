@@ -1575,11 +1575,11 @@ _ds24_paid_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PAID", "740708")
 if _ds24_paid_id:
     DIGISTORE24_PRODUCT_TIER_MAP[_ds24_paid_id] = "paid"
 
-_ds24_premium_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PREMIUM")
+_ds24_premium_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PREMIUM", "740939")
 if _ds24_premium_id:
     DIGISTORE24_PRODUCT_TIER_MAP[_ds24_premium_id] = "premium"
 
-_ds24_compat_id = os.environ.get("DIGISTORE24_PRODUCT_ID_COMPATIBILITY")
+_ds24_compat_id = os.environ.get("DIGISTORE24_PRODUCT_ID_COMPATIBILITY", "740941")
 if _ds24_compat_id:
     DIGISTORE24_PRODUCT_TIER_MAP[_ds24_compat_id] = "compatibility"
 
