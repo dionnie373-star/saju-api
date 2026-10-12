@@ -146,7 +146,8 @@ class SpanishSiteTests(unittest.TestCase):
             self.assertIn(pid, body)
         for pid in ("746476", "746480", "746481"):
             self.assertNotIn(pid, body)
-        self.assertIn("trusted-badge/48515", body)
+        self.assertNotIn("trusted-badge", body)  # Digistore24 compliance: badge removal requested 2026-10-13
+        self.assertIn("Privacy Policy", body)
 
     def test_unknown_page_404(self):
         self.assertEqual(self.c.get("/es/nope").status_code, 404)
