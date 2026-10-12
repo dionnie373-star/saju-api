@@ -638,3 +638,7 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 원인: 직접 결제창으로 한 TEST PAY 테스트 주문(토큰 없음)에 서버가 400을 반복 → Digistore24가 IPN 353269를 자동 비활성화.
 - 수정: api_mode=test + 토큰 없음이면 200(ignored)으로 응답(app.py, 테스트 추가). 실결제(live) 토큰 누락은 기존대로 400+운영자 알림.
 - 후속: Digistore24에서 IPN 353269 ACTIVE=YES로 재활성화 필요(배포 후).
+
+### 독일어 상품 URL 설정 오류 수정 (2026-10-12)
+- 원인 추정: 독일어 상품 740708/740939/740941의 Digistore24 "판매 페이지"가 결제창 자체(checkout-ds24.com/product/…)로, "감사 페이지"가 비어 있었음(승인 7일 지연 가능 원인). FR/ES는 정상.
+- 수정: 판매 페이지=https://palja.de/ , 감사 페이지=https://palja.de/danke 로 3개 모두 저장, 승인 상태는 Pending 유지 확인.
