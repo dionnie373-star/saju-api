@@ -675,3 +675,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 구매 버튼: 입력창(모달) → Digistore24 결제로 이동, 철회권 포기 체크박스 제거(Danny 요청), 서버도 withdrawal_consent 불필요(Digistore24 경로). Danny에게 수정 완료 답장 발송.
 - IPN #353269는 활성(Y) 상태 확인. FR/ES 번역 재점검(ES 버튼 Pedir→Comprar만 수정).
 - 대기: Danny 심사 결과/테스트 구매.
+
+## 2026-10-14 법적 페이지 전수 점검
+- FR/ES retractation·desistimiento: 고아 제목("Perte anticipée…")과 포기 잔여 문장 삭제(60일 보증 문장은 유지).
+- 개인정보 페이지(DE/FR/ES) 섹션 번호 정정(뉴스레터 8, 연락처 9).
+- 판매자(Merchant of Record) 표기: DE=Digistore24 GmbH, FR/ES=Digistore24 (MSLW Limited, 아일랜드). 주소는 임의로 적지 않고 digistore24.com 참조.
+- FR/ES 법적 페이지의 noindex는 소스에 남아 있고 FR_PUBLIC/ES_PUBLIC=1일 때 서버가 제거(감사 페이지 제외).
