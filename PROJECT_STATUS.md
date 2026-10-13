@@ -664,3 +664,8 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - Fungies 독촉 메일, Digistore24 상태 문의 발송 완료.
 - 사용자 직접 필요: 2FA 활성화(GmbH 약관 필수), 지급 계좌, 세금번호/VAT ID/전화번호.
 - 승인 후: Render ES_PUBLIC=1, 0일 반품권 요청, palja.es 정식 폼 흐름 재테스트, 배지 재삽입은 Danny 확인 후.
+
+## 2026-10-14 정리
+- Fungies: 한국 Stripe로는 EUR 불가, 해외 법인 필요(Malvin 최종 답) → 사실상 제외, Digistore24 단일 경로.
+- FR/ES 랜딩에 PDF 미리보기 섹션 추가(실제 파이프라인으로 렌더한 샘플; static_site/images/pdf-preview-{cover,body}-{fr,es}.jpg). DE와 구조 동일 확인.
+- Digistore24 승인 요청 최종: DE 상품 3개→DS-de, FR/ES 6개→DS-ie. DS-us 빨간 금지표시는 "독일어 상품은 독일 대리점에 제출" 거부 사유(정상). Danny에게 라우팅 안내 메일 발송.
