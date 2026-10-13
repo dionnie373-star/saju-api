@@ -1655,8 +1655,6 @@ def create_pending_order():
     email = (payload.get("email") or "").strip()
     if not email or "@" not in email:
         return jsonify({"ok": False, "error": "유효한 이메일 주소가 필요합니다."}), 400
-    if not payload.get("withdrawal_consent"):
-        return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht fehlt."}), 400
 
     # 실제 결제는 아니지만, 서버 메모리를 무한정 채우는 악용(봇이 계속 POST만
     # 반복)은 막아야 한다 — /signup보다는 느슨하게(아직 Claude 호출/메일 발송
@@ -1887,11 +1885,8 @@ def _digistore24_webhook_impl():
         _unmark_order()
         return jsonify({"ok": False, "error": "유효한 email이 없습니다."}), 400
 
-    # Paddle과 동일하게, 체크아웃 우회 호출을 막기 위해 서버에서도 재확인.
-    if not custom_data.get("withdrawal_consent"):
-        _log_rejected_request("missing_withdrawal_consent")
-        _unmark_order()
-        return jsonify({"ok": False, "error": "Zustimmung zum Widerrufsverzicht (withdrawal_consent) fehlt."}), 400
+    # 2026-10-14: 철회권 포기 체크박스는 Digistore24 컴플라이언스(60일 환불 필수) 요청으로 제거됨.
+    # 판매자는 Digistore24(Merchant of Record)이고 환불은 60일 보장으로 처리되므로 동의 값을 요구하지 않는다.
 
     # 리포트 생성은 200~250초가 걸리므로 백그라운드에서 처리하고 즉시 OK를 돌려준다
     # (_start_fulfillment 참고). 실패 시에는 order 표시가 되돌려지고 운영자에게 알림이 간다.

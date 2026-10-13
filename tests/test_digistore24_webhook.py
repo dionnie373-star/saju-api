@@ -138,14 +138,12 @@ class Digistore24WebhookTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.get_data(as_text=True), "OK")
 
-    def test_missing_withdrawal_consent_rejected(self):
+    def test_order_without_withdrawal_consent_is_fulfilled(self):
+        """2026-10-14: 철회권 포기 체크박스는 제거됨(Digistore24 컴플라이언스, 60일 환불 필수).
+        동의 값이 없어도 정상 주문은 처리되어야 한다."""
         calls = []
         self._patch(report_pipeline, "run_paid_signup", lambda **kw: calls.append(kw))
-
-        # 체크아웃을 우회해서 동의 없이 custom 데이터를 만든 경우를 흉내낸다
-        # (/orders/pending 자체는 동의 없이는 토큰을 내주지 않으므로, 웹훅이
-        # 독립적으로 재확인하는지가 여기서 검증 대상).
-        token = "forged_token_no_consent"
+        token = "token_no_consent_field"
         self._stash_pending_order(token, {
             "name": "Test Kunde",
             "birth_date": "1990-05-15",
@@ -155,9 +153,8 @@ class Digistore24WebhookTests(unittest.TestCase):
         form = _base_form("ds24_no_consent", PAID_PRODUCT_ID, "kunde@example.com", token)
         resp = self._post_webhook(form)
 
-        self.assertEqual(resp.status_code, 400)
-        self.assertIn("withdrawal_consent", resp.get_data(as_text=True))
-        self.assertEqual(len(calls), 0, "동의 없이는 리포트 파이프라인이 절대 호출되면 안 된다")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.get_data(as_text=True), "OK")
 
     def test_missing_email_rejected(self):
         # /orders/pending 자체는 email을 필수로 요구하므로(정상 체크아웃이라면
@@ -329,11 +326,12 @@ class PendingOrderEndpointTests(unittest.TestCase):
         resp = self.client.post("/orders/pending", json=data)
         self.assertEqual(resp.status_code, 400)
 
-    def test_missing_withdrawal_consent_rejected(self):
+    def test_pending_order_without_withdrawal_consent_accepted(self):
         data = _valid_paid_order_data()
-        data["withdrawal_consent"] = False
+        data.pop("withdrawal_consent", None)
         resp = self.client.post("/orders/pending", json=data)
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.get_json()["ok"])
 
     def test_tokens_are_unique_across_calls(self):
         t1 = self.client.post("/orders/pending", json=_valid_paid_order_data()).get_json()["token"]

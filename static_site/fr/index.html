@@ -243,14 +243,6 @@
         <span style="color: #6B625A;">Nos rapports sont des produits numériques (PDF) livrés exclusivement par e-mail.</span>
       </div>
 
-      <label for="withdrawalConsent" style="display: flex; gap: 10px; align-items: flex-start; max-width: 640px; margin: 0 auto; font-size: 13px; line-height: 1.6; color: #4A4239; cursor: pointer;">
-        <input type="checkbox" id="withdrawalConsent" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #C1442E;">
-        <span>
-          Je demande expressément que la création de mon rapport commence avant l'expiration du délai légal de rétractation de 14 jours, et je reconnais que je perds mon droit de rétractation dès que le rapport a été envoyé (art. L221-28, 13° du Code de la consommation, voir <a href="/fr/retractation" target="_blank" style="color: inherit; text-decoration: underline;">Rétractation</a>). Notre garantie volontaire de 60 jours reste inchangée.
-          Ce consentement est nécessaire pour l'achat d'un rapport.
-        </span>
-      </label>
-
       <p id="checkoutError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
 
       <!-- Feature-Vergleichstabelle -->
@@ -385,13 +377,6 @@
           <input id="compatEmail" type="email" placeholder="vous@exemple.fr" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
         </div>
 
-        <label for="compatConsent" style="display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; line-height: 1.6; color: #4A4239; cursor: pointer;">
-          <input type="checkbox" id="compatConsent" style="margin-top: 3px; width: 16px; height: 16px; flex-shrink: 0; accent-color: #C1442E;">
-          <span>
-            Je demande expressément que la création de mon rapport commence avant l'expiration du délai légal de rétractation de 14 jours, et je reconnais que je perds mon droit de rétractation dès que le rapport a été envoyé (art. L221-28, 13° du Code de la consommation, voir <a href="/fr/retractation" target="_blank" style="color: inherit; text-decoration: underline;">Rétractation</a>). Notre garantie volontaire de 60 jours reste inchangée.
-          </span>
-        </label>
-
         <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
 
         <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
@@ -399,6 +384,26 @@
         </button>
         <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center;">Prix TVA légale en vigueur incluse. 🔒 Paiement sécurisé par carte bancaire, PayPal et plus</p>
         <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">Garantie satisfait ou remboursé de 60 jours — sans avoir à vous justifier (<a href="/fr/retractation" style="color: inherit; text-decoration: underline;">détails</a>). Produit numérique : livraison au format PDF par e-mail.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Kaufdialog: Eingabefelder erscheinen direkt beim Klick auf einen Kaufbutton, danach Weiterleitung zu Digistore24 -->
+  <div id="buyModal" role="dialog" aria-modal="true" aria-labelledby="buyModalTitle" style="display:none; position: fixed; inset: 0; z-index: 1000; background: rgba(33,29,26,0.55); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
+    <div style="background: #FFFFFF; border-radius: 12px; width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; padding: 24px 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 60px rgba(33,29,26,0.3);">
+      <h2 id="buyModalTitle" class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Vos informations pour le rapport</h2>
+      <p style="margin: 0; font-size: 13.5px; color: #6B625A; line-height: 1.55;">Saisissez vos données de naissance — vous passerez ensuite directement au paiement sécurisé via Digistore24.</p>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date de naissance <span style="color: #C1442E;">*</span></label><input id="mBirthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label><input id="mBirthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="color: #C1442E;">*</span></label><input id="mBirthplace" type="text" placeholder="p. ex. Paris" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Adresse e-mail <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" placeholder="vous@exemple.fr" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe (nécessaire pour la carte de vie premium) <span style="color: #C1442E;">*</span></label>
+        <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Veuillez choisir</option><option value="female">Féminin</option><option value="male">Masculin</option></select></div>
+      <p id="mError" style="margin: 0; font-size: 13px; color: #C1442E; line-height: 1.5; display: none;"></p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" id="mGo" style="flex: 1 1 180px; padding: 13px 18px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">Continuer vers le paiement</button>
+        <button type="button" id="mCancel" style="flex: 0 1 auto; padding: 13px 18px; background: #FFFFFF; color: #4A4239; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; cursor: pointer;">Annuler</button>
       </div>
     </div>
   </div>
@@ -468,6 +473,8 @@
   var checkoutErrorEl = document.getElementById('checkoutError');
 
   function showCheckoutError(msg) {
+    var _mErr = document.getElementById('mError');
+    if (buyModalEl && buyModalEl.style.display === 'flex') { _mErr.textContent = msg; _mErr.style.display = 'block'; return; }
     checkoutErrorEl.textContent = msg;
     checkoutErrorEl.style.display = 'block';
   }
@@ -480,13 +487,11 @@
     var birthplace = document.getElementById('birthplace').value.trim();
     var email = document.getElementById('email').value.trim();
     var gender = document.getElementById('gender').value.trim();
-    var withdrawalConsent = document.getElementById('withdrawalConsent').checked;
 
-    if (!birthdate) { showCheckoutError('Veuillez d\'abord indiquer votre date de naissance ci-dessus.'); return; }
-    if (!birthplace) { showCheckoutError('Veuillez d\'abord indiquer votre lieu de naissance ci-dessus.'); return; }
-    if (!email || email.indexOf('@') === -1) { showCheckoutError('Veuillez d\'abord indiquer une adresse e-mail valide ci-dessus.'); return; }
-    if (tier === 'premium' && !gender) { showCheckoutError('Pour la carte de vie premium, veuillez d\'abord choisir votre sexe ci-dessus.'); return; }
-    if (!withdrawalConsent) { showCheckoutError('Veuillez d\'abord confirmer votre consentement à l\'exécution immédiate (case ci-dessus).'); return; }
+    if (!birthdate) { showCheckoutError('Veuillez indiquer votre date de naissance.'); return; }
+    if (!birthplace) { showCheckoutError('Veuillez indiquer votre lieu de naissance.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCheckoutError('Veuillez indiquer une adresse e-mail valide.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('Pour la carte de vie premium, veuillez choisir votre sexe.'); return; }
     var productId = DIGISTORE24_PRODUCT_IDS[tier];
     if (!productId) { showCheckoutError('Ce rapport n\'est pas encore disponible à la commande. Revenez bientôt.'); return; }
 
@@ -495,8 +500,6 @@
       birth_date: birthdate,
       birth_time: birthtime,
       birth_city: birthplace,
-            withdrawal_consent: true,
-      withdrawal_consent_at: new Date().toISOString(),
       lang: 'fr',
     };
     if (gender) { orderData.gender = gender; }
@@ -512,8 +515,30 @@
     }
   }
 
-  document.getElementById('buyPaidBtn').addEventListener('click', function (ev) { openCheckout('paid', ev.currentTarget); });
-  document.getElementById('buyPremiumBtn').addEventListener('click', function (ev) { openCheckout('premium', ev.currentTarget); });
+  document.getElementById('buyPaidBtn').addEventListener('click', function (ev) { openBuyModal('paid'); });
+  document.getElementById('buyPremiumBtn').addEventListener('click', function (ev) { openBuyModal('premium'); });
+
+  // --- Kaufdialog (2026-10-14): Klick auf einen Kaufbutton öffnet direkt die Eingabefelder; danach Weiterleitung zu Digistore24.
+  var buyModalEl = document.getElementById('buyModal');
+  var buyModalTier = null;
+  function openBuyModal(tier) {
+    buyModalTier = tier;
+    var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
+    map.forEach(function (p) { var s = document.getElementById(p[1]); if (s) document.getElementById(p[0]).value = s.value; });
+    document.getElementById('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
+    document.getElementById('mError').style.display = 'none';
+    buyModalEl.style.display = 'flex';
+    document.getElementById('mBirthdate').focus();
+  }
+  function closeBuyModal() { buyModalEl.style.display = 'none'; }
+  document.getElementById('mCancel').addEventListener('click', closeBuyModal);
+  buyModalEl.addEventListener('click', function (ev) { if (ev.target === buyModalEl) closeBuyModal(); });
+  document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeBuyModal(); });
+  document.getElementById('mGo').addEventListener('click', function (ev) {
+    var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
+    map.forEach(function (p) { var d = document.getElementById(p[1]); if (d) d.value = document.getElementById(p[0]).value; });
+    openCheckout(buyModalTier, ev.currentTarget);
+  });
 
   var compatErrorEl = document.getElementById('compatError');
 
@@ -536,12 +561,10 @@
     var cityB = document.getElementById('compatCity_b').value.trim();
     var genderB = document.getElementById('compatGender_b').value.trim();
     var email = document.getElementById('compatEmail').value.trim();
-    var consent = document.getElementById('compatConsent').checked;
 
     if (!dateA || !cityA) { showCompatError('Veuillez d\'abord indiquer votre date et votre lieu de naissance.'); return; }
     if (!dateB || !cityB) { showCompatError('Veuillez d\'abord indiquer la date et le lieu de naissance de l\'autre personne.'); return; }
     if (!email || email.indexOf('@') === -1) { showCompatError('Veuillez indiquer une adresse e-mail valide.'); return; }
-    if (!consent) { showCompatError('Veuillez d\'abord confirmer votre consentement à l\'exécution immédiate (case ci-dessus).'); return; }
     var productId = DIGISTORE24_PRODUCT_IDS.compatibility;
     if (!productId) { showCompatError('Le test de compatibilité sera bientôt disponible. Revenez bientôt.'); return; }
 
@@ -549,8 +572,6 @@
       email: email,
       name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA, gender_a: genderA,
       name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB, gender_b: genderB,
-            withdrawal_consent: true,
-      withdrawal_consent_at: new Date().toISOString(),
       lang: 'fr',
     };
 
