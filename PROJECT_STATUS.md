@@ -669,3 +669,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - Fungies: 한국 Stripe로는 EUR 불가, 해외 법인 필요(Malvin 최종 답) → 사실상 제외, Digistore24 단일 경로.
 - FR/ES 랜딩에 PDF 미리보기 섹션 추가(실제 파이프라인으로 렌더한 샘플; static_site/images/pdf-preview-{cover,body}-{fr,es}.jpg). DE와 구조 동일 확인.
 - Digistore24 승인 요청 최종: DE 상품 3개→DS-de, FR/ES 6개→DS-ie. DS-us 빨간 금지표시는 "독일어 상품은 독일 대리점에 제출" 거부 사유(정상). Danny에게 라우팅 안내 메일 발송.
+
+## 2026-10-14 공개 전환
+- Render 환경변수 ES_PUBLIC=1, FR_PUBLIC=1 설정 → palja.es/palja.fr noindex 제거·canonical·robots Allow·sitemap 확인(감사 페이지는 noindex 유지). DE는 스위치 없이 처음부터 공개(noindex 없음).
+- 구매 버튼: 입력창(모달) → Digistore24 결제로 이동, 철회권 포기 체크박스 제거(Danny 요청), 서버도 withdrawal_consent 불필요(Digistore24 경로). Danny에게 수정 완료 답장 발송.
+- IPN #353269는 활성(Y) 상태 확인. FR/ES 번역 재점검(ES 버튼 Pedir→Comprar만 수정).
+- 대기: Danny 심사 결과/테스트 구매.
