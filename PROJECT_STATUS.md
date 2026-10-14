@@ -681,3 +681,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 개인정보 페이지(DE/FR/ES) 섹션 번호 정정(뉴스레터 8, 연락처 9).
 - 판매자(Merchant of Record) 표기: DE=Digistore24 GmbH, FR/ES=Digistore24 (MSLW Limited, 아일랜드). 주소는 임의로 적지 않고 digistore24.com 참조.
 - FR/ES 법적 페이지의 noindex는 소스에 남아 있고 FR_PUBLIC/ES_PUBLIC=1일 때 서버가 제거(감사 페이지 제외).
+
+## 2026-10-14 독일어 판매 개시 점검
+- DS-de(Digistore24 GmbH) 승인 완료: 740708 / 740939 / 740941 (검증: 상품 목록). FR/ES 6건은 DS-ie 승인 대기.
+- 구매 흐름(연간·프리미엄·궁합 → 결제 페이지, 이메일+토큰 전달) 라이브 확인. 결제 후 웹훅→PDF는 실주문으로만 확인 가능.
+- 보증금 30일(300달러 이상 결제 상품), 환불 60일 유지(0일 요청 안 함).
+- palja.de 홈 canonical 추가, sitemap의 TODO 주석 제거, 오래된 '승인 대기중' 주석 정리.

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- TODO: palja.de 도메인이 라이브되면 이 안의 URL들을 https://palja.de 기준으로 갱신할 것. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://palja.de/</loc>

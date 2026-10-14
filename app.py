@@ -1566,9 +1566,9 @@ def paddle_webhook():
 # 세 상품 모두 2026-10-03에 Digistore24 승인 요청을 제출했고(승인 대기중),
 # 승인이 날 때까지는 테스트 결제(Test Pay)만 가능하다 — 값이 없는 tier는
 # 그냥 비활성 상태로 남는다 (Paddle의 궁합 애드온과 같은 패턴).
-#   DIGISTORE24_PRODUCT_ID_PAID          -> Palja Jahresreport, EUR 9.90 (상품ID 740708, 승인 대기중)
-#   DIGISTORE24_PRODUCT_ID_PREMIUM       -> Palja Lebenskarte, EUR 24.90 (상품ID 740939, 승인 대기중)
-#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 9.90 (상품ID 740941, 승인 대기중)
+#   DIGISTORE24_PRODUCT_ID_PAID          -> Palja Jahresreport, EUR 9.90 (상품ID 740708, 승인됨)
+#   DIGISTORE24_PRODUCT_ID_PREMIUM       -> Palja Lebenskarte, EUR 24.90 (상품ID 740939, 승인됨)
+#   DIGISTORE24_PRODUCT_ID_COMPATIBILITY -> Kompatibilitäts-Check, EUR 9.90 (상품ID 740941, 승인됨)
 DIGISTORE24_PRODUCT_TIER_MAP = {}
 
 _ds24_paid_id = os.environ.get("DIGISTORE24_PRODUCT_ID_PAID", "740708")
