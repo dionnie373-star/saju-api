@@ -24,3 +24,11 @@ class LocationCoverageTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GoogleVerificationTests(unittest.TestCase):
+    def test_verification_file_served(self):
+        c = app.app.test_client()
+        r = c.get("/googlee92931cdec1b5838.html", headers={"Host": "palja.de"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.get_data(as_text=True), "google-site-verification: googlee92931cdec1b5838.html")
