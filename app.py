@@ -194,6 +194,33 @@ for _k, (_lon, _tz) in _FR_CITIES.items():
     KNOWN_CITY_LONGITUDE.setdefault(_k, _lon)
     KNOWN_CITY_TIMEZONE.setdefault(_k, _tz)
 
+# 프랑스어권 해외 도시(캐나다·아프리카·카리브 등) — 프랑스어 사이트 고객이 유럽 밖에서
+# 태어난 경우, 지오코딩 실패 시 파리 기본값으로 조용히 떨어지는 것을 막기 위해 내장(2026-10-16).
+_FR_OVERSEAS_CITIES = {
+    "québec": (-71.2082, "America/Toronto"), "quebec": (-71.2082, "America/Toronto"),
+    "montréal": (-73.5673, "America/Toronto"), "montreal": (-73.5673, "America/Toronto"),
+    "laval": (-73.7124, "America/Toronto"), "gatineau": (-75.7013, "America/Toronto"),
+    "sherbrooke": (-71.8929, "America/Toronto"), "ottawa": (-75.6972, "America/Toronto"),
+    "dakar": (-17.4677, "Africa/Dakar"), "abidjan": (-4.0083, "Africa/Abidjan"),
+    "casablanca": (-7.5898, "Africa/Casablanca"), "rabat": (-6.8498, "Africa/Casablanca"),
+    "marrakech": (-7.9811, "Africa/Casablanca"), "alger": (3.0588, "Africa/Algiers"),
+    "algiers": (3.0588, "Africa/Algiers"), "oran": (-0.6417, "Africa/Algiers"),
+    "tunis": (10.1815, "Africa/Tunis"), "kinshasa": (15.2663, "Africa/Kinshasa"),
+    "douala": (9.7679, "Africa/Douala"), "yaoundé": (11.5021, "Africa/Douala"),
+    "yaounde": (11.5021, "Africa/Douala"), "libreville": (9.4673, "Africa/Libreville"),
+    "bamako": (-8.0029, "Africa/Bamako"), "conakry": (-13.6785, "Africa/Conakry"),
+    "lomé": (1.2123, "Africa/Lome"), "lome": (1.2123, "Africa/Lome"),
+    "cotonou": (2.3912, "Africa/Porto-Novo"), "antananarivo": (47.5079, "Indian/Antananarivo"),
+    "port-au-prince": (-72.3074, "America/Port-au-Prince"),
+    "fort-de-france": (-61.0588, "America/Martinique"),
+    "pointe-à-pitre": (-61.5510, "America/Guadeloupe"),
+    "saint-denis": (55.4551, "Indian/Reunion"), "nouméa": (166.4572, "Pacific/Noumea"),
+    "papeete": (-149.5585, "Pacific/Tahiti"), "beyrouth": (35.5018, "Asia/Beirut"),
+}
+for _k, (_lon, _tz) in _FR_OVERSEAS_CITIES.items():
+    KNOWN_CITY_LONGITUDE.setdefault(_k, _lon)
+    KNOWN_CITY_TIMEZONE.setdefault(_k, _tz)
+
 # 스페인어권(스페인 + 중남미 주요 도시) — 스페인어 사이트(lang="es")용(2026-10-11 사전 준비).
 # 동명 도시(valencia, córdoba 등)는 스페인 쪽을 우선하고, 나머지는 지오코딩 API가 처리한다.
 # 시간대는 IANA 이름이라 과거 서머타임/표준시 변경도 zoneinfo가 알아서 반영한다.
@@ -228,7 +255,7 @@ _ES_CITIES = {
     "asunción": (-57.5759, "America/Asuncion"), "asuncion": (-57.5759, "America/Asuncion"),
     "la paz": (-68.1193, "America/La_Paz"), "san josé": (-84.0907, "America/Costa_Rica"),
     "san jose": (-84.0907, "America/Costa_Rica"), "panamá": (-79.5199, "America/Panama"),
-    "ciudad de panamá": (-79.5199, "America/Panama"), "la habana": (-82.3666, "America/Havana"),
+    "ciudad de panamá": (-79.5199, "America/Panama"), "mexico": (-99.1332, "America/Mexico_City"), "la habana": (-82.3666, "America/Havana"),
     "santo domingo": (-69.9312, "America/Santo_Domingo"), "san juan": (-66.1057, "America/Puerto_Rico"),
     "guatemala": (-90.5069, "America/Guatemala"), "ciudad de guatemala": (-90.5069, "America/Guatemala"),
     "san salvador": (-89.2182, "America/El_Salvador"), "tegucigalpa": (-87.2068, "America/Tegucigalpa"),
@@ -283,6 +310,10 @@ def _lookup_location(city_name, lang="de"):
     except Exception:
         pass
 
+    import logging
+    logging.getLogger(__name__).warning(
+        "[location] default_fallback used: city=%r lang=%s (geocoding failed or no result)", city_name, lang
+    )
     if lang in _LANG_DEFAULT_LOCATION:
         lon, tz = _LANG_DEFAULT_LOCATION[lang]
         return lon, tz, "default_fallback"
