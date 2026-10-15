@@ -188,13 +188,107 @@ def get_pending_order(token: str):
                 row = cur.fetchone()
                 if not row:
                     return None
-                return {"data": row[0], "created_at": float(row[1])}
+                data = dict(row[0])
+                claim = data.pop("_claim", None)
+                return {"data": data, "created_at": float(row[1]), "claim": claim}
         finally:
             conn.close()
 
     with _MEM_PENDING_LOCK:
         entry = _MEM_PENDING.get(token)
-        return dict(entry) if entry else None
+        if not entry:
+            return None
+        data = dict(entry["data"])
+        claim = data.pop("_claim", None)
+        return {"data": data, "created_at": entry["created_at"], "claim": claim}
+
+
+# --- 생성 중 서버가 죽은 주문 복구 -------------------------------------------
+# 결제 웹훅이 접수되면 보류 주문에 "_claim"(provider/order_id/tier/email/started_at/recoveries)을
+# 기록한다. 생성이 성공하면 보류 주문 자체가 삭제되므로, 오래된 _claim이 남아 있다는 것은
+# (배포 재시작 등으로) 생성이 끝나지 못했다는 뜻이다. recover_stalled_orders가 이를 찾아 준다.
+
+def claim_pending_order(token: str, claim: dict) -> bool:
+    """보류 주문에 접수 기록(_claim)을 남긴다. 주문이 없으면 False."""
+    if not token:
+        return False
+    if _use_db():
+        from psycopg2.extras import Json
+
+        conn = _get_conn()
+        try:
+            _ensure_schema(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE pending_orders SET data = jsonb_set(data, '{_claim}', %s::jsonb) WHERE token = %s",
+                    (Json(claim), token),
+                )
+                return cur.rowcount == 1
+        finally:
+            conn.close()
+    with _MEM_PENDING_LOCK:
+        entry = _MEM_PENDING.get(token)
+        if not entry:
+            return False
+        entry["data"]["_claim"] = dict(claim)
+        return True
+
+
+def list_stalled_claims(stale_seconds: int) -> list:
+    """started_at이 stale_seconds보다 오래된 _claim이 남은 보류 주문 목록.
+    각 항목: {"token", "data"(_claim 제외), "claim"}."""
+    cutoff = time.time() - stale_seconds
+    rows = []
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_schema(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT token, data FROM pending_orders WHERE data ? '_claim' "
+                    "AND (data->'_claim'->>'started_at')::float < %s",
+                    (cutoff,),
+                )
+                for token, data in cur.fetchall():
+                    data = dict(data)
+                    rows.append({"token": token, "claim": data.pop("_claim"), "data": data})
+        finally:
+            conn.close()
+        return rows
+    with _MEM_PENDING_LOCK:
+        for token, entry in _MEM_PENDING.items():
+            claim = entry["data"].get("_claim")
+            if claim and float(claim.get("started_at", 0)) < cutoff:
+                data = {k: v for k, v in entry["data"].items() if k != "_claim"}
+                rows.append({"token": token, "claim": dict(claim), "data": data})
+    return rows
+
+
+def cas_claim(token: str, old_started_at: float, new_claim: dict) -> bool:
+    """원자적 compare-and-set: 여전히 old_started_at인 _claim만 new_claim으로 교체한다.
+    여러 워커가 동시에 같은 주문을 복구하려 할 때 한 쪽만 True를 받는다."""
+    if _use_db():
+        from psycopg2.extras import Json
+
+        conn = _get_conn()
+        try:
+            _ensure_schema(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE pending_orders SET data = jsonb_set(data, '{_claim}', %s::jsonb) "
+                    "WHERE token = %s AND (data->'_claim'->>'started_at')::float = %s",
+                    (Json(new_claim), token, float(old_started_at)),
+                )
+                return cur.rowcount == 1
+        finally:
+            conn.close()
+    with _MEM_PENDING_LOCK:
+        entry = _MEM_PENDING.get(token)
+        claim = entry["data"].get("_claim") if entry else None
+        if not claim or float(claim.get("started_at", 0)) != float(old_started_at):
+            return False
+        entry["data"]["_claim"] = dict(new_claim)
+        return True
 
 
 def pending_token_exists(token: str) -> bool:

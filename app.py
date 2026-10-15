@@ -1444,6 +1444,16 @@ def _fulfill_with_retry(provider, order_id, token, tier, custom_data, email):
 
 def _start_fulfillment(provider, order_id, token, tier, custom_data, email):
     """비동기면 스레드로 시작하고 (OK응답용 dict, 200), 동기 모드면 기존 방식대로 실행."""
+    if token:
+        # 서버가 생성 도중 재시작돼도 recover_stalled_orders가 이 주문을 찾을 수 있게 접수 기록을 남긴다.
+        try:
+            prev = (orders_store.get_pending_order(token) or {}).get("claim") or {}
+            orders_store.claim_pending_order(token, {
+                "provider": provider, "order_id": order_id, "tier": tier, "email": email,
+                "started_at": time.time(), "recoveries": int(prev.get("recoveries", 0)),
+            })
+        except Exception as e:
+            app.logger.error("[claim] 접수 기록 실패: %s", type(e).__name__)
     if not FULFILL_ASYNC:
         ok = _fulfill_with_retry(provider, order_id, token, tier, custom_data, email)
         if ok:
@@ -1457,6 +1467,76 @@ def _start_fulfillment(provider, order_id, token, tier, custom_data, email):
     )
     t.start()
     return {"ok": True, "accepted": True, "message": "주문을 접수했습니다. 리포트는 곧 이메일로 발송됩니다."}, 200
+
+
+RECOVERY_STALE_SECONDS = 12 * 60   # 생성 최대 소요(재시도 포함 약 10분)보다 길게
+RECOVERY_INTERVAL_SECONDS = 5 * 60
+RECOVERY_MAX_RECOVERIES = 2
+
+
+def recover_stalled_orders():
+    """접수 후 RECOVERY_STALE_SECONDS가 지나도 끝나지 않은(보류 주문이 아직 남은) 주문을 다시 시작한다.
+
+    배포/재시작으로 생성 스레드가 죽은 경우를 복구한다. 최대 RECOVERY_MAX_RECOVERIES번만 재시도하고,
+    그 뒤에는 운영자에게 알리고 멈춘다. 반환값: 이번에 다시 시작한 주문 수."""
+    started = 0
+    for item in orders_store.list_stalled_claims(RECOVERY_STALE_SECONDS):
+        claim, token = item["claim"], item["token"]
+        provider, order_id = claim.get("provider"), claim.get("order_id")
+        tier, email = claim.get("tier"), claim.get("email")
+        n = int(claim.get("recoveries", 0))
+        if n >= RECOVERY_MAX_RECOVERIES:
+            if orders_store.cas_claim(token, claim["started_at"], {**claim, "started_at": time.time() + 10**9}):
+                _alert_owner(
+                    f"[Palja] 자동 복구 포기 - {provider} {order_id}",
+                    f"order_id: {order_id}\ntier: {tier}\n고객 이메일: {email}\n"
+                    f"자동 복구를 {n}번 시도했지만 리포트가 발송되지 않았습니다. 수동 확인이 필요합니다.",
+                )
+            continue
+        new_claim = {**claim, "started_at": time.time(), "recoveries": n + 1}
+        if not orders_store.cas_claim(token, claim["started_at"], new_claim):
+            continue  # 다른 워커가 먼저 가져감
+        if order_id:
+            orders_store.try_mark_processed(provider, order_id)
+        _alert_owner(
+            f"[Palja] 중단된 주문 자동 복구 시작 - {provider} {order_id}",
+            f"order_id: {order_id}\ntier: {tier}\n고객 이메일: {email}\n복구 시도 {n + 1}/{RECOVERY_MAX_RECOVERIES}\n"
+            "접수 후 12분이 지나도 완료되지 않아(서버 재시작 추정) 리포트 생성을 다시 시작합니다.",
+        )
+        t = threading.Thread(
+            target=_fulfill_with_retry,
+            args=(provider, order_id, token, tier, item["data"], email),
+            daemon=True, name=f"recover-{provider}-{order_id}",
+        )
+        t.start()
+        started += 1
+    return started
+
+
+_RECOVERY_THREAD_STARTED = False
+
+
+def start_recovery_worker():
+    """DB가 설정된 환경에서만 주기적 복구 스레드를 시작한다(메모리 모드는 재시작 시 어차피 초기화)."""
+    global _RECOVERY_THREAD_STARTED
+    if _RECOVERY_THREAD_STARTED or not orders_store._use_db():
+        return False
+    _RECOVERY_THREAD_STARTED = True
+
+    def _loop():
+        time.sleep(90)
+        while True:
+            try:
+                recover_stalled_orders()
+            except Exception as e:
+                app.logger.error("[recovery] 실패: %s", type(e).__name__)
+            time.sleep(RECOVERY_INTERVAL_SECONDS)
+
+    threading.Thread(target=_loop, daemon=True, name="order-recovery").start()
+    return True
+
+
+start_recovery_worker()
 
 
 PADDLE_SIGNATURE_MAX_AGE_SECONDS = 300  # 5분 — 이보다 오래된 서명은 재전송 공격으로 간주해 거부
