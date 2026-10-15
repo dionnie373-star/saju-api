@@ -1355,9 +1355,8 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
   </p>
 {geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">
-    Bestätigung: Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der
-    Ausführung des Vertrags beginnen, und bestätigt, dass du dein Widerrufsrecht verlierst, sobald dieser
-    Report bereitgestellt wurde. Unsere freiwillige 60-Tage-Geld-zurück-Garantie bleibt davon unberührt.
+    Du hast 60 Tage Zeit: Unsere freiwillige Geld-zurück-Garantie gilt für diesen Kauf. Schreib uns
+    einfach, wenn der Report nicht zu dir passt.
   </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
@@ -1448,9 +1447,8 @@ _PREMIUM_EMAIL_HTML_TEMPLATE = """\
   </p>
 {geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">
-    Bestätigung: Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der
-    Ausführung des Vertrags beginnen, und bestätigt, dass du dein Widerrufsrecht verlierst, sobald dieser
-    Report bereitgestellt wurde. Unsere freiwillige 60-Tage-Geld-zurück-Garantie bleibt davon unberührt.
+    Du hast 60 Tage Zeit: Unsere freiwillige Geld-zurück-Garantie gilt für diesen Kauf. Schreib uns
+    einfach, wenn der Report nicht zu dir passt.
   </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
@@ -1472,9 +1470,8 @@ _COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
   </p>
 {geocoding_notice}\
   <p style="font-size: 13px; line-height: 1.6; color: #6B625A;">
-    Bestätigung: Du hast ausdrücklich zugestimmt, dass wir vor Ablauf der Widerrufsfrist mit der
-    Ausführung des Vertrags beginnen, und bestätigt, dass du dein Widerrufsrecht verlierst, sobald dieser
-    Report bereitgestellt wurde. Unsere freiwillige 60-Tage-Geld-zurück-Garantie bleibt davon unberührt.
+    Du hast 60 Tage Zeit: Unsere freiwillige Geld-zurück-Garantie gilt für diesen Kauf. Schreib uns
+    einfach, wenn der Report nicht zu dir passt.
   </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
     Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine

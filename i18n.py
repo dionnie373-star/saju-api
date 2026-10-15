@@ -213,9 +213,8 @@ FR_STRINGS = {
         "il ne remplace pas un avis médical ou psychologique."
     ),
     "withdrawal_confirmation": (
-        "Confirmation : vous avez expressément demandé que nous commencions l'exécution du contrat avant "
-        "l'expiration du délai de rétractation et reconnu que vous perdez votre droit de rétractation dès "
-        "que ce rapport a été fourni. Notre garantie volontaire de 60 jours reste inchangée."
+        "Vous disposez de 60 jours : notre garantie volontaire « satisfait ou remboursé » s\'applique à cet achat. "
+        "Écrivez-nous simplement si le rapport ne vous convient pas."
     ),
     "promo": "Envie de savoir à quel point vous vous accordez avec quelqu'un d'autre ?",
     "promo_link": "→ Test de compatibilité Saju (9,90 €)",
@@ -396,9 +395,8 @@ ES_STRINGS = {
         "no sustituye el consejo médico ni psicológico."
     ),
     "withdrawal_confirmation": (
-        "Confirmación: has solicitado expresamente que comencemos la ejecución del contrato antes de que "
-        "venza el plazo de desistimiento y reconoces que pierdes tu derecho de desistimiento en cuanto se "
-        "entregue este informe. Nuestra garantía voluntaria de 60 días se mantiene sin cambios."
+        "Tienes 60 días: nuestra garantía voluntaria de devolución del dinero se aplica a esta compra. "
+        "Escríbenos si el informe no es para ti."
     ),
     "promo": "¿Quieres saber cuánto conectas con otra persona?",
     "promo_link": "→ Test de compatibilidad Saju (9,90 €)",

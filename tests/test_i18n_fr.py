@@ -144,12 +144,14 @@ class WithdrawalConfirmationEmailTest(unittest.TestCase):
     def test_fr_paid_email_has_confirmation_free_does_not(self):
         paid = rp._fr_email_template("paid").format(name_suffix="", geocoding_notice="")
         free = rp._fr_email_template("free").format(name_suffix="", geocoding_notice="")
-        self.assertIn("droit de rétractation", paid)
-        self.assertNotIn("droit de rétractation", free)
+        self.assertIn("60 jours", paid)
+        self.assertNotIn("perdez votre droit", paid)
+        self.assertNotIn("60 jours", free)
 
     def test_de_paid_templates_have_confirmation(self):
         for tpl in (rp._PAID_EMAIL_HTML_TEMPLATE, rp._PREMIUM_EMAIL_HTML_TEMPLATE, rp._COMPATIBILITY_EMAIL_HTML_TEMPLATE):
-            self.assertIn("Widerrufsrecht verlierst", tpl)
+            self.assertIn("60 Tage", tpl)
+            self.assertNotIn("Widerrufsrecht verlierst", tpl)
         self.assertNotIn("Widerrufsrecht verlierst", rp._FREE_EMAIL_HTML_TEMPLATE)
 
 
