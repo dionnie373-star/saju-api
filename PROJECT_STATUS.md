@@ -687,3 +687,8 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 구매 흐름(연간·프리미엄·궁합 → 결제 페이지, 이메일+토큰 전달) 라이브 확인. 결제 후 웹훅→PDF는 실주문으로만 확인 가능.
 - 보증금 30일(300달러 이상 결제 상품), 환불 60일 유지(0일 요청 안 함).
 - palja.de 홈 canonical 추가, sitemap의 TODO 주석 제거, 오래된 '승인 대기중' 주석 정리.
+
+## 2026-10-15 FR/ES 승인 현황 (DS-ie)
+- 승인: FR 746476(Rapport annuel), 746481(Test de compatibilité) / ES 746748(Informe anual), 746753(Test de compatibilidad).
+- 심사 중: FR 746480(Carte de vie premium), ES 746751(Mapa de vida premium) — 승인 전까지 fr/index.html, es/index.html의 프리미엄 버튼을 비활성("Bientôt disponible"/"Próximamente")으로 둠. 승인되면 disabled 속성, 배경색(#211D1A), 문구(Commander la carte de vie — 24,90 € / Comprar el mapa de vida — 24,90 €), cursor를 원복할 것.
+- 프리미엄 안전보장 기간 30일(300달러 이상 결제 상품 규정), 15개 판매 후 해제 요청 가능.
