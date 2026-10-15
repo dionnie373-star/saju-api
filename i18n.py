@@ -121,7 +121,7 @@ FR_GERMAN_STOPWORDS_RE = re.compile(r"\b(?:und|der|die|das|nicht|dein|deine|dein
 # établi"는 과학적 근거를 '암시'하는 게 아니라 정반대로 선을 긋는 문장이다(2026-10-11 실제
 # 궁합 주문에서 모델이 이 문장을 매번 써서 재생성 2회가 다 실패하고 경고만 남았음).
 FR_NEGATED_SCIENCE_RE = re.compile(
-    r"\b(?:non|pas|ni|sans)\b[^.!?\n]{0,80}?\bscientifiquement\s+établi(?:e|s|es)?\b", re.IGNORECASE)
+    r"\b(?:non|pas|ni|sans)\b[^.!?\n]{0,80}?\bscientifi(?:quement\s+établi(?:e|s|es)?|que|ques)\b", re.IGNORECASE)
 
 
 def fr_mechanical_issues(report_text):
@@ -306,7 +306,7 @@ ES_GERMAN_LEAK_RE = re.compile(r"\b(?:Holz|Feuer|Erde|Metall|Wasser|Dein|Deine|J
 ES_FRENCH_LEAK_RE = re.compile(r"\b(?:vous|votre|vos|Bois|Feu|Terre|Métal|Eau|rapport annuel)\b")
 ES_GERMAN_STOPWORDS_RE = re.compile(r"\b(?:und|der|die|nicht|dein|deine|deinen|ein|eine|mit|auch|wird|ist)\b")
 ES_NEGATED_SCIENCE_RE = re.compile(
-    r"\b(?:no|ni|sin)\b[^.!?\n]{0,80}?\b(?:con base científica|científicamente (?:comprobad[oa]s?|probad[oa]s?|demostrad[oa]s?|establecid[oa]s?)|base científica)\b",
+    r"\b(?:no|ni|sin)\b[^.!?\n]{0,80}?\b(?:con base científica|diagnóstico científico|científic[oa]s?|científicamente (?:comprobad[oa]s?|probad[oa]s?|demostrad[oa]s?|establecid[oa]s?)|base científica)\b",
     re.IGNORECASE)
 
 

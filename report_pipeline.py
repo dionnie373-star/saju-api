@@ -565,6 +565,35 @@ def generate_verified_report(prompt_template_name, variables, *, source_data, ap
     return report_text, validation
 
 
+def call_claude_checked(prompt_template_name, variables, *, lang="de", min_words=0, max_retries=2, api_key=None):
+    """call_claude + 기계적 규칙 검사(금지어·존칭·타 언어 혼입·분량) + 문제 시 자동 재생성.
+
+    무료/궁합 리포트용(LLM 2차 검증 없음 - 비용 절감). 재생성이 실패하면(네트워크 오류 등)
+    원본을 그대로 쓴다. 재시도 후에도 문제가 남으면 발송은 막지 않고 로그만 남긴다.
+    """
+    text = call_claude(prompt_template_name, variables, api_key=api_key, lang=lang)
+    issues = check_mechanical_rules(text, min_words=min_words, lang=lang)
+    attempts = 0
+    while issues and attempts < max_retries:
+        attempts += 1
+        note = _build_correction_note(
+            {"issues": [{"claim": "(기계적 검사)", "problem": m} for m in issues]}, min_words=min_words
+        )
+        retried = _regenerate_with_correction(prompt_template_name, variables, note, api_key=api_key, lang=lang)
+        if not retried:
+            break
+        text = retried
+        issues = check_mechanical_rules(text, min_words=min_words, lang=lang)
+    destiny_re = i18n.DESTINY_RE.get(lang, _SCHICKSAL_WORD_RE)
+    if destiny_re.search(text):
+        text = _strip_schicksal_sentences(text, destiny_re)
+        label = i18n.DESTINY_LABEL[lang]
+        issues = [m for m in issues if label not in m]
+    if issues:
+        print(f"[report_pipeline] 경고: {prompt_template_name} lang={lang} 재생성 {attempts}회 후에도 검사 실패 - {issues}")
+    return text
+
+
 # ---------------------------------------------------------------------------
 # PDF 생성
 # ---------------------------------------------------------------------------
@@ -1310,10 +1339,11 @@ def run_free_signup(*, payload, calc_result):
     email = payload["email"].strip()
     lang = i18n.normalize_lang(payload.get("lang"))
 
-    report_text = call_claude(
+    report_text = call_claude_checked(
         "free_report_prompt.json",
         {"compact": calc_result["compact"]},
         lang=lang,
+        min_words=450,
     )
 
     fallback_city = None
@@ -1499,11 +1529,15 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     # 궁합 리포트에는 daewoon이 없음). 명시적으로 "female"/"male"을 골랐을 때만 프롬프트가
     # 그 사람에게 자연스러운 독일어 대명사(sie/er)를 쓰도록 허용하고, 그 외(선택 안 함/
     # "divers"/모름)에는 프롬프트가 이름 반복 등 성별 중립적인 표현으로 안전하게 대체한다.
-    _GENDER_LABELS = {"female": "weiblich", "male": "männlich"}
-    gender_a = _GENDER_LABELS.get((payload.get("gender_a") or "").strip().lower(), "keine Angabe")
-    gender_b = _GENDER_LABELS.get((payload.get("gender_b") or "").strip().lower(), "keine Angabe")
+    _GENDER_LABELS = {
+        "de": {"female": "weiblich", "male": "männlich", "none": "keine Angabe"},
+        "fr": {"female": "féminin", "male": "masculin", "none": "non précisé"},
+        "es": {"female": "femenino", "male": "masculino", "none": "no indicado"},
+    }[lang]
+    gender_a = _GENDER_LABELS.get((payload.get("gender_a") or "").strip().lower(), _GENDER_LABELS["none"])
+    gender_b = _GENDER_LABELS.get((payload.get("gender_b") or "").strip().lower(), _GENDER_LABELS["none"])
 
-    report_text = call_claude(
+    report_text = call_claude_checked(
         "compatibility_report_prompt.json",
         {
             "name_a": name_a,
@@ -1514,6 +1548,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
             "compact_b": calc_result_b["compact"],
         },
         lang=lang,
+        min_words=450,
     )
 
     fallback_cities = []

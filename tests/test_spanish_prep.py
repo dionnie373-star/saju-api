@@ -247,10 +247,46 @@ class SpanishPaidPromptTests(unittest.TestCase):
         self.assertNotIn("언어 전환 지시", text)
         self.assertNotIn("독일어", text)
 
-    def test_other_templates_still_use_override(self):
-        t = rp._load_prompt_template("free_report_prompt.json", "es")
-        text = rp._build_messages(t, {"compact": "C"}, "es")[0]["content"]
-        self.assertIn("스페인어", text)
+    def test_free_and_compat_are_native(self):
+        for lang, tu in (("es", "tú"), ("fr", "vous")):
+            for name, vars_ in (
+                ("free_report_prompt.json", {"compact": "C"}),
+                ("compatibility_report_prompt.json", {"name_a": "A", "name_b": "B", "gender_a": "x",
+                                                      "gender_b": "y", "compact_a": "CA", "compact_b": "CB"}),
+            ):
+                t = rp._load_prompt_template(name, lang)
+                self.assertEqual(t["native_lang"], lang)
+                text = rp._build_messages(t, vars_, lang)[0]["content"]
+                self.assertNotIn("{{", text)
+                self.assertNotIn("언어 전환 지시", text)
+                self.assertNotIn("독일어", text)
+                self.assertIn(tu, text)
+
+
+class CheckedGenerationTests(unittest.TestCase):
+    def test_retries_on_issue_then_keeps_clean_text(self):
+        from unittest import mock
+        bad = "Tu informe habla del destino. " + "palabra " * 600
+        good = "Tu informe habla de tu año. " + "palabra " * 600
+        with mock.patch.object(rp, "call_claude", return_value=bad), \
+             mock.patch.object(rp, "_regenerate_with_correction", return_value=good) as regen:
+            out = rp.call_claude_checked("free_report_prompt.json", {}, lang="es", min_words=450)
+        self.assertEqual(out, good)
+        self.assertEqual(regen.call_count, 1)
+
+    def test_regen_failure_keeps_original_and_strips_destiny(self):
+        from unittest import mock
+        bad = "Tu informe habla del destino. Otra frase limpia. " + "palabra " * 600
+        with mock.patch.object(rp, "call_claude", return_value=bad), \
+             mock.patch.object(rp, "_regenerate_with_correction", return_value=None):
+            out = rp.call_claude_checked("free_report_prompt.json", {}, lang="es", min_words=450)
+        self.assertNotIn("destino", out)
+        self.assertIn("Otra frase limpia", out)
+
+    def test_mandated_negated_science_sentence_is_allowed(self):
+        import i18n
+        self.assertEqual(i18n.es_mechanical_issues("ni un diagnóstico de personalidad con base científica"), [])
+        self.assertEqual(i18n.fr_mechanical_issues("ni diagnostic scientifique de la personnalité"), [])
 
 
 class SpanishProductMapTests(unittest.TestCase):
