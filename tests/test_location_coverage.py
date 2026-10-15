@@ -32,3 +32,9 @@ class GoogleVerificationTests(unittest.TestCase):
         r = c.get("/googlee92931cdec1b5838.html", headers={"Host": "palja.de"})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.get_data(as_text=True), "google-site-verification: googlee92931cdec1b5838.html")
+
+    def test_verification_file_served_on_fr_es_hosts(self):
+        c = app.app.test_client()
+        for host in ("palja.fr", "palja.es"):
+            r = c.get("/googlee92931cdec1b5838.html", headers={"Host": host})
+            self.assertEqual(r.status_code, 200, host)

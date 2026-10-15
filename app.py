@@ -1118,8 +1118,7 @@ def robots_txt():
 # Google Search Console 소유권 확인 파일(palja.de). 이 파일은 확인 후에도 삭제하면 안 된다.
 @app.route("/googlee92931cdec1b5838.html", methods=["GET"])
 def google_site_verification():
-    if _is_es_host() or _is_fr_host():
-        return jsonify({"ok": False, "error": "Not found"}), 404
+    # 토큰이 구글 계정 단위라 palja.de / palja.fr / palja.es 모두 같은 파일로 확인된다.
     return Response("google-site-verification: googlee92931cdec1b5838.html", mimetype="text/html")
 
 
