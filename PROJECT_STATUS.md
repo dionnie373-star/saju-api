@@ -692,3 +692,11 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 승인: FR 746476(Rapport annuel), 746481(Test de compatibilité) / ES 746748(Informe anual), 746753(Test de compatibilidad).
 - 심사 중: FR 746480(Carte de vie premium), ES 746751(Mapa de vida premium) — 승인 전까지 fr/index.html, es/index.html의 프리미엄 버튼을 비활성("Bientôt disponible"/"Próximamente")으로 둠. 승인되면 disabled 속성, 배경색(#211D1A), 문구(Commander la carte de vie — 24,90 € / Comprar el mapa de vida — 24,90 €), cursor를 원복할 것.
 - 프리미엄 안전보장 기간 30일(300달러 이상 결제 상품 규정), 15개 판매 후 해제 요청 가능.
+
+## 2026-10-16 FR/ES 프리미엄 "end product 개선" 요청 대응
+- Danny(DS-ie 컴플라이언스) 회신: 746480/746751은 "end product를 개선"하라며 미승인. 승인된 4개는 FR/ES 연간·궁합.
+- Render 로그 근거: Digistore 심사팀 테스트 구매가 10/15 00:47~01:13 KST에 있었고, ES 프리미엄 리포트 3건 모두 자동 검증 실패(분량 2,917~3,019단어 < 최소 3,200 / 금지어 revela·demuestra·garantiza / 희소성·긴박감 표현 / 숫자 사실 오류). 검증 실패해도 발송은 진행되는 구조라 결함 있는 PDF가 그대로 전달됨. (10/10 내 FR 테스트도 동일: 3,028단어, 성별 일치 분사, 금지어.)
+- 원인 추정: FR/ES 프리미엄은 독일어 프롬프트에 언어 전환 블록을 덧씌우는 임시 방식이었음(연간 리포트는 전용 프롬프트).
+- 조치: prompts/fr/premium_report_prompt.json, prompts/es/premium_report_prompt.json 신규(native_lang 지정, 연간 전용 프롬프트와 같은 구조 + 독일어 프리미엄 규칙 이식). 목표 3,400~4,400단어, 기간별 최소 230단어/현재 대운 350~420단어, 금지어·성별 일치·'primera/última vez' 등 기계검사 항목을 프롬프트에 명시, max_tokens 14,000.
+- 독일어 원본의 모순(다른 시기 120~150단어 vs 시기당 최소 200단어)은 후자로 통일.
+- 미검증: 로컬에 ANTHROPIC_API_KEY가 없어 실제 생성 테스트는 못 함. 배포 후 Danny 재테스트 구매 → Render 로그의 `[report_pipeline] lang=fr|es premium` 경고/단어수로 확인. 확인 전까지 FR/ES 프리미엄 버튼은 비활성 유지.
