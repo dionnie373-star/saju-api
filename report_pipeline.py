@@ -441,9 +441,22 @@ def check_mechanical_rules(report_text, *, min_words, lang="de"):
     hanja_matches = _HANJA_RE.findall(report_text)
     if hanja_matches:
         issues.append(f"한자/CJK 문자 포함됨: {''.join(sorted(set(hanja_matches)))[:20]}")
-    formal_matches = _FORMAL_ADDRESS_RE.findall(report_text)
+    # "Sie"는 문장 첫머리에서는 "그녀/그것"(예: "Sie bietet Bilder an" = 이 가르침은)일 수
+    # 있어 오탐이 났다(2026-10-17 실제 프리미엄 생성에서 재생성 2회 낭비). 문장 첫머리의
+    # "Sie"는 제외하고, 문장 중간의 대문자 Sie와 Ihr 계열만 격식체로 본다.
+    formal_matches = []
+    for m in _FORMAL_ADDRESS_RE.finditer(report_text):
+        if m.group(0) == "Sie":
+            before = report_text[:m.start()].rstrip(" \t\"“„»«*_")
+            if not before or before[-1] in ".!?:\n#":
+                nxt = re.match(r"\s+([A-Za-zÄÖÜäöüß]+)", report_text[m.end():])
+                verb = nxt.group(1).lower() if nxt else ""
+                # 3인칭 단수 동사(…t, kann/will/soll/darf/muss/mag)면 "그녀/그것"
+                if verb.endswith("t") or verb in ("kann", "will", "soll", "darf", "muss", "mag"):
+                    continue
+        formal_matches.append(m.group(0))
     if formal_matches:
-        formal_count = len(_FORMAL_ADDRESS_RE.findall(report_text))
+        formal_count = len(formal_matches)
         issues.append(
             f"격식체(Sie/Ihr) {formal_count}회 사용됨 - 웹사이트와 동일하게 반드시 "
             f"'du/dein/dich' 비격식체만 써야 함(Sie/Ihr/Ihnen 전부 금지)"
@@ -1544,7 +1557,7 @@ def run_paid_signup(*, payload, calc_result):
         },
         # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
         # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
-        source_data=calc_result["monthly_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
+        source_data=calc_result["compact"] + "\n\n" + calc_result["monthly_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
         min_words=2500,
         lang=lang,
     )
@@ -1734,7 +1747,7 @@ def run_premium_signup(*, payload, calc_result):
         },
         # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
         # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
-        source_data=calc_result["daewoon_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
+        source_data=calc_result["compact"] + "\n\n" + calc_result["daewoon_compact"] + "\n\n[계산된 사실]\n" + computed_facts_kr,
         # 실제 API 재테스트 결과 3800단어는 재시도 2회를 다 써도 안정적으로
         # 못 맞췄음(최고 3357단어) - 프롬프트 목표도 3,200~4,200으로 낮춰서
         # 달성 가능한 기준으로 재설정함(2026-09-27).

@@ -249,3 +249,11 @@ class GermanPortedChecksTest(unittest.TestCase):
 
     def test_clean_text_passes(self):
         self.assertEqual(self._issues("Du kannst dir Zeit nehmen. Das Wasser hilft dir."), [])
+
+
+class GermanSieSentenceStartTest(unittest.TestCase):
+    def test_sentence_initial_sie_is_not_formal(self):
+        self.assertEqual(rp.check_mechanical_rules("Die Lehre ist alt. Sie bietet Bilder an.", min_words=0), [])
+
+    def test_midsentence_sie_is_formal(self):
+        self.assertTrue(rp.check_mechanical_rules("Wenn Sie das tun, hilft es.", min_words=0))
