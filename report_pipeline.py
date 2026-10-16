@@ -395,6 +395,17 @@ _WRONG_COLLOCATION_RE = re.compile(r"\bLeistungen\s+gebracht\b")
 _AWKWARD_BEDARF_RE = re.compile(r"\bBedarf\s+nach\b")
 
 
+_DE_SCARCITY_RE = re.compile(
+    r"\beinmalige[nrms]?\s+Gelegenheit\b|\bletzte[nrms]?\s+Chance\b|\bideale[nrms]?\s+Zeitpunkt\b|"
+    r"\bentscheidende[nrms]?\s+Moment\b|\bzum\s+ersten\s+Mal\b|\bmit\s+klopfendem\s+Herzen\b", re.IGNORECASE)
+_DE_ASSERTION_RE = re.compile(r"\b(?:beweist|beweisen|garantiert|garantieren|offenbart|offenbaren)\b", re.IGNORECASE)
+_DE_STEM_LITERAL_RE = re.compile(
+    r"\b(?:Feuer|Holz|Erde|Metall|Wasser)\s+(?:des|im|am)\s+Himmel(?:s)?\b|\b(?:Feuer|Holz|Erde|Metall|Wasser)\s+(?:auf|in)\s+der\s+Erde\b",
+    re.IGNORECASE)
+_DE_ENGLISH_LEAK_RE = re.compile(
+    r"\b(?:deepened|growing|moving|feeling|because|which|while|between|journey|mindful|healing|your)\b",
+    re.IGNORECASE)
+
 _NEGATED_SCIENCE_DE_RE = re.compile(
     r"\b(?:kein\w*|nicht|ohne)\b[^.!?\n]{0,60}?\bwissenschaftlich\w*", re.IGNORECASE)
 
@@ -437,6 +448,16 @@ def check_mechanical_rules(report_text, *, min_words, lang="de"):
             f"격식체(Sie/Ihr) {formal_count}회 사용됨 - 웹사이트와 동일하게 반드시 "
             f"'du/dein/dich' 비격식체만 써야 함(Sie/Ihr/Ihnen 전부 금지)"
         )
+    # FR/ES 검사에서 이식(2026-10-17): 희소성/긴박감/단정 표현, 영어 혼입, 천간 직역
+    if _DE_SCARCITY_RE.search(report_text):
+        issues.append("표현 금지(희소성/긴박감/범위 밖 단정): 'einmalige Gelegenheit/letzte Chance/idealer Zeitpunkt/entscheidender Moment/zum ersten Mal' 등")
+    if _DE_ASSERTION_RE.search(report_text):
+        issues.append("단정 표현 금지: 'beweist/garantiert/offenbart' 등 - 'deutet an/kann'처럼 가능성 어조로")
+    if _DE_STEM_LITERAL_RE.search(report_text):
+        issues.append("천간/지지 직역 금지('Feuer des Himmels' 등) - 오행 이름만 사용")
+    eng = {m.lower() for m in _DE_ENGLISH_LEAK_RE.findall(report_text)}
+    if eng:
+        issues.append(f"영어 단어가 섞여 있음: {', '.join(sorted(eng))} - 전부 독일어로")
     if _WRONG_COLLOCATION_RE.search(report_text):
         issues.append("연어 오류: 'Leistungen gebracht'는 틀린 표현 - 'Leistungen erbracht'로 써야 함")
     if _AWKWARD_BEDARF_RE.search(report_text):

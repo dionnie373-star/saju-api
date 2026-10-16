@@ -235,3 +235,17 @@ class GermanNegatedScienceTests(unittest.TestCase):
         bad = "Diese Methode ist wissenschaftlich belegt. " * 3
         self.assertFalse(any("wissenschaftlich" in x for x in rp.check_mechanical_rules(ok, min_words=0)))
         self.assertTrue(any("wissenschaftlich" in x for x in rp.check_mechanical_rules(bad, min_words=0)))
+
+
+class GermanPortedChecksTest(unittest.TestCase):
+    def _issues(self, t):
+        return rp.check_mechanical_rules(t, min_words=0)
+
+    def test_flags_scarcity_and_assertions(self):
+        self.assertTrue(self._issues("Das ist deine letzte Chance."))
+        self.assertTrue(self._issues("Das beweist deinen Weg."))
+        self.assertTrue(self._issues("Feuer des Himmels trifft dich."))
+        self.assertTrue(self._issues("Dein journey beginnt."))
+
+    def test_clean_text_passes(self):
+        self.assertEqual(self._issues("Du kannst dir Zeit nehmen. Das Wasser hilft dir."), [])
