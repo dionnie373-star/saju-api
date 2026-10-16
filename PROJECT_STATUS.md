@@ -748,3 +748,10 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - Danny(DS-ie)가 "판매 페이지 버튼이 꺼져 있어 주문 폼에서 직접 테스트 구매 → 상품 미배달"이라고 알려옴. 직접 주문 폼 구매는 토큰/출생정보가 없어 서버가 무시하는 것이 설계(정상 흐름은 사이트 버튼 → 토큰 → 결제창).
 - 조치: fr/index.html, es/index.html 프리미엄 버튼 원복(disabled 제거, #211D1A, "Commander la carte de vie — 24,90 €" / "Comprar el mapa de vida — 24,90 €").
 - 미검증: 새 FR/ES premium 프롬프트의 실제 생성은 아직 한 번도 못 돌려봄. 사용자 테스트 결제 → Render 로그(`[report_pipeline] lang=fr|es premium`)로 확인 후 Danny에게 회신.
+
+## 2026-10-17 타임아웃 정리: Claude 생성 호출을 스트리밍(SSE)으로
+- 웹훅 쪽은 이미 "즉시 OK + 백그라운드 생성"(FULFILL_ASYNC, claim/recovery)이라 Digistore24 타임아웃 문제는 해결된 상태(위 571행 메모는 낡음).
+- 남은 진짜 위험: 비스트리밍 호출은 읽기 타임아웃 280초가 곧 총 생성 시간 상한 → FR/ES 프리미엄(max_tokens 14,000)이 넘기면 같은 요청이 반복 실패.
+- 조치: report_pipeline._post_anthropic(stream=True) 추가, call_claude / call_claude_checked 재생성 호출이 사용. 조각 사이 타임아웃 120초(STREAM_READ_TIMEOUT), 1회 총 시간 상한 480초(STREAM_TOTAL_DEADLINE). 중간 오류 이벤트는 ConnectionError로 올려 기존 재시도 경로 사용. 검증용 호출(validate_report_consistency)과 이메일은 그대로.
+- 테스트: tests/test_streaming.py (SSE 조립/오류/재시도/마감, 총 216개). 실제 API로의 검증은 무료 가입(Haiku) 실행으로 확인할 것.
+- 주의: recover_stalled_orders의 RECOVERY_STALE_SECONDS(12분)보다 재시도 합산 시간이 길어질 수 있음(기존에도 동일).

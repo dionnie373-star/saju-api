@@ -126,14 +126,102 @@ ANTHROPIC_RETRY_BASE_SECONDS = 5  # 5, 10, 20초 (retry-after 헤더가 있으�
 ANTHROPIC_GENERATION_TIMEOUT = 280
 
 
-def _post_anthropic(headers, body, timeout):
-    """requests.post + 일시 오류 재시도. 마지막 응답(또는 마지막 예외)을 그대로 돌려준다/던진다."""
+# 스트리밍(SSE) 수신: 비스트리밍은 응답이 끝날 때까지 한 바이트도 안 와서 읽기 타임아웃(280초)이 곧 "총 생성 시간
+# 상한"이었다. 긴 프리미엄 리포트(FR/ES 14,000토큰)는 이를 넘길 수 있다. 스트리밍은 토큰이 계속 와서
+# 조각 사이 타임아웃(STREAM_READ_TIMEOUT)만 걸리고, 총 시간은 STREAM_TOTAL_DEADLINE으로 따로 제한한다.
+STREAM_READ_TIMEOUT = 120
+STREAM_TOTAL_DEADLINE = 480
+
+
+class _StreamedResponse:
+    """_consume_sse 결과를 requests.Response처럼 쓸 수 있게 감싼다(.status_code/.json()/.text/.headers)."""
+    status_code = 200
+
+    def __init__(self, data):
+        self._data = data
+        self.headers = {}
+        self.text = json.dumps(data, ensure_ascii=False)
+
+    def json(self):
+        return self._data
+
+
+def _consume_sse(resp, deadline_seconds=STREAM_TOTAL_DEADLINE):
+    """Anthropic 스트리밍 응답(SSE)을 비스트리밍 응답과 같은 dict로 합친다.
+
+    mid-stream 오류 이벤트(overloaded 등)는 requests.ConnectionError로 올려 기존 재시도 경로를 탄다.
+    """
+    import time as _t
+    started = _t.monotonic()
+    message = {"content": [], "stop_reason": None, "usage": {}}
+    blocks = {}
+    event = None
+    for raw in resp.iter_lines(decode_unicode=True):
+        if _t.monotonic() - started > deadline_seconds:
+            raise requests.Timeout(f"스트리밍 총 시간 {deadline_seconds}초 초과")
+        if not raw:
+            continue
+        if raw.startswith("event:"):
+            event = raw[6:].strip()
+            continue
+        if not raw.startswith("data:"):
+            continue
+        try:
+            d = json.loads(raw[5:].strip())
+        except ValueError:
+            continue
+        et = d.get("type") or event
+        if et == "message_start":
+            m = d.get("message", {})
+            for k in ("id", "model", "role"):
+                if k in m:
+                    message[k] = m[k]
+            message["usage"].update(m.get("usage") or {})
+        elif et == "content_block_start":
+            blocks[d["index"]] = dict(d.get("content_block") or {})
+        elif et == "content_block_delta":
+            b = blocks.get(d["index"])
+            if b is None:
+                continue
+            delta = d.get("delta") or {}
+            dt = delta.get("type")
+            if dt == "text_delta":
+                b["text"] = b.get("text", "") + delta.get("text", "")
+            elif dt == "thinking_delta":
+                b["thinking"] = b.get("thinking", "") + delta.get("thinking", "")
+            elif dt == "signature_delta":
+                b["signature"] = delta.get("signature", "")
+        elif et == "message_delta":
+            delta = d.get("delta") or {}
+            if "stop_reason" in delta:
+                message["stop_reason"] = delta["stop_reason"]
+            message["usage"].update(d.get("usage") or {})
+        elif et == "error":
+            err = d.get("error") or {}
+            raise requests.ConnectionError(f"스트리밍 중 API 오류: {err.get('type')}: {err.get('message')}")
+    message["content"] = [blocks[i] for i in sorted(blocks)]
+    if message["stop_reason"] is None and not message["content"]:
+        raise requests.ConnectionError("스트리밍이 내용 없이 끝났습니다(연결 끊김 추정)")
+    return message
+
+
+def _post_anthropic(headers, body, timeout, stream=False):
+    """requests.post + 일시 오류 재시도. 마지막 응답(또는 마지막 예외)을 그대로 돌려준다/던진다.
+
+    stream=True면 SSE로 받아 비스트리밍과 같은 모양의 응답 객체를 돌려준다(긴 생성용).
+    """
     import time as _t
     last_exc = None
     resp = None
     for attempt in range(1, ANTHROPIC_HTTP_ATTEMPTS + 1):
         try:
-            resp = requests.post(ANTHROPIC_API_URL, headers=headers, json=body, timeout=timeout)
+            if stream:
+                resp = requests.post(ANTHROPIC_API_URL, headers=headers, json={**body, "stream": True},
+                                     timeout=(10, STREAM_READ_TIMEOUT), stream=True)
+                if isinstance(resp, requests.Response) and resp.status_code == 200:
+                    resp = _StreamedResponse(_consume_sse(resp))
+            else:
+                resp = requests.post(ANTHROPIC_API_URL, headers=headers, json=body, timeout=timeout)
         except (requests.ConnectionError, requests.Timeout) as e:
             last_exc, resp = e, None
         else:
@@ -190,6 +278,7 @@ def call_claude(prompt_template_name, variables, *, api_key=None, timeout=ANTHRO
             },
             body,
             timeout,
+            stream=True,
         )
     except requests.RequestException as e:
         raise PipelineError(f"Claude API 호출 중 네트워크 오류: {e}") from e
@@ -445,6 +534,7 @@ def _regenerate_with_correction(prompt_template_name, variables, correction_note
             },
             body,
             ANTHROPIC_GENERATION_TIMEOUT,
+            stream=True,
         )
         if resp.status_code != 200:
             return None
