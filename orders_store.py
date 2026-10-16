@@ -334,6 +334,73 @@ def sweep_expired_pending_orders(ttl_seconds: int) -> None:
             _MEM_PENDING.pop(tok, None)
 
 
+# --- 무료 신청 메타(출처/관심사) 집계 -----------------------------------------
+# 이메일·이름 등 개인 식별 정보는 저장하지 않는다. (src, interest, lang, 시각)만.
+_MEM_SIGNUP_META = []  # [(created_at_epoch, src, interest, lang)]
+_MEM_SIGNUP_META_LOCK = threading.Lock()
+_MEM_SIGNUP_META_MAX = 5000
+
+
+def record_signup_meta(src: str, interest: str, lang: str) -> None:
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_schema(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "CREATE TABLE IF NOT EXISTS signup_meta ("
+                    "id BIGSERIAL PRIMARY KEY, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
+                    "src TEXT NOT NULL, interest TEXT NOT NULL, lang TEXT NOT NULL)"
+                )
+                cur.execute(
+                    "INSERT INTO signup_meta (src, interest, lang) VALUES (%s, %s, %s)",
+                    (src, interest, lang),
+                )
+        finally:
+            conn.close()
+        return
+    with _MEM_SIGNUP_META_LOCK:
+        _MEM_SIGNUP_META.append((time.time(), src, interest, lang))
+        if len(_MEM_SIGNUP_META) > _MEM_SIGNUP_META_MAX:
+            del _MEM_SIGNUP_META[0]
+
+
+def signup_meta_stats(days: int = 30) -> list:
+    """[{src, interest, lang, count}] — 최근 days일, 많은 순."""
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_schema(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "CREATE TABLE IF NOT EXISTS signup_meta ("
+                    "id BIGSERIAL PRIMARY KEY, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
+                    "src TEXT NOT NULL, interest TEXT NOT NULL, lang TEXT NOT NULL)"
+                )
+                cur.execute(
+                    "SELECT src, interest, lang, count(*) FROM signup_meta "
+                    "WHERE created_at > now() - make_interval(days => %s) "
+                    "GROUP BY src, interest, lang ORDER BY count(*) DESC",
+                    (int(days),),
+                )
+                return [
+                    {"src": r[0], "interest": r[1], "lang": r[2], "count": r[3]}
+                    for r in cur.fetchall()
+                ]
+        finally:
+            conn.close()
+    cutoff = time.time() - days * 86400
+    counts = {}
+    with _MEM_SIGNUP_META_LOCK:
+        for ts, src, interest, lang in _MEM_SIGNUP_META:
+            if ts >= cutoff:
+                counts[(src, interest, lang)] = counts.get((src, interest, lang), 0) + 1
+    return [
+        {"src": k[0], "interest": k[1], "lang": k[2], "count": v}
+        for k, v in sorted(counts.items(), key=lambda kv: -kv[1])
+    ]
+
+
 def reset_for_tests():
     """테스트 전용 — 메모리 상태를 초기화한다.
 
@@ -344,3 +411,5 @@ def reset_for_tests():
         _MEM_PROCESSED.clear()
     with _MEM_PENDING_LOCK:
         _MEM_PENDING.clear()
+    with _MEM_SIGNUP_META_LOCK:
+        _MEM_SIGNUP_META.clear()

@@ -109,6 +109,18 @@
           </span>
         </div>
 
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="interest" style="font-size: 13px; font-weight: 500; color: #4A4239;">Was interessiert dich am meisten? <span style="font-weight: 400; color: #8A8074;">(optional)</span></label>
+          <select id="interest" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            <option value="">Bitte wählen</option>
+            <option value="self">Mich selbst besser verstehen</option>
+            <option value="korea">Koreanische Kultur & Tradition</option>
+            <option value="relationship">Beziehungen & Kompatibilität</option>
+            <option value="yearreview">Rückblick & Orientierung fürs neue Jahr</option>
+            <option value="curious">Ich bin einfach neugierig</option>
+          </select>
+        </div>
+
         <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
           Kostenloses Saju-Profil erhalten
         </button>
@@ -655,6 +667,8 @@
           birth_time: birthtime,
           birth_city: birthplace,
           email: email,
+          src: paljaSrc(),
+          interest: (document.getElementById('interest') || {}).value || '',
         }),
       });
       var data = {};
@@ -672,5 +686,16 @@
 </script>
 
 
+<script>
+  // Herkunft (?src=...) merken, damit sie beim Absenden mitgeschickt wird.
+  function paljaSrc() {
+    try {
+      var p = new URLSearchParams(window.location.search).get('src');
+      if (p) { sessionStorage.setItem('palja_src', p); return p; }
+      return sessionStorage.getItem('palja_src') || '';
+    } catch (e) { return ''; }
+  }
+  paljaSrc();
+</script>
 </body>
 </html>

@@ -1272,7 +1272,47 @@ def signup():
     except PipelineError as e:
         return jsonify({"ok": False, "error": str(e)}), e.status
 
+    _record_signup_meta(payload, _lang)
     return jsonify({"ok": True, "message": "리포트를 생성해서 이메일로 발송했습니다."})
+
+
+_SIGNUP_INTERESTS = {"self", "korea", "relationship", "yearreview", "curious"}
+_SRC_RE = re.compile(r"^[a-z0-9_-]{1,30}$")
+
+
+def _record_signup_meta(payload, lang):
+    """무료 신청 성공 시 (출처, 관심사, 언어)만 기록한다. 이메일 등 개인정보는 제외.
+    실패해도 신청 응답에는 영향을 주지 않는다."""
+    try:
+        src = (payload.get("src") or "").strip().lower()
+        src = src if _SRC_RE.match(src) else "none"
+        interest = (payload.get("interest") or "").strip().lower()
+        interest = interest if interest in _SIGNUP_INTERESTS else "none"
+        import orders_store
+
+        orders_store.record_signup_meta(src, interest, lang)
+        print(f"SIGNUP_META lang={lang} src={src} interest={interest}", flush=True)
+    except Exception as e:  # noqa: BLE001
+        print(f"signup meta record failed: {e}", flush=True)
+
+
+@app.route("/admin/signup-stats", methods=["GET"])
+def admin_signup_stats():
+    """무료 신청의 출처/관심사 집계 (ADMIN_TEST_TOKEN 필요, 미설정이면 404)."""
+    token = os.environ.get("ADMIN_TEST_TOKEN", "").strip()
+    if len(token) < 20:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    given = request.headers.get("X-Admin-Token", "")
+    if not hmac.compare_digest(given.encode("utf-8"), token.encode("utf-8")):
+        return jsonify({"ok": False, "error": "Unauthorized"}), 401
+    import orders_store
+
+    try:
+        days = max(1, min(int(request.args.get("days", "30")), 365))
+    except ValueError:
+        days = 30
+    rows = orders_store.signup_meta_stats(days)
+    return jsonify({"ok": True, "days": days, "total": sum(r["count"] for r in rows), "rows": rows})
 
 
 # Paddle 상품 가격(price) ID -> 우리 시스템의 리포트 등급(tier) 매핑.
