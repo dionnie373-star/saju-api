@@ -858,6 +858,18 @@ def pricing_page():
     return redirect("/#pricing")
 
 
+# SNS 프로필용 짧은 주소 (플랫폼별 유입 구분: ?src=...). 호스트(de/fr/es)는 그대로 유지.
+def _make_short(code, src):
+    def _view():
+        return redirect("/?src=" + src, code=302)
+    _view.__name__ = "short_" + code
+    app.route("/" + code, methods=["GET"])(_view)
+
+
+for _c, _s in (("yt", "yt-profile"), ("ig", "ig-bio"), ("tt", "tt-bio"), ("th", "th-bio"), ("pin", "pin-bio")):
+    _make_short(_c, _s)
+
+
 # 법적 필수 페이지 (초안 — 실 오픈 전 실제 정보로 채우고 법률 검토 필요.
 # static_site/*.html 상단의 "Entwurf" 경고 참고).
 _LEGAL_PAGES = {
