@@ -743,3 +743,8 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 조치: prompts/fr/premium_report_prompt.json, prompts/es/premium_report_prompt.json 신규(native_lang 지정, 연간 전용 프롬프트와 같은 구조 + 독일어 프리미엄 규칙 이식). 목표 3,400~4,400단어, 기간별 최소 230단어/현재 대운 350~420단어, 금지어·성별 일치·'primera/última vez' 등 기계검사 항목을 프롬프트에 명시, max_tokens 14,000.
 - 독일어 원본의 모순(다른 시기 120~150단어 vs 시기당 최소 200단어)은 후자로 통일.
 - 미검증: 로컬에 ANTHROPIC_API_KEY가 없어 실제 생성 테스트는 못 함. 배포 후 Danny 재테스트 구매 → Render 로그의 `[report_pipeline] lang=fr|es premium` 경고/단어수로 확인. 확인 전까지 FR/ES 프리미엄 버튼은 비활성 유지.
+
+## 2026-10-17 FR/ES 프리미엄 버튼 원복
+- Danny(DS-ie)가 "판매 페이지 버튼이 꺼져 있어 주문 폼에서 직접 테스트 구매 → 상품 미배달"이라고 알려옴. 직접 주문 폼 구매는 토큰/출생정보가 없어 서버가 무시하는 것이 설계(정상 흐름은 사이트 버튼 → 토큰 → 결제창).
+- 조치: fr/index.html, es/index.html 프리미엄 버튼 원복(disabled 제거, #211D1A, "Commander la carte de vie — 24,90 €" / "Comprar el mapa de vida — 24,90 €").
+- 미검증: 새 FR/ES premium 프롬프트의 실제 생성은 아직 한 번도 못 돌려봄. 사용자 테스트 결제 → Render 로그(`[report_pipeline] lang=fr|es premium`)로 확인 후 Danny에게 회신.
