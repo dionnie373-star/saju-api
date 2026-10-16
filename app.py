@@ -1260,6 +1260,10 @@ def signup():
     if _rate_limited("signup_ip", _client_ip(), max_count=5, window_seconds=3600):
         return jsonify({"ok": False, "error": _msg("too_many", _lang)}), 429
 
+    # 무료 프로필은 2026 회고/2027 예고를 쓰는데, 세운 데이터를 안 넘기면 AI가 연도 오행을
+    # 추측해 틀린다(2026=병오=화인데 "토·금"으로 서술, 2026-10-16 실제 PDF 3건에서 확인).
+    payload = dict(payload)
+    payload["target_years"] = [2026, 2027]
     try:
         calc_result = run_calculation(payload)
     except CalcError as e:
