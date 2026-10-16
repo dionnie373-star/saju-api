@@ -645,7 +645,9 @@ def _build_compact(name, saju, counts, yearly=None, ilgan_strength=None, jeonggy
     for y in (yearly or []):
         lines.append(
             f"{y['year']}년 세운: {y['pillar'].hanja}({y['pillar'].hangul}), "
-            f"천간 오행 {y['pillar'].cheon_gan.o_haeng.hangul}({ELEMENT_HANJA[y['pillar'].cheon_gan.o_haeng.hangul]})"
+            f"천간 오행 {y['pillar'].cheon_gan.o_haeng.hangul}({ELEMENT_HANJA[y['pillar'].cheon_gan.o_haeng.hangul]}), "
+            f"지지 오행 {y['pillar'].ji_ji.o_haeng.hangul}({ELEMENT_HANJA[y['pillar'].ji_ji.o_haeng.hangul]}) "
+            "— 이 해의 오행은 천간·지지의 이 두 오행만이다(다른 오행을 덧붙여 추측하지 말 것)"
         )
     # Make.com 같은 자동화 도구에서 이 문자열을 JSON 안에 그대로 끼워 넣을 때
     # 실제 줄바꿈 문자가 있으면 JSON이 깨지므로, 줄바꿈 대신 " | "로 구분한다.
