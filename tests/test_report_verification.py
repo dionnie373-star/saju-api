@@ -257,3 +257,17 @@ class GermanSieSentenceStartTest(unittest.TestCase):
 
     def test_midsentence_sie_is_formal(self):
         self.assertTrue(rp.check_mechanical_rules("Wenn Sie das tun, hilft es.", min_words=0))
+
+
+class GermanSieWirdTest(unittest.TestCase):
+    def test_sie_wird_third_person_not_flagged(self):
+        import report_pipeline as rp
+        text = ("Wort " * 60) + "Die Phase beginnt mit 23. Sie wird durch Erde geprägt. Sie gibt dir Halt. Du wirst es sehen."
+        issues = rp.check_mechanical_rules(text, min_words=0, lang="de")
+        self.assertFalse([i for i in issues if "Sie/Ihr" in i], issues)
+
+    def test_zum_ersten_mal_structural_allowed(self):
+        import report_pipeline as rp
+        text = ("Wort " * 60) + "Wasser taucht zum ersten Mal in der Phasenfolge auf."
+        issues = rp.check_mechanical_rules(text, min_words=0, lang="de")
+        self.assertFalse([i for i in issues if "희소성" in i], issues)

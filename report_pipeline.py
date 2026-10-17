@@ -397,7 +397,7 @@ _AWKWARD_BEDARF_RE = re.compile(r"\bBedarf\s+nach\b")
 
 _DE_SCARCITY_RE = re.compile(
     r"\beinmalige[nrms]?\s+Gelegenheit\b|\bletzte[nrms]?\s+Chance\b|\bideale[nrms]?\s+Zeitpunkt\b|"
-    r"\bentscheidende[nrms]?\s+Moment\b|\bzum\s+ersten\s+Mal\b|\bmit\s+klopfendem\s+Herzen\b", re.IGNORECASE)
+    r"\bentscheidende[nrms]?\s+Moment\b|\bmit\s+klopfendem\s+Herzen\b", re.IGNORECASE)
 _DE_ASSERTION_RE = re.compile(r"\b(?:beweist|beweisen|garantiert|garantieren|offenbart|offenbaren)\b", re.IGNORECASE)
 _DE_STEM_LITERAL_RE = re.compile(
     r"\b(?:Feuer|Holz|Erde|Metall|Wasser)\s+(?:des|im|am)\s+Himmel(?:s)?\b|\b(?:Feuer|Holz|Erde|Metall|Wasser)\s+(?:auf|in)\s+der\s+Erde\b",
@@ -452,7 +452,7 @@ def check_mechanical_rules(report_text, *, min_words, lang="de"):
                 nxt = re.match(r"\s+([A-Za-zÄÖÜäöüß]+)", report_text[m.end():])
                 verb = nxt.group(1).lower() if nxt else ""
                 # 3인칭 단수 동사(…t, kann/will/soll/darf/muss/mag)면 "그녀/그것"
-                if verb.endswith("t") or verb in ("kann", "will", "soll", "darf", "muss", "mag"):
+                if verb.endswith("t") or verb in ("kann", "will", "soll", "darf", "muss", "mag", "wird", "gibt", "weiß"):
                     continue
         formal_matches.append(m.group(0))
     if formal_matches:
@@ -463,7 +463,7 @@ def check_mechanical_rules(report_text, *, min_words, lang="de"):
         )
     # FR/ES 검사에서 이식(2026-10-17): 희소성/긴박감/단정 표현, 영어 혼입, 천간 직역
     if _DE_SCARCITY_RE.search(report_text):
-        issues.append("표현 금지(희소성/긴박감/범위 밖 단정): 'einmalige Gelegenheit/letzte Chance/idealer Zeitpunkt/entscheidender Moment/zum ersten Mal' 등")
+        issues.append("표현 금지(희소성/긴박감/범위 밖 단정): 'einmalige Gelegenheit/letzte Chance/idealer Zeitpunkt/entscheidender Moment' 등")
     if _DE_ASSERTION_RE.search(report_text):
         issues.append("단정 표현 금지: 'beweist/garantiert/offenbart' 등 - 'deutet an/kann'처럼 가능성 어조로")
     if _DE_STEM_LITERAL_RE.search(report_text):
