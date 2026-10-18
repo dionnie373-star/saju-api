@@ -1321,6 +1321,105 @@ def admin_signup_stats():
     return jsonify({"ok": True, "days": days, "total": sum(r["count"] for r in rows), "rows": rows})
 
 
+# --- 방문 집계 + 관리자 대시보드 ------------------------------------------------
+# 쿠키/IP/UA는 저장하지 않는다. JS 비콘(/api/hit)이 오는 요청만 센다(JS 없는 봇 제외).
+_BOT_UA_RE = re.compile(
+    r"bot|crawl|spider|slurp|preview|facebookexternalhit|headless|python-requests|"
+    r"curl|wget|lighthouse|monitor|uptime|scanner|httpclient|go-http|java/|okhttp",
+    re.I,
+)
+_HIT_PATH_RE = re.compile(r"^/[a-z0-9/_-]{0,40}$")
+
+
+@app.route("/api/hit", methods=["POST"])
+def api_hit():
+    """페이지 방문 1회 집계 (일자/출처/경로별 카운트만 저장, 개인정보 없음)."""
+    try:
+        ua = request.headers.get("User-Agent", "")
+        if not ua or _BOT_UA_RE.search(ua):
+            return ("", 204)
+        data = request.get_json(silent=True) or {}
+        src = (data.get("src") or "").strip().lower()
+        src = src if _SRC_RE.match(src) else "none"
+        path = (data.get("path") or "/").strip().lower()
+        path = path if _HIT_PATH_RE.match(path) else "/"
+        orders_store.record_hit(src, path)
+    except Exception as e:  # noqa: BLE001
+        print(f"hit record failed: {e}", flush=True)
+    return ("", 204)
+
+
+def _dash_auth_ok():
+    pw = os.environ.get("ADMIN_DASH_PASSWORD", "").strip()
+    if len(pw) < 12:
+        return None  # 미설정 -> 404
+    auth = request.authorization
+    given = (auth.password or "") if auth else ""
+    return hmac.compare_digest(given.encode("utf-8"), pw.encode("utf-8"))
+
+
+@app.route("/admin/dashboard", methods=["GET"])
+def admin_dashboard():
+    """방문/무료 신청/주문 집계 대시보드 (HTTP Basic, 비밀번호=ADMIN_DASH_PASSWORD, 미설정이면 404)."""
+    ok = _dash_auth_ok()
+    if ok is None:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    if not ok:
+        return Response("Unauthorized", 401, {"WWW-Authenticate": 'Basic realm="Palja stats"'})
+    import html as _h
+
+    try:
+        days = max(1, min(int(request.args.get("days", "14")), 90))
+    except ValueError:
+        days = 14
+    hits = orders_store.hits_stats(days)
+    sign = orders_store.signups_daily(days)
+    ords = orders_store.orders_daily(days)
+    by_day = {}
+    by_src = {}
+    for r in hits:
+        d = by_day.setdefault(r["day"], {"v": 0, "s": 0, "o": 0})
+        d["v"] += r["n"]
+        by_src.setdefault(r["src"], {"v": 0, "s": 0})["v"] += r["n"]
+    for r in sign:
+        d = by_day.setdefault(r["day"], {"v": 0, "s": 0, "o": 0})
+        d["s"] += r["count"]
+        by_src.setdefault(r["src"], {"v": 0, "s": 0})["s"] += r["count"]
+    for r in ords:
+        d = by_day.setdefault(r["day"], {"v": 0, "s": 0, "o": 0})
+        d["o"] += r["count"]
+    e = lambda x: _h.escape(str(x))
+    tv = sum(v["v"] for v in by_day.values())
+    ts = sum(v["s"] for v in by_day.values())
+    to = sum(v["o"] for v in by_day.values())
+    rows_day = "".join(
+        f"<tr><td>{e(d)}</td><td>{v['v']}</td><td>{v['s']}</td><td>{v['o']}</td></tr>"
+        for d, v in sorted(by_day.items(), reverse=True)
+    )
+    rows_src = "".join(
+        f"<tr><td>{e(s)}</td><td>{v['v']}</td><td>{v['s']}</td>"
+        f"<td>{(str(round(100 * v['s'] / v['v'], 1)) + '%') if v['v'] else '–'}</td></tr>"
+        for s, v in sorted(by_src.items(), key=lambda kv: -kv[1]["v"])
+    )
+    page = f"""<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Palja Stats</title><style>
+body{{font:15px/1.5 system-ui,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#2a2420;background:#f6efe2}}
+h1{{font-size:20px}} h2{{font-size:16px;margin-top:28px}} table{{border-collapse:collapse;width:100%}}
+th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:first-child,td:first-child{{text-align:left}}
+.k{{display:flex;gap:12px;flex-wrap:wrap}} .k div{{background:#fff8ea;border:1px solid #d9cfbd;border-radius:10px;padding:10px 14px;min-width:120px}}
+.k b{{font-size:24px;display:block}} small{{color:#7a6f60}}</style></head><body>
+<h1>Palja Stats · letzte {days} Tage (UTC)</h1>
+<div class="k"><div><b>{tv}</b>Seitenaufrufe</div><div><b>{ts}</b>Gratis-Profile</div><div><b>{to}</b>Bestellungen</div></div>
+<h2>Pro Tag</h2><table><tr><th>Tag</th><th>Aufrufe</th><th>Gratis</th><th>Bestellungen</th></tr>{rows_day or '<tr><td colspan=4>–</td></tr>'}</table>
+<h2>Pro Quelle (src)</h2><table><tr><th>src</th><th>Aufrufe</th><th>Gratis</th><th>Quote</th></tr>{rows_src or '<tr><td colspan=4>–</td></tr>'}</table>
+<p><small>Aufrufe = JS-Beacon der Startseite, ohne Bots; kein Cookie, keine IP gespeichert; keine Unique-Visitor-Zahl.
+Bestellungen = verarbeitete Zahlungen (kann Testbestellungen enthalten; im Memory-Modus leer).
+Quote = Gratis-Profile ÷ Aufrufe je Quelle (ungefähr; Aufruf und Anmeldung können an verschiedenen Tagen liegen).
+Zähler startet erst nach dem Deployment.</small></p></body></html>"""
+    return Response(page, 200, {"Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"})
+
+
 # Paddle 상품 가격(price) ID -> 우리 시스템의 리포트 등급(tier) 매핑.
 # 샌드박스/라이브 가격 ID가 서로 다르므로(같은 상품이라도 환경마다 pri_...
 # ID가 별개로 발급됨), 하드코딩 대신 전부 환경변수로 주입한다. 이렇게 하면

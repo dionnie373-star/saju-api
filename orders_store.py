@@ -401,6 +401,115 @@ def signup_meta_stats(days: int = 30) -> list:
     ]
 
 
+# --- 방문 집계(쿠키·IP·UA 저장 없음, 일자/출처/경로별 카운트만) -----------------
+_MEM_HITS = {}  # (day_iso, src, path) -> n
+_MEM_HITS_LOCK = threading.Lock()
+
+
+def _ensure_hits_table(conn):
+    with conn.cursor() as cur:
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS page_hits ("
+            "day DATE NOT NULL, src TEXT NOT NULL, path TEXT NOT NULL, "
+            "n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, src, path))"
+        )
+
+
+def record_hit(src: str, path: str) -> None:
+    """오늘(UTC) 날짜의 (src, path) 카운트를 1 올린다."""
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_hits_table(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO page_hits (day, src, path, n) VALUES (%s, %s, %s, 1) "
+                    "ON CONFLICT (day, src, path) DO UPDATE SET n = page_hits.n + 1",
+                    (day, src, path),
+                )
+        finally:
+            conn.close()
+        return
+    with _MEM_HITS_LOCK:
+        k = (day, src, path)
+        _MEM_HITS[k] = _MEM_HITS.get(k, 0) + 1
+
+
+def hits_stats(days: int = 14) -> list:
+    """[{day, src, path, n}] 최근 days일."""
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_hits_table(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT day::text, src, path, n FROM page_hits "
+                    "WHERE day > (now() at time zone 'utc')::date - %s ORDER BY day DESC",
+                    (int(days),),
+                )
+                return [{"day": r[0], "src": r[1], "path": r[2], "n": r[3]} for r in cur.fetchall()]
+        finally:
+            conn.close()
+    cutoff = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
+    with _MEM_HITS_LOCK:
+        return [
+            {"day": d, "src": s, "path": p, "n": n}
+            for (d, s, p), n in sorted(_MEM_HITS.items(), reverse=True)
+            if d > cutoff
+        ]
+
+
+def signups_daily(days: int = 14) -> list:
+    """[{day, src, count}] 무료 신청 일별(출처별)."""
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_schema(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "CREATE TABLE IF NOT EXISTS signup_meta ("
+                    "id BIGSERIAL PRIMARY KEY, created_at TIMESTAMPTZ NOT NULL DEFAULT now(), "
+                    "src TEXT NOT NULL, interest TEXT NOT NULL, lang TEXT NOT NULL)"
+                )
+                cur.execute(
+                    "SELECT (created_at at time zone 'utc')::date::text, src, count(*) FROM signup_meta "
+                    "WHERE created_at > now() - make_interval(days => %s) GROUP BY 1, 2 ORDER BY 1 DESC",
+                    (int(days),),
+                )
+                return [{"day": r[0], "src": r[1], "count": r[2]} for r in cur.fetchall()]
+        finally:
+            conn.close()
+    cutoff = time.time() - days * 86400
+    out = {}
+    with _MEM_SIGNUP_META_LOCK:
+        for ts, src, _i, _l in _MEM_SIGNUP_META:
+            if ts >= cutoff:
+                k = (time.strftime("%Y-%m-%d", time.gmtime(ts)), src)
+                out[k] = out.get(k, 0) + 1
+    return [{"day": k[0], "src": k[1], "count": v} for k, v in sorted(out.items(), reverse=True)]
+
+
+def orders_daily(days: int = 14) -> list:
+    """[{day, provider, count}] 처리 완료 주문(결제 완료 후 리포트 처리된 건) 일별.
+    메모리 모드에서는 시각을 저장하지 않으므로 빈 목록."""
+    if not _use_db():
+        return []
+    conn = _get_conn()
+    try:
+        _ensure_schema(conn)
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT (processed_at at time zone 'utc')::date::text, provider, count(*) "
+                "FROM processed_orders WHERE processed_at > now() - make_interval(days => %s) "
+                "GROUP BY 1, 2 ORDER BY 1 DESC",
+                (int(days),),
+            )
+            return [{"day": r[0], "provider": r[1], "count": r[2]} for r in cur.fetchall()]
+    finally:
+        conn.close()
+
+
 def reset_for_tests():
     """테스트 전용 — 메모리 상태를 초기화한다.
 
@@ -413,3 +522,5 @@ def reset_for_tests():
         _MEM_PENDING.clear()
     with _MEM_SIGNUP_META_LOCK:
         _MEM_SIGNUP_META.clear()
+    with _MEM_HITS_LOCK:
+        _MEM_HITS.clear()
