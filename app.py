@@ -1401,7 +1401,7 @@ def admin_dashboard():
         f"<td>{(str(round(100 * v['s'] / v['v'], 1)) + '%') if v['v'] else '–'}</td></tr>"
         for s, v in sorted(by_src.items(), key=lambda kv: -kv[1]["v"])
     )
-    page = f"""<!doctype html><html lang="de"><head><meta charset="utf-8">
+    page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Palja Stats</title><style>
 body{{font:15px/1.5 system-ui,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#2a2420;background:#f6efe2}}
@@ -1409,14 +1409,14 @@ h1{{font-size:20px}} h2{{font-size:16px;margin-top:28px}} table{{border-collapse
 th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:first-child,td:first-child{{text-align:left}}
 .k{{display:flex;gap:12px;flex-wrap:wrap}} .k div{{background:#fff8ea;border:1px solid #d9cfbd;border-radius:10px;padding:10px 14px;min-width:120px}}
 .k b{{font-size:24px;display:block}} small{{color:#7a6f60}}</style></head><body>
-<h1>Palja Stats · letzte {days} Tage (UTC)</h1>
-<div class="k"><div><b>{tv}</b>Seitenaufrufe</div><div><b>{ts}</b>Gratis-Profile</div><div><b>{to}</b>Bestellungen</div></div>
-<h2>Pro Tag</h2><table><tr><th>Tag</th><th>Aufrufe</th><th>Gratis</th><th>Bestellungen</th></tr>{rows_day or '<tr><td colspan=4>–</td></tr>'}</table>
-<h2>Pro Quelle (src)</h2><table><tr><th>src</th><th>Aufrufe</th><th>Gratis</th><th>Quote</th></tr>{rows_src or '<tr><td colspan=4>–</td></tr>'}</table>
-<p><small>Aufrufe = JS-Beacon der Startseite, ohne Bots; kein Cookie, keine IP gespeichert; keine Unique-Visitor-Zahl.
-Bestellungen = verarbeitete Zahlungen (kann Testbestellungen enthalten; im Memory-Modus leer).
-Quote = Gratis-Profile ÷ Aufrufe je Quelle (ungefähr; Aufruf und Anmeldung können an verschiedenen Tagen liegen).
-Zähler startet erst nach dem Deployment.</small></p></body></html>"""
+<h1>Palja 통계 · 최근 {days}일 (UTC)</h1>
+<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문</div></div>
+<h2>일별</h2><table><tr><th>날짜</th><th>페이지뷰</th><th>무료</th><th>주문</th></tr>{rows_day or '<tr><td colspan=4>–</td></tr>'}</table>
+<h2>채널별 (src)</h2><table><tr><th>src</th><th>페이지뷰</th><th>무료</th><th>전환율</th></tr>{rows_src or '<tr><td colspan=4>–</td></tr>'}</table>
+<p><small>페이지뷰 = 홈페이지 JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
+주문 = 처리된 결제(테스트 주문 포함 가능, 메모리 모드에선 비어 있음).
+전환율 = 무료 프로필 ÷ 페이지뷰(채널별, 대략값. 방문일과 가입일이 다를 수 있음).
+집계는 배포 이후부터 시작.</small></p></body></html>"""
     return Response(page, 200, {"Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"})
 
 

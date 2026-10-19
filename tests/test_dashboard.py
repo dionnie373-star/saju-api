@@ -40,7 +40,7 @@ class DashboardTests(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         t = r.get_data(as_text=True)
         self.assertIn("tt-bio", t)
-        self.assertIn("<b>3</b>Seitenaufrufe", t)
+        self.assertIn("<b>3</b>페이지뷰", t)
         self.assertIn("noindex", r.headers.get("X-Robots-Tag", ""))
         self.assertEqual(r.headers.get("Cache-Control"), "no-store")
 
@@ -49,7 +49,7 @@ class DashboardTests(unittest.TestCase):
         os.environ["ADMIN_DASH_PASSWORD"] = "correct-horse-battery"
         t = self.c.get("/admin/dashboard", headers=self._auth("correct-horse-battery")).get_data(as_text=True)
         self.assertIn("ig-bio", t)
-        self.assertIn("<b>1</b>Gratis-Profile", t)
+        self.assertIn("<b>1</b>무료 프로필", t)
 
 
 if __name__ == "__main__":
