@@ -883,6 +883,22 @@ _LEGAL_PAGES = {
     "danke": "danke.html",  # Digistore24 Thank-you 페이지 (승인 요건: 필수 고지문구 + trust badge)
 }
 
+WISSEN_DIR = os.path.join(STATIC_SITE_DIR, "wissen")
+_WISSEN_SLUG_RE = re.compile(r"^[a-z0-9-]{1,60}$")
+
+
+@app.route("/wissen", methods=["GET"])
+@app.route("/wissen/", methods=["GET"])
+@app.route("/wissen/<slug>", methods=["GET"])
+def wissen_page(slug="index"):
+    """독일어 SEO 가이드 페이지(static_site/wissen/*.html). palja.de(독일어 호스트)에서만 제공."""
+    if _is_es_host() or _is_fr_host() or not _WISSEN_SLUG_RE.match(slug):
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    filename = f"{slug}.html"
+    if not os.path.isfile(os.path.join(WISSEN_DIR, filename)):
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return send_from_directory(WISSEN_DIR, filename)
+
 
 @app.route("/<page>", methods=["GET"])
 def legal_page(page):
