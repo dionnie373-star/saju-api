@@ -35,3 +35,24 @@ class PartnerPageTest(unittest.TestCase):
         self.assertIn("?aff=", body)
         self.assertIn("Werbung", body)
         self.assertIn("40 %", body)
+
+
+class PartnerPagesFrEsTest(unittest.TestCase):
+    def test_fr_es_partner_pages(self):
+        import os
+        import app as app_module
+        old = os.environ.get("ES_DOMAIN")
+        os.environ["ES_DOMAIN"] = "palja.es"
+        try:
+            c = app_module.app.test_client()
+            for host, path, word in (("palja.fr", "/partenaire", "publicité"), ("palja.es", "/socios", "publicidad")):
+                r = c.get(path, base_url="http://" + host)
+                self.assertEqual(r.status_code, 200, host)
+                b = r.get_data(as_text=True)
+                self.assertIn("?aff=", b)
+                self.assertIn(word, b)
+        finally:
+            if old is None:
+                os.environ.pop("ES_DOMAIN", None)
+            else:
+                os.environ["ES_DOMAIN"] = old

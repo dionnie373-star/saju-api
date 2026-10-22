@@ -930,6 +930,7 @@ _FR_PAGES = {
     "retractation": "retractation.html",
     "contact": "contact.html",
     "merci": "merci.html",  # Digistore24 Thank-you 페이지(프랑스어 상품용)
+    "partenaire": "partenaire.html",  # 제휴 지원 페이지
 }
 FR_SITE_DIR = os.path.join(STATIC_SITE_DIR, "fr")
 FR_HOSTS = ("palja.fr", "www.palja.fr")  # 프랑스어 전용 도메인(예정). Render 커스텀 도메인 + DNS 연결 후 동작.
@@ -990,6 +991,7 @@ _ES_PAGES = {
     "desistimiento": "desistimiento.html",
     "contacto": "contacto.html",
     "gracias": "gracias.html",
+    "socios": "socios.html",  # 제휴 지원 페이지
 }
 ES_SITE_DIR = os.path.join(STATIC_SITE_DIR, "es")
 
