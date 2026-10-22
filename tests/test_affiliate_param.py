@@ -23,3 +23,15 @@ class AffiliateParamTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PartnerPageTest(unittest.TestCase):
+    def test_partner_page_served_on_german_host(self):
+        import app as app_module
+        c = app_module.app.test_client()
+        r = c.get("/partner", base_url="http://palja.de")
+        self.assertEqual(r.status_code, 200)
+        body = r.get_data(as_text=True)
+        self.assertIn("?aff=", body)
+        self.assertIn("Werbung", body)
+        self.assertIn("40 %", body)

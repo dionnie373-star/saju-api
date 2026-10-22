@@ -880,6 +880,7 @@ _LEGAL_PAGES = {
     "agb": "agb.html",
     "widerruf": "widerruf.html",
     "kontakt": "kontakt.html",
+    "partner": "partner.html",  # 제휴(affiliate) 지원 페이지 — Digistore24 마켓플레이스 항목에서 링크
     "danke": "danke.html",  # Digistore24 Thank-you 페이지 (승인 요건: 필수 고지문구 + trust badge)
 }
 
