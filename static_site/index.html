@@ -479,6 +479,18 @@
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
 
+  // 제휴(affiliate) 추적: 제휴자가 ?aff=ID 또는 #aff=ID 가 붙은 링크로 보내면 그 ID를
+  // 메모리에만(쿠키·localStorage 없음) 들고 있다가 Digistore24 주문서 링크에
+  // aff 파라미터로 붙인다. 제3자 스크립트는 로드하지 않는다.
+  var affiliateId = (function () {
+    try {
+      var q = new URLSearchParams(window.location.search).get('aff');
+      var h = (window.location.hash || '').replace(/^#/, '');
+      var v = q || (h.indexOf('aff=') === 0 ? h.slice(4) : '');
+      return /^[A-Za-z0-9_-]{2,40}$/.test(v) ? v : '';
+    } catch (e) { return ''; }
+  })();
+
   async function createPendingOrderToken(orderData) {
     var resp = await fetch('/orders/pending', {
       method: 'POST',
@@ -496,6 +508,7 @@
     var params = new URLSearchParams();
     params.set('email', email);
     params.set('custom', token);
+    if (affiliateId) { params.set('aff', affiliateId); }
     return DIGISTORE24_ORDER_FORM_BASE + productId + '?' + params.toString();
   }
 
