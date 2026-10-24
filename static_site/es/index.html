@@ -79,6 +79,8 @@
           <input id="birthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1;">
         </div>
 
+        <div id="tasteBox" aria-live="polite" style="display:none; background:#F6EFE3; border:1px solid #E6DFD2; border-radius:10px; padding:14px 16px; font-size:14px; line-height:1.55; color:#4A4239;"></div>
+
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Hora de nacimiento (opcional)</label>
           <input id="birthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1;">
@@ -697,6 +699,43 @@
     } catch (e) { return ''; }
   }
   paljaSrc();
+</script>
+<script>
+// Sofort-Vorschau (rein im Browser, nichts wird gesendet): Jahrestier/-element und Tageselement.
+(function () {
+function paljaTaste(y, m, d) {
+  var ANIMALS = ['Rata','Búfalo','Tigre','Conejo','Dragón','Serpiente','Caballo','Cabra','Mono','Gallo','Perro','Cerdo'];
+  var ELEM = ['Madera','Madera','Fuego','Fuego','Tierra','Tierra','Metal','Metal','Agua','Agua'];
+  var HANJA_S = '甲乙丙丁戊己庚辛壬癸', HANJA_B = '子丑寅卯辰巳午未申酉戌亥';
+  var edge = (m === 2 && d >= 3 && d <= 5);
+  var sy = (m < 2 || (m === 2 && d < 4)) ? y - 1 : y;
+  var ys = ((sy - 4) % 10 + 10) % 10, yb = ((sy - 4) % 12 + 12) % 12;
+  var jdn = Math.floor(Date.UTC(y, m - 1, d) / 86400000) + 2440588;
+  var di = (((jdn - 2451545) + 54) % 60 + 60) % 60; // 2000-01-01 = 戊午
+  var ds = di % 10;
+  return { animal: ANIMALS[yb], yearElem: ELEM[ys], yearHanja: HANJA_S[ys] + HANJA_B[yb],
+           dayElem: ELEM[ds], dayStem: HANJA_S[ds], edge: edge };
+}
+
+  var box = document.getElementById('tasteBox');
+  var inp = document.getElementById('birthdate');
+  if (!box || !inp) return;
+  inp.addEventListener('change', function () {
+    var v = (inp.value || '').split('-');
+    if (v.length !== 3) { box.style.display = 'none'; return; }
+    var y = +v[0], m = +v[1], d = +v[2];
+    if (!y || y < 1900 || y > 2100) { box.style.display = 'none'; return; }
+    var t = paljaTaste(y, m, d);
+    var html = '<strong>Tu primer vistazo (tradicional):</strong><br>' +
+      'Año: <strong>' + t.yearElem + ' · ' + t.animal + '</strong> (' + t.yearHanja + ') · ' +
+      'Elemento del día: <strong>' + t.dayElem + '</strong> (' + t.dayStem + ')<br>' +
+      '<span style="font-size:12.5px;color:#8A8074;">' +
+      (t.edge ? 'Hacia el 4 de febrero cambia el año Saju: aquí el animal puede variar; tu perfil se calcula al día exacto. ': '') +
+      'Es solo un fragmento. Tu perfil completo con todos los pilares te llega gratis por correo electrónico. Para entretenimiento y reflexión personal – no es una predicción.</span>';
+    box.innerHTML = html;
+    box.style.display = 'block';
+  });
+})();
 </script>
 </body>
 </html>
