@@ -180,6 +180,8 @@ INDEX = """<!doctype html>
 """
 
 def main():
+    from wissen_more import MORE
+    ARTICLES.extend(MORE)
     os.makedirs(OUT, exist_ok=True)
     items = ""
     for a in ARTICLES:
