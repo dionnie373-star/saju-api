@@ -71,7 +71,7 @@
   <p class="note">Saju ist eine traditionelle Deutungslehre und dient hier der Unterhaltung und Selbstreflexion. Es sind keine Vorhersagen und kein Ersatz für professionelle Beratung.</p>
 </div>
 <script>
-try { var s = "seo-horoskop-2027"; if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([JSON.stringify({src: s, path: location.pathname})], {type: 'application/json'})); } catch (e) {}
+try { var s = "seo-horoskop-2027"; var q = (new URLSearchParams(location.search).get('src') || '').toLowerCase(); if (q) s = q; if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([JSON.stringify({src: s, path: location.pathname})], {type: 'application/json'})); } catch (e) {}
 </script>
 </body>
 </html>
