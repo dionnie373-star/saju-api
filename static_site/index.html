@@ -555,6 +555,7 @@
     if (gender) { orderData.gender = gender; }
 
     var originalLabel = btnEl ? btnEl.textContent : null;
+    if (window.paljaEv) { paljaEv('buy_open'); }
     if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Wird vorbereitet …'; }
     try {
       var token = await createPendingOrderToken(orderData);
@@ -674,10 +675,11 @@
     var birthplace = document.getElementById('birthplace').value.trim();
     var email = document.getElementById('email').value.trim();
 
-    if (!birthdate) { setStatus('error', 'Bitte gib dein Geburtsdatum an.'); return; }
-    if (!birthplace) { setStatus('error', 'Bitte gib deinen Geburtsort an.'); return; }
-    if (!email || email.indexOf('@') === -1) { setStatus('error', 'Bitte gib eine gültige E-Mail-Adresse an.'); return; }
+    if (!birthdate) { if (window.paljaEv) { paljaEv('val_err'); } setStatus('error', 'Bitte gib dein Geburtsdatum an.'); return; }
+    if (!birthplace) { if (window.paljaEv) { paljaEv('val_err'); } setStatus('error', 'Bitte gib deinen Geburtsort an.'); return; }
+    if (!email || email.indexOf('@') === -1) { if (window.paljaEv) { paljaEv('val_err'); } setStatus('error', 'Bitte gib eine gültige E-Mail-Adresse an.'); return; }
 
+    if (window.paljaEv) { paljaEv('submit'); }
     setStatus('loading');
 
     try {
@@ -696,11 +698,14 @@
       var data = {};
       try { data = await res.json(); } catch (e) {}
       if (!res.ok || data.ok === false) {
+        if (window.paljaEv) { paljaEv('err'); }
         setStatus('error', data.error || 'Etwas ist schiefgelaufen. Bitte versuch es später erneut.');
         return;
       }
+      if (window.paljaEv) { paljaEv('ok'); }
       setStatus('sent');
     } catch (err) {
+      if (window.paljaEv) { paljaEv('neterr'); }
       setStatus('error', 'Verbindung zum Server nicht möglich. Bitte versuch es später erneut.');
     }
   });
@@ -719,12 +724,42 @@
   }
   paljaSrc();
   // Anonyme Seitenaufruf-Zählung (kein Cookie, keine IP-Speicherung): nur Datum, Quelle, Pfad.
+  // Eigene Besuche ausschließen: ?nohit=1 setzt ein lokales Flag (nur in diesem Browser, nichts wird gesendet); ?nohit=0 hebt es auf.
+  window.paljaNoHit = false;
+  try {
+    var _u = new URLSearchParams(window.location.search);
+    if (_u.get('nohit') === '1') { localStorage.setItem('palja_nohit', '1'); }
+    if (_u.get('nohit') === '0') { localStorage.removeItem('palja_nohit'); }
+    window.paljaNoHit = localStorage.getItem('palja_nohit') === '1';
+  } catch (e) {}
+  function _paljaPost(url, obj) {
+    if (window.paljaNoHit) { return; }
+    try {
+      var b = JSON.stringify(obj);
+      if (navigator.sendBeacon) { navigator.sendBeacon(url, new Blob([b], { type: 'application/json' })); }
+      else { fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: b, keepalive: true }); }
+    } catch (e) {}
+  }
+  // Anonyme Funnel-Ereignisse (nur Datum, Quelle, Ereignisname; kein Cookie, keine IP-Speicherung).
+  window.paljaEv = function (ev) { _paljaPost('/api/ev', { ev: ev, src: (paljaSrc() || '').toLowerCase() }); };
   try {
     var q = (new URLSearchParams(window.location.search).get('src') || '').toLowerCase();
-    var body = JSON.stringify({ src: q, path: window.location.pathname });
-    if (navigator.sendBeacon) { navigator.sendBeacon('/api/hit', new Blob([body], { type: 'application/json' })); }
-    else { fetch('/api/hit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: body, keepalive: true }); }
+    _paljaPost('/api/hit', { src: q, path: window.location.pathname });
   } catch (e) {}
+  (function () {
+    var seen = {};
+    function once(ev) { if (seen[ev]) { return; } seen[ev] = 1; window.paljaEv(ev); }
+    window.paljaEvOnce = once;
+    var ids = { birthdate: 1, birthtime: 1, birthplace: 1, email: 1, gender: 1, interest: 1 };
+    document.addEventListener('focusin', function (e) { if (e.target && ids[e.target.id]) { once('start'); } });
+    var bd = document.getElementById('birthdate');
+    if (bd) { bd.addEventListener('change', function () { setTimeout(function () { var tb = document.getElementById('tasteBox'); if (tb && tb.style.display !== 'none') { once('taste'); } }, 80); }); }
+    var sb = document.getElementById('submitBtn');
+    if (sb && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { once('view_form'); io.disconnect(); } }, { threshold: 0.6 });
+      io.observe(sb);
+    }
+  })();
 </script>
 
 <script>

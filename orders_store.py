@@ -460,6 +460,63 @@ def hits_stats(days: int = 14) -> list:
         ]
 
 
+_MEM_EVENTS = {}  # (day_iso, src, ev) -> n
+
+
+def _ensure_events_table(conn):
+    with conn.cursor() as cur:
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS page_events ("
+            "day DATE NOT NULL, src TEXT NOT NULL, ev TEXT NOT NULL, "
+            "n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, src, ev))"
+        )
+
+
+def record_event(src: str, ev: str) -> None:
+    """오늘(UTC) 날짜의 (src, ev) 퍼널 이벤트 카운트를 1 올린다. 개인정보 없음."""
+    day = time.strftime("%Y-%m-%d", time.gmtime())
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_events_table(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO page_events (day, src, ev, n) VALUES (%s, %s, %s, 1) "
+                    "ON CONFLICT (day, src, ev) DO UPDATE SET n = page_events.n + 1",
+                    (day, src, ev),
+                )
+        finally:
+            conn.close()
+        return
+    with _MEM_HITS_LOCK:
+        k = (day, src, ev)
+        _MEM_EVENTS[k] = _MEM_EVENTS.get(k, 0) + 1
+
+
+def events_stats(days: int = 14) -> list:
+    """[{day, src, ev, n}] 최근 days일."""
+    if _use_db():
+        conn = _get_conn()
+        try:
+            _ensure_events_table(conn)
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT day::text, src, ev, n FROM page_events "
+                    "WHERE day > (now() at time zone 'utc')::date - %s ORDER BY day DESC",
+                    (int(days),),
+                )
+                return [{"day": r[0], "src": r[1], "ev": r[2], "n": r[3]} for r in cur.fetchall()]
+        finally:
+            conn.close()
+    cutoff = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
+    with _MEM_HITS_LOCK:
+        return [
+            {"day": d, "src": s, "ev": e, "n": n}
+            for (d, s, e), n in sorted(_MEM_EVENTS.items(), reverse=True)
+            if d > cutoff
+        ]
+
+
 def signups_daily(days: int = 14) -> list:
     """[{day, src, count}] 무료 신청 일별(출처별)."""
     if _use_db():

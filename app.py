@@ -1368,6 +1368,28 @@ def api_hit():
     return ("", 204)
 
 
+_EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open"}
+
+
+@app.route("/api/ev", methods=["POST"])
+def api_ev():
+    """퍼널 이벤트 1회 집계 (일자/출처/이벤트명별 카운트만 저장, 개인정보 없음)."""
+    try:
+        ua = request.headers.get("User-Agent", "")
+        if not ua or _BOT_UA_RE.search(ua):
+            return ("", 204)
+        data = request.get_json(silent=True) or {}
+        ev = (data.get("ev") or "").strip().lower()
+        if ev not in _EV_ALLOWED:
+            return ("", 204)
+        src = (data.get("src") or "").strip().lower()
+        src = src if _SRC_RE.match(src) else "none"
+        orders_store.record_event(src, ev)
+    except Exception as e:  # noqa: BLE001
+        print(f"event record failed: {e}", flush=True)
+    return ("", 204)
+
+
 def _dash_auth_ok():
     pw = os.environ.get("ADMIN_DASH_PASSWORD", "").strip()
     if len(pw) < 12:
@@ -1392,6 +1414,7 @@ def admin_dashboard():
     except ValueError:
         days = 14
     hits = orders_store.hits_stats(days)
+    evs = orders_store.events_stats(days)
     sign = orders_store.signups_daily(days)
     ords = orders_store.orders_daily(days)
     by_day = {}
@@ -1420,6 +1443,25 @@ def admin_dashboard():
         f"<td>{(str(round(100 * v['s'] / v['v'], 1)) + '%') if v['v'] else '–'}</td></tr>"
         for s, v in sorted(by_src.items(), key=lambda kv: -kv[1]["v"])
     )
+    ev_tot = {}
+    ev_src = {}
+    for r in evs:
+        ev_tot[r["ev"]] = ev_tot.get(r["ev"], 0) + r["n"]
+        ev_src.setdefault(r["src"], {})[r["ev"]] = ev_src.setdefault(r["src"], {}).get(r["ev"], 0) + r["n"]
+    _ev_labels = [
+        ("view_form", "가입 폼이 화면에 보임"), ("taste", "생년월일 입력 → 맛보기 카드"),
+        ("start", "폼 입력 시작"), ("val_err", "필수 항목 누락(클릭했지만 막힘)"),
+        ("submit", "제출 클릭(검증 통과)"), ("ok", "가입 성공"),
+        ("err", "서버 오류 응답"), ("neterr", "연결 오류"), ("buy_open", "유료 구매 시도"),
+    ]
+    rows_ev = "".join(
+        f"<tr><td>{e(lbl)}</td><td>{ev_tot.get(k, 0)}</td></tr>" for k, lbl in _ev_labels
+    )
+    rows_evsrc = "".join(
+        f"<tr><td>{e(s)}</td><td>{m.get('view_form', 0)}</td><td>{m.get('start', 0)}</td>"
+        f"<td>{m.get('submit', 0)}</td><td>{m.get('ok', 0)}</td></tr>"
+        for s, m in sorted(ev_src.items(), key=lambda kv: -kv[1].get("view_form", 0))
+    )
     page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Palja Stats</title><style>
@@ -1432,6 +1474,8 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 <div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문</div></div>
 <h2>일별</h2><table><tr><th>날짜</th><th>페이지뷰</th><th>무료</th><th>주문</th></tr>{rows_day or '<tr><td colspan=4>–</td></tr>'}</table>
 <h2>채널별 (src)</h2><table><tr><th>src</th><th>페이지뷰</th><th>무료</th><th>전환율</th></tr>{rows_src or '<tr><td colspan=4>–</td></tr>'}</table>
+<h2>가입 퍼널 (이벤트 집계 시작 이후)</h2><table><tr><th>단계</th><th>횟수</th></tr>{rows_ev}</table>
+<h2>채널별 퍼널</h2><table><tr><th>src</th><th>폼 보임</th><th>입력 시작</th><th>제출</th><th>성공</th></tr>{rows_evsrc or '<tr><td colspan=5>–</td></tr>'}</table>
 <p><small>페이지뷰 = 홈페이지 JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
 주문 = 처리된 결제(테스트 주문 포함 가능, 메모리 모드에선 비어 있음).
 전환율 = 무료 프로필 ÷ 페이지뷰(채널별, 대략값. 방문일과 가입일이 다를 수 있음).
