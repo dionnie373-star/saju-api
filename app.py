@@ -1368,7 +1368,7 @@ def api_hit():
     return ("", 204)
 
 
-_EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open"}
+_EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky"}
 
 
 @app.route("/api/ev", methods=["POST"])
@@ -1452,7 +1452,7 @@ def admin_dashboard():
         ("view_form", "가입 폼이 화면에 보임"), ("taste", "생년월일 입력 → 맛보기 카드"),
         ("start", "폼 입력 시작"), ("val_err", "필수 항목 누락(클릭했지만 막힘)"),
         ("submit", "제출 클릭(검증 통과)"), ("ok", "가입 성공"),
-        ("err", "서버 오류 응답"), ("neterr", "연결 오류"), ("buy_open", "유료 구매 시도"),
+        ("err", "서버 오류 응답"), ("neterr", "연결 오류"), ("buy_open", "유료 구매 시도"), ("sticky", "하단 고정 버튼 클릭(모바일)"),
     ]
     rows_ev = "".join(
         f"<tr><td>{e(lbl)}</td><td>{ev_tot.get(k, 0)}</td></tr>" for k, lbl in _ev_labels
