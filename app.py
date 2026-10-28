@@ -276,6 +276,11 @@ _LANG_DEFAULT_LOCATION = {
 
 
 
+_COUNTRY_ALIASES = {"usa": "united states", "us": "united states", "u.s.": "united states", "uk": "united kingdom",
+                    "uae": "united arab emirates", "türkiye": "turkey", "turkiye": "turkey", "korea": "south korea",
+                    "russia": "russian federation"}
+
+
 def _lookup_location(city_name, lang="de"):
     """도시 이름 -> (경도, 시간대, 출처). 1) 내장 표 2) 무료 지오코딩 API 3) 기본값 순으로 시도.
 
@@ -285,17 +290,19 @@ def _lookup_location(city_name, lang="de"):
     여부는 별도로 알아야 한다).
     """
     key = city_name.strip().lower()
-    if key in KNOWN_CITY_LONGITUDE:
-        return KNOWN_CITY_LONGITUDE[key], KNOWN_CITY_TIMEZONE.get(key, DEFAULT_TIMEZONE), "known_city"
-    # "City, Country" 입력: 쉼표 앞 도시명으로 내장 표를 먼저 본다(국가는 지오코딩 필터에 쓴다).
-    head, _, country_part = (p.strip() for p in key.partition(","))
-    if head and head in KNOWN_CITY_LONGITUDE:
-        return KNOWN_CITY_LONGITUDE[head], KNOWN_CITY_TIMEZONE.get(head, DEFAULT_TIMEZONE), "known_city"
+    # "City, Country" / "City, Region, Country" 입력: 첫 조각=도시, 마지막 조각=국가
+    parts = [p.strip() for p in key.split(",") if p.strip()]
+    head = parts[0] if parts else key
+    country_part = parts[-1] if len(parts) > 1 else ""
+    country_part = _COUNTRY_ALIASES.get(country_part, country_part)
     import world_cities
     if not country_part:
+        if key in KNOWN_CITY_LONGITUDE:
+            return KNOWN_CITY_LONGITUDE[key], KNOWN_CITY_TIMEZONE.get(key, DEFAULT_TIMEZONE), "known_city"
         wc = world_cities.lookup_world_city(head)
         if wc:
             return wc[0], wc[1], "known_city"
+    # 국가가 주어지면 같은 이름의 다른 나라 도시(Paris, Texas 등)와 혼동하지 않도록 지오코딩을 먼저 본다.
 
     try:
         import urllib.parse
@@ -328,7 +335,9 @@ def _lookup_location(city_name, lang="de"):
     except Exception:
         pass
 
-    # 지오코딩 실패(네트워크·미등록): 내장 세계 도시 표를 마지막으로 시도
+    # 지오코딩 실패(네트워크·미등록): 내장 표를 마지막으로 시도
+    if head in KNOWN_CITY_LONGITUDE:
+        return KNOWN_CITY_LONGITUDE[head], KNOWN_CITY_TIMEZONE.get(head, DEFAULT_TIMEZONE), "known_city"
     wc = world_cities.lookup_world_city(head)
     if wc:
         return wc[0], wc[1], "known_city"
@@ -1359,7 +1368,9 @@ def profile_view_route():
         payload = request.get_json(force=True, silent=False) or {}
     except Exception:
         return jsonify({"ok": False, "error": "bad json"}), 400
-    raw_lang = (payload.get("lang") or "").strip().lower()
+    if not isinstance(payload, dict):
+        return jsonify({"ok": False, "error": "bad json"}), 400
+    raw_lang = str(payload.get("lang") or "").strip().lower()
     view_lang = raw_lang if raw_lang in ("de", "fr", "es", "en") else "de"
     calc_lang = view_lang if view_lang != "en" else "de"
     if _rate_limited("profile_ip", _client_ip(), max_count=30, window_seconds=3600):
@@ -1372,11 +1383,18 @@ def profile_view_route():
         "lang": calc_lang,
         "target_years": [2026, 2027],
     }
+    _bd = str(calc_payload.get("birth_date") or "")[:4]
+    if not (_bd.isdigit() and 1900 <= int(_bd) <= 2100):
+        bad0 = {"de": "Bitte prüfe Geburtsdatum und Geburtsort.", "fr": "Veuillez vérifier la date et le lieu de naissance.",
+                "es": "Comprueba la fecha y el lugar de nacimiento.", "en": "Please check the date and place of birth."}
+        return jsonify({"ok": False, "error": bad0[view_lang]}), 400
     try:
         calc_result = run_calculation(calc_payload)
     except CalcError as e:
         if e.status >= 500:
-            return jsonify({"ok": False, "error": str(e)}), e.status
+            gen = {"de": "Es ist ein Fehler aufgetreten. Bitte versuche es später erneut.", "fr": "Une erreur est survenue. Veuillez réessayer plus tard.",
+                   "es": "Se produjo un error. Inténtalo de nuevo más tarde.", "en": "Something went wrong. Please try again later."}
+            return jsonify({"ok": False, "error": gen[view_lang]}), e.status
         bad = {"de": "Bitte prüfe Geburtsdatum und Geburtsort.", "fr": "Veuillez vérifier la date et le lieu de naissance.",
                "es": "Comprueba la fecha y el lugar de nacimiento.", "en": "Please check the date and place of birth."}
         return jsonify({"ok": False, "error": bad[view_lang]}), e.status
@@ -1389,7 +1407,7 @@ def profile_view_route():
         nf = {"de": "Den Geburtsort konnten wir nicht finden. Bitte gib die nächstgrößere Stadt an (z. B. Berlin) oder lass die Geburtszeit leer.",
               "fr": "Nous n'avons pas trouvé ce lieu de naissance. Indiquez la plus grande ville proche (par ex. Paris) ou laissez l'heure vide.",
               "es": "No encontramos ese lugar de nacimiento. Indica la ciudad grande más cercana (p. ej. Madrid) o deja la hora en blanco.",
-              "en": "We couldn't find that birth place. Please enter the nearest larger city (e.g. London) or leave the birth time empty."}
+              "en": "We couldn't find that birth place. Please enter the nearest larger city (e.g. Nairobi) or leave the birth time empty."}
         return jsonify({"ok": False, "error": nf[view_lang], "code": "place_not_found"}), 422
 
     view = profile_view.build_profile_view(calc_result, view_lang)
