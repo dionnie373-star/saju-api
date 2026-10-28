@@ -755,3 +755,13 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 조치: report_pipeline._post_anthropic(stream=True) 추가, call_claude / call_claude_checked 재생성 호출이 사용. 조각 사이 타임아웃 120초(STREAM_READ_TIMEOUT), 1회 총 시간 상한 480초(STREAM_TOTAL_DEADLINE). 중간 오류 이벤트는 ConnectionError로 올려 기존 재시도 경로 사용. 검증용 호출(validate_report_consistency)과 이메일은 그대로.
 - 테스트: tests/test_streaming.py (SSE 조립/오류/재시도/마감, 총 216개). 실제 API로의 검증은 무료 가입(Haiku) 실행으로 확인할 것.
 - 주의: recover_stalled_orders의 RECOVERY_STALE_SECONDS(12분)보다 재시도 합산 시간이 길어질 수 있음(기존에도 동일).
+
+
+## 2026-10-28 무료 프로필 "웹 즉시 결과" 개편 (브랜치 feature/instant-result, 푸시 승인 대기)
+- 무료 프로필을 이메일 대신 웹 화면에서 바로 보여준다: POST /profile (AI·메일 없음, 계산 + profile_view.py 고정 문구 DE/FR/ES/EN).
+  결과 아래에 Jahresreport/Lebenskarte 안내, 맨 아래에 "PDF 이메일로 받기"(선택, 기존 /signup + via_result=true).
+- 출생지를 못 찾아 기본 도시로 대체되고 출생 시각이 있으면 422(place_not_found)로 더 큰 도시 입력을 요청.
+- 새 퍼널 이벤트(/api/ev): res_ok, res_err, res_up_view, res_up_paid, res_up_premium, res_pdf_open, res_pdf_ok (대시보드에 표시).
+  무료 프로필 집계(signup_meta)는 /profile 성공 시 기록, /signup은 via_result면 기록 생략(중복 방지).
+- FR/ES 페이지에도 익명 방문/이벤트 집계 스크립트를 추가(방침 문구 갱신). DE/FR/ES 방침에 웹 즉시 결과 문구 추가.
+- /en/ 영어 파일럿(noindex): 무료 결과 + "영어 리포트 관심" 버튼(fake door, 이벤트 res_up_paid). 영어 상품·결제·법적 고지는 아직 없음.
