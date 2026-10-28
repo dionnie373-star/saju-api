@@ -101,10 +101,7 @@
           <span style="font-size: 12px; color: #8A8074;">Afin de rattacher votre heure de naissance au bon fuseau horaire.</span>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="email" style="font-size: 13px; font-weight: 500; color: #4A4239;">Adresse e-mail <span style="color: #C1442E;">*</span></label>
-          <input id="email" type="email" placeholder="vous@exemple.fr" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-        </div>
+        <input id="email" type="hidden">
 
         <div style="display: none; flex-direction: column; gap: 6px;">
           <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(nécessaire uniquement pour la carte de vie premium)</span></label>
@@ -131,7 +128,7 @@
         </div>
 
         <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
-          Recevoir mon profil Saju gratuit
+          Voir mon profil maintenant
         </button>
 
         <p id="errorMsg" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
@@ -139,13 +136,64 @@
         <p id="infoMsg" role="status" aria-live="polite" style="margin: 0; font-size: 13.5px; color: #4A4239; text-align: center; line-height: 1.55; display: none;"></p>
 
         <p style="margin: 0; font-size: 12.5px; color: #8A8074; text-align: center; line-height: 1.5;">
-          Gratuit · Résultat par e-mail · environ 2 minutes
+          Gratuit · Résultat immédiat sur cette page · sans e-mail
         </p>
         <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center; line-height: 1.5;">
           Les textes sont rédigés avec l'aide de l'IA à partir de vos piliers calculés – à titre de divertissement et de réflexion personnelle, pas une prédiction. Nous utilisons vos informations uniquement pour établir votre profil et les traitons de manière confidentielle. Plus d'informations dans notre <a href="/fr/confidentialite" style="color: inherit; text-decoration: underline;">politique de confidentialité</a>.
         </p>
       </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Sofort-Ergebnis (2026-10-28): Profil direkt im Browser, ohne E-Mail; darunter Reports; PDF per E-Mail optional. -->
+  <div id="resultSection" style="display:none;width:100%;box-sizing:border-box;padding:56px 6vw 24px;justify-content:center;background:#FAF7F1;">
+    <div style="width:100%;max-width:820px;display:flex;flex-direction:column;gap:28px;">
+      <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
+        <h2 class="display" style="margin:0;font-size:28px;font-weight:500;">Votre profil des cinq éléments</h2>
+        <p style="margin:0;font-size:14.5px;color:#6B625A;">Vos piliers dans le Saju – gratuit et immédiat</p>
+      </div>
+      <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
+      <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
+        <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Répartition des cinq éléments</h3>
+        <div id="resBars" style="display:flex;flex-direction:column;gap:9px;"></div>
+      </div>
+      <div id="resTexts" style="display:flex;flex-direction:column;gap:14px;"></div>
+      <p style="margin:0;font-size:12.5px;color:#8A8074;text-align:center;line-height:1.55;">Cet aperçu est calculé directement à partir de vos piliers. À des fins de divertissement et de réflexion personnelle – pas une prédiction.</p>
+
+      <div id="resUpsell" style="display:flex;flex-direction:column;gap:18px;margin-top:8px;">
+        <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
+          <h3 class="display" style="margin:0;font-size:22px;font-weight:500;">Envie d'aller plus loin ?</h3>
+          <p style="margin:0 auto;max-width:560px;font-size:14.5px;line-height:1.6;color:#6B625A;">Votre profil gratuit donne l'aperçu. Le rapport annuel vous guide à travers les 12 mois de 2027, la carte de vie montre en plus vos grands cycles de dix ans.</p>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
+          <div style="flex:1 1 300px;max-width:380px;background:#211D1A;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;color:#FAF7F1;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Rapport annuel</h4><span class="display" style="font-size:19px;font-weight:600;">9,90 €</span></div>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#E8E2D8;"><li><strong>Des impulsions mensuelles</strong> pour les 12 mois</li><li>Des éclairages approfondis sur les relations, le travail et vos objectifs</li><li>Votre boussole annuelle personnelle</li><li><strong>Au format PDF</strong> pour le conserver</li></ul>
+            <button type="button" id="resBuyPaid" style="margin-top:auto;padding:12px 16px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Voir le rapport annuel — 9,90 €</button>
+          </div>
+          <div style="flex:1 1 300px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Carte de vie premium</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li>Tout le contenu du rapport annuel</li><li><strong>Analyse des périodes de vie (Daewoon)</strong> — vos grands cycles de dix ans</li><li><strong>Au format PDF</strong> — votre guide de réflexion personnel</li></ul>
+            <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Voir la carte de vie — 24,90 €</button>
+          </div>
+        </div>
+        <p style="margin:0;font-size:12px;color:#A79E93;text-align:center;">🔒 Paiement sécurisé par carte, PayPal et plus · garantie 60 jours satisfait ou remboursé</p>
+      </div>
+
+      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Votre profil gratuit en PDF détaillé</h3>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Rédigé avec l'aide de l'IA, environ 4 pages à conserver. Nous vous l'envoyons par e-mail.</p>
+        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Recevoir le PDF détaillé par e-mail</button>
+        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="vous@exemple.fr" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
+            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Envoyer le PDF</button>
+          </div>
+          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">Nous utilisons votre adresse e-mail uniquement pour l'envoi de ce PDF. <a href="/fr/confidentialite" style="color:inherit;text-decoration:underline;">Confidentialité</a></p>
+        </div>
+        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
       </div>
     </div>
   </div>
@@ -170,8 +218,8 @@
 
         <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
           <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">3</div>
-          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Votre profil directement par e-mail</h3>
-          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Au format PDF — à lire, à conserver ou à partager.</p>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Votre résultat immédiatement sur cette page</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Juste après le clic, sans e-mail. Le PDF détaillé vous est envoyé en option.</p>
         </div>
 
       </div>
@@ -629,78 +677,147 @@
 })();
 
 (function () {
-  // 같은 오리진에서 서빙되므로 상대경로로 호출 (CORS/CSP 문제 없음)
+  // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
-
+  var L = {"btn_idle": "Voir mon profil maintenant", "btn_loading": "Calcul en cours …", "btn_retry": "Réessayer", "info_loading": "Votre profil est en cours de calcul – cela ne prend qu'un instant.", "err_date": "Veuillez indiquer votre date de naissance.", "err_city": "Veuillez indiquer votre lieu de naissance.", "err_net": "Connexion au serveur impossible. Veuillez réessayer plus tard.", "err_gen": "Une erreur s'est produite. Veuillez réessayer plus tard.", "pil": ["Année", "Mois", "Jour", "Heure"], "pil_none": "non indiquée", "chart_u": "sur", "pdf_sending": "Création en cours – cela prend 1 à 2 minutes …", "pdf_ok": "C'est fait ! Votre PDF est en route et arrive généralement dans votre boîte mail en quelques minutes. Pensez à vérifier vos spams.", "pdf_bad": "Veuillez indiquer une adresse e-mail valide.", "lang": "fr"};
+  var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
-  var status = 'idle';
-
-  var labels = {
-    idle: 'Recevoir mon profil Saju gratuit',
-    loading: 'Création en cours …',
-    sent: 'En route vers vous ✓',
-    error: 'Réessayer',
-  };
-
   var infoEl = document.getElementById('infoMsg');
-  var infoTexts = {
-    loading: 'Votre profil est en cours de création – cela prend en général 1 à 2 minutes. Veuillez garder cette page ouverte.',
-    sent: "C'est fait ! Votre profil Saju est en route et arrive généralement dans votre boîte mail en quelques minutes. Pensez à vérifier vos spams.",
-  };
+  var status = 'idle';
+  function ev(n) { if (window.paljaEv) { paljaEv(n); } }
+  function $(id) { return document.getElementById(id); }
+  function mk(tag, css, text) { var e = document.createElement(tag); if (css) { e.style.cssText = css; } if (text != null) { e.textContent = text; } return e; }
+
   function setStatus(next, msg) {
     status = next;
-    btn.textContent = labels[next] || labels.idle;
+    btn.textContent = next === 'loading' ? L.btn_loading : (next === 'error' ? L.btn_retry : L.btn_idle);
+    btn.disabled = next === 'loading';
     if (infoEl) {
-      if (infoTexts[next]) { infoEl.textContent = infoTexts[next]; infoEl.style.display = 'block'; }
+      if (next === 'loading') { infoEl.textContent = L.info_loading; infoEl.style.display = 'block'; }
       else { infoEl.textContent = ''; infoEl.style.display = 'none'; }
     }
-    if (msg) {
-      errorEl.textContent = msg;
-      errorEl.style.display = 'block';
-    } else {
-      errorEl.textContent = '';
-      errorEl.style.display = 'none';
+    if (msg) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+    else { errorEl.textContent = ''; errorEl.style.display = 'none'; }
+  }
+
+  function render(d) {
+    var P = $('resPillars'); P.textContent = '';
+    ['year', 'month', 'day', 'hour'].forEach(function (k, i) {
+      var p = d.pillars[k];
+      var card = mk('div', 'background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;');
+      card.appendChild(mk('div', 'font-size:12px;color:#8A8074;letter-spacing:0.04em;', L.pil[i]));
+      if (p) {
+        card.appendChild(mk('div', 'font-size:30px;line-height:1.1;font-weight:600;color:#211D1A;', p.hanja));
+        var r = mk('div', 'font-size:12px;color:#4A4239;display:flex;flex-direction:column;gap:3px;');
+        [[p.stem, p.stem_name], [p.branch, p.branch_name]].forEach(function (x) {
+          var line = mk('div', 'display:flex;align-items:center;gap:5px;justify-content:center;');
+          line.appendChild(mk('span', 'width:9px;height:9px;border-radius:50%;background:' + COLORS[x[0]] + ';display:inline-block;'));
+          line.appendChild(mk('span', '', x[1]));
+          r.appendChild(line);
+        });
+        card.appendChild(r);
+      } else {
+        card.appendChild(mk('div', 'font-size:26px;line-height:1.1;color:#C9BFAE;', '–'));
+        card.appendChild(mk('div', 'font-size:11.5px;color:#A79E93;', L.pil_none));
+      }
+      P.appendChild(card);
+    });
+    var B = $('resBars'); B.textContent = '';
+    var max = Math.max.apply(null, d.counts.map(function (c) { return c.n; })) || 1;
+    d.counts.forEach(function (c) {
+      var row = mk('div', 'display:flex;align-items:center;gap:10px;font-size:13.5px;color:#4A4239;');
+      row.appendChild(mk('span', 'flex:0 0 74px;', c.name));
+      var track = mk('div', 'flex:1;background:#EFE8DB;border-radius:6px;height:12px;overflow:hidden;');
+      track.appendChild(mk('div', 'height:100%;border-radius:6px;background:' + COLORS[c.key] + ';width:' + (c.n ? Math.max(8, Math.round(100 * c.n / max)) : 0) + '%;'));
+      row.appendChild(track);
+      row.appendChild(mk('span', 'flex:0 0 52px;text-align:right;color:#6B625A;', c.n + ' ' + L.chart_u + ' ' + d.total));
+      B.appendChild(row);
+    });
+    var T = $('resTexts'); T.textContent = '';
+    d.sections.forEach(function (s) {
+      var box = mk('div', 'background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;' + (s.key ? 'border-left:4px solid ' + COLORS[s.key] + ';' : ''));
+      box.appendChild(mk('h3', 'margin:0 0 8px;font-size:17px;font-weight:600;color:#211D1A;', s.title));
+      s.text.split('\n\n').forEach(function (para) { box.appendChild(mk('p', 'margin:0 0 8px;font-size:14.5px;line-height:1.65;color:#4A4239;', para)); });
+      T.appendChild(box);
+    });
+    var sec = $('resultSection');
+    sec.style.display = 'flex';
+    setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+    if ('IntersectionObserver' in window) {
+      var up = $('resUpsell');
+      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { ev('res_up_view'); io.disconnect(); } }, { threshold: 0.4 });
+      io.observe(up);
     }
+  }
+
+  function formData() {
+    return {
+      birth_date: $('birthdate').value.trim(),
+      birth_time: $('birthtime').value.trim(),
+      birth_city: $('birthplace').value.trim(),
+    };
   }
 
   btn.addEventListener('click', async function () {
     if (status === 'loading') return;
-
-    var birthdate = document.getElementById('birthdate').value.trim();
-    var birthtime = document.getElementById('birthtime').value.trim();
-    var birthplace = document.getElementById('birthplace').value.trim();
-    var email = document.getElementById('email').value.trim();
-
-    if (!birthdate) { setStatus('error', 'Veuillez indiquer votre date de naissance.'); return; }
-    if (!birthplace) { setStatus('error', 'Veuillez indiquer votre lieu de naissance.'); return; }
-    if (!email || email.indexOf('@') === -1) { setStatus('error', 'Veuillez indiquer une adresse e-mail valide.'); return; }
-
+    var f = formData();
+    if (!f.birth_date) { ev('val_err'); setStatus('error', L.err_date); return; }
+    if (!f.birth_city) { ev('val_err'); setStatus('error', L.err_city); return; }
+    ev('submit');
     setStatus('loading');
-
     try {
-      var res = await fetch(API_BASE + '/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          birth_date: birthdate,
-          birth_time: birthtime,
-          birth_city: birthplace,
-                    email: email,
-          src: paljaSrc(),
-          interest: (document.getElementById('interest') || {}).value || '',
-          lang: 'fr',
-        }),
+      var res = await fetch(API_BASE + '/profile', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ birth_date: f.birth_date, birth_time: f.birth_time, birth_city: f.birth_city, src: (window.paljaSrc ? paljaSrc() : ''), lang: L.lang }),
       });
       var data = {};
       try { data = await res.json(); } catch (e) {}
-      if (!res.ok || data.ok === false) {
-        setStatus('error', data.error || 'Une erreur s\'est produite. Veuillez réessayer plus tard.');
-        return;
-      }
-      setStatus('sent');
+      if (!res.ok || data.ok === false) { ev('res_err'); setStatus('error', L.err_gen); return; }
+      ev('res_ok');
+      render(data);
+      setStatus('idle');
     } catch (err) {
-      setStatus('error', 'Connexion au serveur impossible. Veuillez réessayer plus tard.');
+      ev('neterr');
+      setStatus('error', L.err_net);
+    }
+  });
+
+  // Reports: gleiche Kaufdialoge wie im Preisbereich (Geburtsdaten sind aus dem Formular vorbelegt).
+  $('resBuyPaid').addEventListener('click', function () { ev('res_up_paid'); $('buyPaidBtn').click(); });
+  $('resBuyPremium').addEventListener('click', function () { ev('res_up_premium'); $('buyPremiumBtn').click(); });
+
+  // PDF per E-Mail (optional): bestehender /signup-Weg mit KI-Text.
+  var pdfMsg = $('resPdfMsg');
+  function pdfSay(t) { pdfMsg.textContent = t; pdfMsg.style.display = t ? 'block' : 'none'; }
+  $('resPdfOpen').addEventListener('click', function () {
+    ev('res_pdf_open');
+    $('resPdfForm').style.display = 'flex';
+    this.style.display = 'none';
+    setTimeout(function () { $('resPdfEmail').focus(); }, 50);
+  });
+  var pdfBusy = false;
+  $('resPdfSend').addEventListener('click', async function () {
+    if (pdfBusy) return;
+    var email = $('resPdfEmail').value.trim();
+    if (!email || email.indexOf('@') === -1) { pdfSay(L.pdf_bad); return; }
+    var f = formData();
+    var hid = $('email'); if (hid) { hid.value = email; }
+    pdfBusy = true; this.disabled = true; pdfSay(L.pdf_sending);
+    try {
+      var res = await fetch(API_BASE + '/signup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ birth_date: f.birth_date, birth_time: f.birth_time, birth_city: f.birth_city, email: email,
+                               src: (window.paljaSrc ? paljaSrc() : ''), interest: '', lang: L.lang, via_result: true }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || data.ok === false) { pdfSay(data.error || L.err_gen); this.disabled = false; pdfBusy = false; return; }
+      ev('res_pdf_ok');
+      pdfSay(L.pdf_ok);
+      $('resPdfForm').style.display = 'none';
+    } catch (err) {
+      pdfSay(L.err_net); this.disabled = false; pdfBusy = false;
     }
   });
 })();
@@ -718,6 +835,43 @@
     } catch (e) { return ''; }
   }
   paljaSrc();
+  // Anonyme Seitenaufruf-Zählung (kein Cookie, keine IP-Speicherung): nur Datum, Quelle, Pfad.
+  // Eigene Besuche ausschließen: ?nohit=1 setzt ein lokales Flag (nur in diesem Browser, nichts wird gesendet); ?nohit=0 hebt es auf.
+  window.paljaNoHit = false;
+  try {
+    var _u = new URLSearchParams(window.location.search);
+    if (_u.get('nohit') === '1') { localStorage.setItem('palja_nohit', '1'); }
+    if (_u.get('nohit') === '0') { localStorage.removeItem('palja_nohit'); }
+    window.paljaNoHit = localStorage.getItem('palja_nohit') === '1';
+  } catch (e) {}
+  function _paljaPost(url, obj) {
+    if (window.paljaNoHit) { return; }
+    try {
+      var b = JSON.stringify(obj);
+      if (navigator.sendBeacon) { navigator.sendBeacon(url, new Blob([b], { type: 'application/json' })); }
+      else { fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: b, keepalive: true }); }
+    } catch (e) {}
+  }
+  // Anonyme Funnel-Ereignisse (nur Datum, Quelle, Ereignisname; kein Cookie, keine IP-Speicherung).
+  window.paljaEv = function (ev) { _paljaPost('/api/ev', { ev: ev, src: (paljaSrc() || '').toLowerCase() }); };
+  try {
+    var q = (new URLSearchParams(window.location.search).get('src') || '').toLowerCase();
+    _paljaPost('/api/hit', { src: q, path: window.location.pathname });
+  } catch (e) {}
+  (function () {
+    var seen = {};
+    function once(ev) { if (seen[ev]) { return; } seen[ev] = 1; window.paljaEv(ev); }
+    window.paljaEvOnce = once;
+    var ids = { birthdate: 1, birthtime: 1, birthplace: 1, email: 1, gender: 1, interest: 1 };
+    document.addEventListener('focusin', function (e) { if (e.target && ids[e.target.id]) { once('start'); } });
+    var bd = document.getElementById('birthdate');
+    if (bd) { bd.addEventListener('change', function () { setTimeout(function () { var tb = document.getElementById('tasteBox'); if (tb && tb.style.display !== 'none') { once('taste'); } }, 80); }); }
+    var sb = document.getElementById('submitBtn');
+    if (sb && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { once('view_form'); io.disconnect(); } }, { threshold: 0.6 });
+      io.observe(sb);
+    }
+  })();
 </script>
 <script>
 // Sofort-Vorschau (rein im Browser, nichts wird gesendet): Jahrestier/-element und Tageselement.
@@ -750,7 +904,7 @@ function paljaTaste(y, m, d) {
       'Élément du jour : <strong>' + t.dayElem + '</strong> (' + t.dayStem + ')<br>' +
       '<span style="font-size:12.5px;color:#8A8074;">' +
       (t.edge ? 'Autour du 4 février, l\'année Saju change : l\'animal peut différer ici ; ton profil calcule au jour près. ' : '') +
-      'Ce n\'est qu\'un extrait. Ton profil complet avec tous les piliers t\'est envoyé gratuitement par e-mail. Pour le divertissement et la réflexion personnelle – pas une prévision.</span>';
+      'Ce n\'est qu\'un extrait. Ton profil complet avec tous les piliers s\'affiche gratuitement juste après le clic sur « Voir mon profil maintenant ». Pour le divertissement et la réflexion personnelle – pas une prévision.</span>';
     box.innerHTML = html;
     box.style.display = 'block';
   });

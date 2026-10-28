@@ -102,10 +102,7 @@
           <span style="font-size: 12px; color: #8A8074;">Para asignar tu hora de nacimiento a la zona horaria correcta.</span>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="email" style="font-size: 13px; font-weight: 500; color: #4A4239;">Correo electrónico <span style="color: #C1442E;">*</span></label>
-          <input id="email" type="email" placeholder="tu@ejemplo.es" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-        </div>
+        <input id="email" type="hidden">
 
         <div style="display: none; flex-direction: column; gap: 6px;">
           <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexo <span style="font-weight: 400; color: #8A8074;">(solo necesario para el mapa de vida premium)</span></label>
@@ -132,7 +129,7 @@
         </div>
 
         <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
-          Recibir mi perfil Saju gratis
+          Ver mi perfil ahora
         </button>
 
         <p id="errorMsg" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
@@ -140,13 +137,64 @@
         <p id="infoMsg" role="status" aria-live="polite" style="margin: 0; font-size: 13.5px; color: #4A4239; text-align: center; line-height: 1.55; display: none;"></p>
 
         <p style="margin: 0; font-size: 12.5px; color: #8A8074; text-align: center; line-height: 1.5;">
-          Gratis · Resultado por correo · unos 2 minutos
+          Gratis · Resultado al instante en esta página · sin correo
         </p>
         <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center; line-height: 1.5;">
           Los textos se elaboran con ayuda de IA a partir de tus pilares calculados – con fines de entretenimiento y autorreflexión, no son una predicción. Usamos tu información únicamente para elaborar tu perfil y la tratamos de forma confidencial. Más información en nuestra <a href="/es/privacidad" style="color: inherit; text-decoration: underline;">política de privacidad</a>.
         </p>
       </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Sofort-Ergebnis (2026-10-28): Profil direkt im Browser, ohne E-Mail; darunter Reports; PDF per E-Mail optional. -->
+  <div id="resultSection" style="display:none;width:100%;box-sizing:border-box;padding:56px 6vw 24px;justify-content:center;background:#FAF7F1;">
+    <div style="width:100%;max-width:820px;display:flex;flex-direction:column;gap:28px;">
+      <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
+        <h2 class="display" style="margin:0;font-size:28px;font-weight:500;">Tu perfil de los cinco elementos</h2>
+        <p style="margin:0;font-size:14.5px;color:#6B625A;">Tus pilares en el Saju: gratis e inmediato</p>
+      </div>
+      <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
+      <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
+        <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Distribución de los cinco elementos</h3>
+        <div id="resBars" style="display:flex;flex-direction:column;gap:9px;"></div>
+      </div>
+      <div id="resTexts" style="display:flex;flex-direction:column;gap:14px;"></div>
+      <p style="margin:0;font-size:12.5px;color:#8A8074;text-align:center;line-height:1.55;">Este resumen se calcula directamente a partir de tus pilares. Para entretenimiento y reflexión personal – no es una predicción.</p>
+
+      <div id="resUpsell" style="display:flex;flex-direction:column;gap:18px;margin-top:8px;">
+        <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
+          <h3 class="display" style="margin:0;font-size:22px;font-weight:500;">¿Quieres profundizar?</h3>
+          <p style="margin:0 auto;max-width:560px;font-size:14.5px;line-height:1.6;color:#6B625A;">Tu perfil gratuito muestra la visión general. El informe anual te guía por los 12 meses de 2027, y el mapa de vida muestra además tus grandes ciclos de diez años.</p>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
+          <div style="flex:1 1 300px;max-width:380px;background:#211D1A;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;color:#FAF7F1;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Informe anual</h4><span class="display" style="font-size:19px;font-weight:600;">9,90 €</span></div>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#E8E2D8;"><li><strong>Impulsos mensuales</strong> para los 12 meses</li><li>Perspectivas en profundidad sobre relaciones, trabajo y tus metas</li><li>Tu brújula anual personal</li><li><strong>En formato PDF</strong> para guardarlo</li></ul>
+            <button type="button" id="resBuyPaid" style="margin-top:auto;padding:12px 16px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Ver el informe anual — 9,90 €</button>
+          </div>
+          <div style="flex:1 1 300px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Mapa de vida premium</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li>Todo el contenido del informe anual</li><li><strong>Análisis de las etapas de vida (Daewoon)</strong>: tus grandes ciclos de diez años</li><li><strong>En formato PDF</strong>: tu guía de reflexión personal</li></ul>
+            <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Ver el mapa de vida — 24,90 €</button>
+          </div>
+        </div>
+        <p style="margin:0;font-size:12px;color:#A79E93;text-align:center;">🔒 Pago seguro con tarjeta, PayPal y más · garantía de devolución de 60 días</p>
+      </div>
+
+      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Tu perfil gratuito como PDF detallado</h3>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Elaborado con ayuda de IA, unas 4 páginas para guardar. Te lo enviamos por correo.</p>
+        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Pedir el PDF detallado por correo</button>
+        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="tu@ejemplo.es" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
+            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Enviar PDF</button>
+          </div>
+          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">Usamos tu correo solo para enviarte este PDF. <a href="/es/privacidad" style="color:inherit;text-decoration:underline;">Privacidad</a></p>
+        </div>
+        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
       </div>
     </div>
   </div>
@@ -171,8 +219,8 @@
 
         <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
           <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">3</div>
-          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Tu perfil directamente por correo</h3>
-          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">En formato PDF: para leer, guardar o compartir.</p>
+          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Tu resultado al instante en esta página</h3>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Justo después del clic, sin correo. El PDF detallado te lo enviamos si lo deseas.</p>
         </div>
 
       </div>
@@ -630,78 +678,147 @@
 })();
 
 (function () {
-  // 같은 오리진에서 서빙되므로 상대경로로 호출 (CORS/CSP 문제 없음)
+  // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
-
+  var L = {"btn_idle": "Ver mi perfil ahora", "btn_loading": "Calculando …", "btn_retry": "Reintentar", "info_loading": "Tu perfil se está calculando; solo tarda un momento.", "err_date": "Por favor, indica tu fecha de nacimiento.", "err_city": "Por favor, indica tu lugar de nacimiento.", "err_net": "No se pudo conectar con el servidor. Inténtalo de nuevo más tarde.", "err_gen": "Algo salió mal. Inténtalo de nuevo más tarde.", "pil": ["Año", "Mes", "Día", "Hora"], "pil_none": "no indicada", "chart_u": "de", "pdf_sending": "Creando – tarda de 1 a 2 minutos …", "pdf_ok": "¡Listo! Tu PDF va de camino y suele llegar a tu bandeja de entrada en pocos minutos. Revisa también la carpeta de spam.", "pdf_bad": "Por favor, indica un correo electrónico válido.", "lang": "es"};
+  var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
-  var status = 'idle';
-
-  var labels = {
-    idle: 'Recibir mi perfil Saju gratis',
-    loading: 'Creando …',
-    sent: 'Va de camino ✓',
-    error: 'Reintentar',
-  };
-
   var infoEl = document.getElementById('infoMsg');
-  var infoTexts = {
-    loading: 'Tu perfil se está creando – suele tardar de 1 a 2 minutos. Por favor, mantén esta página abierta.',
-    sent: '¡Listo! Tu perfil Saju va de camino y suele llegar a tu bandeja de entrada en pocos minutos. Revisa también la carpeta de spam.',
-  };
+  var status = 'idle';
+  function ev(n) { if (window.paljaEv) { paljaEv(n); } }
+  function $(id) { return document.getElementById(id); }
+  function mk(tag, css, text) { var e = document.createElement(tag); if (css) { e.style.cssText = css; } if (text != null) { e.textContent = text; } return e; }
+
   function setStatus(next, msg) {
     status = next;
-    btn.textContent = labels[next] || labels.idle;
+    btn.textContent = next === 'loading' ? L.btn_loading : (next === 'error' ? L.btn_retry : L.btn_idle);
+    btn.disabled = next === 'loading';
     if (infoEl) {
-      if (infoTexts[next]) { infoEl.textContent = infoTexts[next]; infoEl.style.display = 'block'; }
+      if (next === 'loading') { infoEl.textContent = L.info_loading; infoEl.style.display = 'block'; }
       else { infoEl.textContent = ''; infoEl.style.display = 'none'; }
     }
-    if (msg) {
-      errorEl.textContent = msg;
-      errorEl.style.display = 'block';
-    } else {
-      errorEl.textContent = '';
-      errorEl.style.display = 'none';
+    if (msg) { errorEl.textContent = msg; errorEl.style.display = 'block'; }
+    else { errorEl.textContent = ''; errorEl.style.display = 'none'; }
+  }
+
+  function render(d) {
+    var P = $('resPillars'); P.textContent = '';
+    ['year', 'month', 'day', 'hour'].forEach(function (k, i) {
+      var p = d.pillars[k];
+      var card = mk('div', 'background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;');
+      card.appendChild(mk('div', 'font-size:12px;color:#8A8074;letter-spacing:0.04em;', L.pil[i]));
+      if (p) {
+        card.appendChild(mk('div', 'font-size:30px;line-height:1.1;font-weight:600;color:#211D1A;', p.hanja));
+        var r = mk('div', 'font-size:12px;color:#4A4239;display:flex;flex-direction:column;gap:3px;');
+        [[p.stem, p.stem_name], [p.branch, p.branch_name]].forEach(function (x) {
+          var line = mk('div', 'display:flex;align-items:center;gap:5px;justify-content:center;');
+          line.appendChild(mk('span', 'width:9px;height:9px;border-radius:50%;background:' + COLORS[x[0]] + ';display:inline-block;'));
+          line.appendChild(mk('span', '', x[1]));
+          r.appendChild(line);
+        });
+        card.appendChild(r);
+      } else {
+        card.appendChild(mk('div', 'font-size:26px;line-height:1.1;color:#C9BFAE;', '–'));
+        card.appendChild(mk('div', 'font-size:11.5px;color:#A79E93;', L.pil_none));
+      }
+      P.appendChild(card);
+    });
+    var B = $('resBars'); B.textContent = '';
+    var max = Math.max.apply(null, d.counts.map(function (c) { return c.n; })) || 1;
+    d.counts.forEach(function (c) {
+      var row = mk('div', 'display:flex;align-items:center;gap:10px;font-size:13.5px;color:#4A4239;');
+      row.appendChild(mk('span', 'flex:0 0 74px;', c.name));
+      var track = mk('div', 'flex:1;background:#EFE8DB;border-radius:6px;height:12px;overflow:hidden;');
+      track.appendChild(mk('div', 'height:100%;border-radius:6px;background:' + COLORS[c.key] + ';width:' + (c.n ? Math.max(8, Math.round(100 * c.n / max)) : 0) + '%;'));
+      row.appendChild(track);
+      row.appendChild(mk('span', 'flex:0 0 52px;text-align:right;color:#6B625A;', c.n + ' ' + L.chart_u + ' ' + d.total));
+      B.appendChild(row);
+    });
+    var T = $('resTexts'); T.textContent = '';
+    d.sections.forEach(function (s) {
+      var box = mk('div', 'background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;' + (s.key ? 'border-left:4px solid ' + COLORS[s.key] + ';' : ''));
+      box.appendChild(mk('h3', 'margin:0 0 8px;font-size:17px;font-weight:600;color:#211D1A;', s.title));
+      s.text.split('\n\n').forEach(function (para) { box.appendChild(mk('p', 'margin:0 0 8px;font-size:14.5px;line-height:1.65;color:#4A4239;', para)); });
+      T.appendChild(box);
+    });
+    var sec = $('resultSection');
+    sec.style.display = 'flex';
+    setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+    if ('IntersectionObserver' in window) {
+      var up = $('resUpsell');
+      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { ev('res_up_view'); io.disconnect(); } }, { threshold: 0.4 });
+      io.observe(up);
     }
+  }
+
+  function formData() {
+    return {
+      birth_date: $('birthdate').value.trim(),
+      birth_time: $('birthtime').value.trim(),
+      birth_city: $('birthplace').value.trim(),
+    };
   }
 
   btn.addEventListener('click', async function () {
     if (status === 'loading') return;
-
-    var birthdate = document.getElementById('birthdate').value.trim();
-    var birthtime = document.getElementById('birthtime').value.trim();
-    var birthplace = document.getElementById('birthplace').value.trim();
-    var email = document.getElementById('email').value.trim();
-
-    if (!birthdate) { setStatus('error', 'Indica tu fecha de nacimiento.'); return; }
-    if (!birthplace) { setStatus('error', 'Indica tu lugar de nacimiento.'); return; }
-    if (!email || email.indexOf('@') === -1) { setStatus('error', 'Indica un correo electrónico válido.'); return; }
-
+    var f = formData();
+    if (!f.birth_date) { ev('val_err'); setStatus('error', L.err_date); return; }
+    if (!f.birth_city) { ev('val_err'); setStatus('error', L.err_city); return; }
+    ev('submit');
     setStatus('loading');
-
     try {
-      var res = await fetch(API_BASE + '/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          birth_date: birthdate,
-          birth_time: birthtime,
-          birth_city: birthplace,
-                    email: email,
-          src: paljaSrc(),
-          interest: (document.getElementById('interest') || {}).value || '',
-          lang: 'es',
-        }),
+      var res = await fetch(API_BASE + '/profile', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ birth_date: f.birth_date, birth_time: f.birth_time, birth_city: f.birth_city, src: (window.paljaSrc ? paljaSrc() : ''), lang: L.lang }),
       });
       var data = {};
       try { data = await res.json(); } catch (e) {}
-      if (!res.ok || data.ok === false) {
-        setStatus('error', data.error || 'Se ha producido un error. Inténtalo de nuevo más tarde.');
-        return;
-      }
-      setStatus('sent');
+      if (!res.ok || data.ok === false) { ev('res_err'); setStatus('error', L.err_gen); return; }
+      ev('res_ok');
+      render(data);
+      setStatus('idle');
     } catch (err) {
-      setStatus('error', 'No se pudo conectar con el servidor. Inténtalo de nuevo más tarde.');
+      ev('neterr');
+      setStatus('error', L.err_net);
+    }
+  });
+
+  // Reports: gleiche Kaufdialoge wie im Preisbereich (Geburtsdaten sind aus dem Formular vorbelegt).
+  $('resBuyPaid').addEventListener('click', function () { ev('res_up_paid'); $('buyPaidBtn').click(); });
+  $('resBuyPremium').addEventListener('click', function () { ev('res_up_premium'); $('buyPremiumBtn').click(); });
+
+  // PDF per E-Mail (optional): bestehender /signup-Weg mit KI-Text.
+  var pdfMsg = $('resPdfMsg');
+  function pdfSay(t) { pdfMsg.textContent = t; pdfMsg.style.display = t ? 'block' : 'none'; }
+  $('resPdfOpen').addEventListener('click', function () {
+    ev('res_pdf_open');
+    $('resPdfForm').style.display = 'flex';
+    this.style.display = 'none';
+    setTimeout(function () { $('resPdfEmail').focus(); }, 50);
+  });
+  var pdfBusy = false;
+  $('resPdfSend').addEventListener('click', async function () {
+    if (pdfBusy) return;
+    var email = $('resPdfEmail').value.trim();
+    if (!email || email.indexOf('@') === -1) { pdfSay(L.pdf_bad); return; }
+    var f = formData();
+    var hid = $('email'); if (hid) { hid.value = email; }
+    pdfBusy = true; this.disabled = true; pdfSay(L.pdf_sending);
+    try {
+      var res = await fetch(API_BASE + '/signup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ birth_date: f.birth_date, birth_time: f.birth_time, birth_city: f.birth_city, email: email,
+                               src: (window.paljaSrc ? paljaSrc() : ''), interest: '', lang: L.lang, via_result: true }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || data.ok === false) { pdfSay(data.error || L.err_gen); this.disabled = false; pdfBusy = false; return; }
+      ev('res_pdf_ok');
+      pdfSay(L.pdf_ok);
+      $('resPdfForm').style.display = 'none';
+    } catch (err) {
+      pdfSay(L.err_net); this.disabled = false; pdfBusy = false;
     }
   });
 })();
@@ -719,6 +836,43 @@
     } catch (e) { return ''; }
   }
   paljaSrc();
+  // Anonyme Seitenaufruf-Zählung (kein Cookie, keine IP-Speicherung): nur Datum, Quelle, Pfad.
+  // Eigene Besuche ausschließen: ?nohit=1 setzt ein lokales Flag (nur in diesem Browser, nichts wird gesendet); ?nohit=0 hebt es auf.
+  window.paljaNoHit = false;
+  try {
+    var _u = new URLSearchParams(window.location.search);
+    if (_u.get('nohit') === '1') { localStorage.setItem('palja_nohit', '1'); }
+    if (_u.get('nohit') === '0') { localStorage.removeItem('palja_nohit'); }
+    window.paljaNoHit = localStorage.getItem('palja_nohit') === '1';
+  } catch (e) {}
+  function _paljaPost(url, obj) {
+    if (window.paljaNoHit) { return; }
+    try {
+      var b = JSON.stringify(obj);
+      if (navigator.sendBeacon) { navigator.sendBeacon(url, new Blob([b], { type: 'application/json' })); }
+      else { fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: b, keepalive: true }); }
+    } catch (e) {}
+  }
+  // Anonyme Funnel-Ereignisse (nur Datum, Quelle, Ereignisname; kein Cookie, keine IP-Speicherung).
+  window.paljaEv = function (ev) { _paljaPost('/api/ev', { ev: ev, src: (paljaSrc() || '').toLowerCase() }); };
+  try {
+    var q = (new URLSearchParams(window.location.search).get('src') || '').toLowerCase();
+    _paljaPost('/api/hit', { src: q, path: window.location.pathname });
+  } catch (e) {}
+  (function () {
+    var seen = {};
+    function once(ev) { if (seen[ev]) { return; } seen[ev] = 1; window.paljaEv(ev); }
+    window.paljaEvOnce = once;
+    var ids = { birthdate: 1, birthtime: 1, birthplace: 1, email: 1, gender: 1, interest: 1 };
+    document.addEventListener('focusin', function (e) { if (e.target && ids[e.target.id]) { once('start'); } });
+    var bd = document.getElementById('birthdate');
+    if (bd) { bd.addEventListener('change', function () { setTimeout(function () { var tb = document.getElementById('tasteBox'); if (tb && tb.style.display !== 'none') { once('taste'); } }, 80); }); }
+    var sb = document.getElementById('submitBtn');
+    if (sb && 'IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { once('view_form'); io.disconnect(); } }, { threshold: 0.6 });
+      io.observe(sb);
+    }
+  })();
 </script>
 <script>
 // Sofort-Vorschau (rein im Browser, nichts wird gesendet): Jahrestier/-element und Tageselement.
@@ -751,7 +905,7 @@ function paljaTaste(y, m, d) {
       'Elemento del día: <strong>' + t.dayElem + '</strong> (' + t.dayStem + ')<br>' +
       '<span style="font-size:12.5px;color:#8A8074;">' +
       (t.edge ? 'Hacia el 4 de febrero cambia el año Saju: aquí el animal puede variar; tu perfil se calcula al día exacto. ': '') +
-      'Es solo un fragmento. Tu perfil completo con todos los pilares te llega gratis por correo electrónico. Para entretenimiento y reflexión personal – no es una predicción.</span>';
+      'Es solo un fragmento. Tu perfil completo con todos los pilares lo ves gratis justo después de pulsar «Ver mi perfil ahora». Para entretenimiento y reflexión personal – no es una predicción.</span>';
     box.innerHTML = html;
     box.style.display = 'block';
   });

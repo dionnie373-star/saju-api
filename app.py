@@ -1297,8 +1297,51 @@ def signup():
     except PipelineError as e:
         return jsonify({"ok": False, "error": str(e)}), e.status
 
-    _record_signup_meta(payload, _lang)
+    if not payload.get("via_result"):  # 웹 결과 화면에서 온 PDF 신청은 /profile에서 이미 집계됨
+        _record_signup_meta(payload, _lang)
     return jsonify({"ok": True, "message": "리포트를 생성해서 이메일로 발송했습니다."})
+
+
+@app.route("/profile", methods=["POST", "OPTIONS"])
+def profile_view_route():
+    """무료 프로필 즉시 결과(웹 화면). 이메일 없이 계산 결과 + 고정 해설 문구를 바로 돌려준다.
+
+    AI/메일을 쓰지 않으므로 비용·지연이 거의 없다. 개인정보는 저장·로그하지 않는다.
+    입력값은 응답에 담지 않는다. 전체 AI 리포트(PDF)는 선택 사항으로 /signup(이메일)을 쓴다.
+    """
+    if request.method == "OPTIONS":
+        return "", 204
+    try:
+        payload = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return jsonify({"ok": False, "error": "bad json"}), 400
+    raw_lang = (payload.get("lang") or "").strip().lower()
+    view_lang = raw_lang if raw_lang in ("de", "fr", "es", "en") else "de"
+    calc_lang = view_lang if view_lang != "en" else "de"
+    if _rate_limited("profile_ip", _client_ip(), max_count=30, window_seconds=3600):
+        msg = "Too many requests. Please try again later." if view_lang == "en" else _msg("too_many", calc_lang)
+        return jsonify({"ok": False, "error": msg}), 429
+    calc_payload = {
+        "birth_date": payload.get("birth_date"),
+        "birth_time": payload.get("birth_time") or "",
+        "birth_city": payload.get("birth_city"),
+        "lang": calc_lang,
+        "target_years": [2026, 2027],
+    }
+    try:
+        calc_result = run_calculation(calc_payload)
+    except CalcError as e:
+        if e.status >= 500:
+            return jsonify({"ok": False, "error": str(e)}), e.status
+        bad = {"de": "Bitte prüfe Geburtsdatum und Geburtsort.", "fr": "Veuillez vérifier la date et le lieu de naissance.",
+               "es": "Comprueba la fecha y el lugar de nacimiento.", "en": "Please check the date and place of birth."}
+        return jsonify({"ok": False, "error": bad[view_lang]}), e.status
+    import profile_view
+
+    view = profile_view.build_profile_view(calc_result, view_lang)
+    view["ok"] = True
+    _record_signup_meta(payload, view_lang)  # (출처, 관심사, 언어)만 집계. 개인정보 없음
+    return jsonify(view)
 
 
 _SIGNUP_INTERESTS = {"self", "korea", "relationship", "yearreview", "curious"}
@@ -1368,7 +1411,8 @@ def api_hit():
     return ("", 204)
 
 
-_EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky"}
+_EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky",
+               "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok"}
 
 
 @app.route("/api/ev", methods=["POST"])
@@ -1453,6 +1497,9 @@ def admin_dashboard():
         ("start", "폼 입력 시작"), ("val_err", "필수 항목 누락(클릭했지만 막힘)"),
         ("submit", "제출 클릭(검증 통과)"), ("ok", "가입 성공"),
         ("err", "서버 오류 응답"), ("neterr", "연결 오류"), ("buy_open", "유료 구매 시도"), ("sticky", "하단 고정 버튼 클릭(모바일)"),
+        ("res_ok", "[웹 결과] 결과 화면 표시"), ("res_err", "[웹 결과] 오류"), ("res_up_view", "[웹 결과] 유료 안내가 화면에 보임"),
+        ("res_up_paid", "[웹 결과] Jahresreport 클릭"), ("res_up_premium", "[웹 결과] Lebenskarte 클릭"),
+        ("res_pdf_open", "[웹 결과] PDF 메일 입력 열기"), ("res_pdf_ok", "[웹 결과] PDF 메일 신청 성공"),
     ]
     rows_ev = "".join(
         f"<tr><td>{e(lbl)}</td><td>{ev_tot.get(k, 0)}</td></tr>" for k, lbl in _ev_labels
@@ -1471,7 +1518,7 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 .k{{display:flex;gap:12px;flex-wrap:wrap}} .k div{{background:#fff8ea;border:1px solid #d9cfbd;border-radius:10px;padding:10px 14px;min-width:120px}}
 .k b{{font-size:24px;display:block}} small{{color:#7a6f60}}</style></head><body>
 <h1>Palja 통계 · 최근 {days}일 (UTC)</h1>
-<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문</div></div>
+<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필(웹 결과 + PDF)</div><div><b>{to}</b>주문</div></div>
 <h2>일별</h2><table><tr><th>날짜</th><th>페이지뷰</th><th>무료</th><th>주문</th></tr>{rows_day or '<tr><td colspan=4>–</td></tr>'}</table>
 <h2>채널별 (src)</h2><table><tr><th>src</th><th>페이지뷰</th><th>무료</th><th>전환율</th></tr>{rows_src or '<tr><td colspan=4>–</td></tr>'}</table>
 <h2>가입 퍼널 (이벤트 집계 시작 이후)</h2><table><tr><th>단계</th><th>횟수</th></tr>{rows_ev}</table>
