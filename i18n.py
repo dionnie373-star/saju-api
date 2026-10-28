@@ -425,7 +425,7 @@ FR_STRINGS["promo_anchor"] = "compatibilite"
 #  - 오행: Wood / Fire / Earth / Metal / Water (금(金)을 "Gold"로 쓰지 않는다).
 #  - 철자: 미국식 중립(center, color, behavior, recognize, practice). 영국식 철자는 기계 검사에서 걸러낸다.
 #  - 쉬운 국제 영어: 짧은 문장, 관용구/문화 종속 표현 금지(관용구 목록은 기계 검사).
-#  - 통화는 USD("$9.90", "$24.90").
+#  - 통화는 USD("$10.00", "$24.90").
 # ===========================================================================
 
 _EN_PROMPT_OVERRIDE = """\
@@ -441,8 +441,8 @@ _EN_PROMPT_OVERRIDE = """\
 - 성별: 독자의 성별·가족 상황·직업을 가정하지 마세요. 궁합 리포트에서 성별 정보가 "keine Angabe"/"not specified"이면 이름을 반복해 쓰세요.
 - 월 이름은 영어로("January" … "December"). 챕터 소제목은 예를 들어 "January — Resources that are ready to show"처럼 동사 없는 짧은 명사구로 쓰세요.
 - 본문의 독일어 예시 소제목은 다음 영어로 대응하세요: "Dein Jahr auf einen Blick" → "Your year at a glance"; "Monate, in denen vieles leichter fließen kann" → "Months in which things may flow more easily"; "Monate für mehr Achtsamkeit" → "Months for more attention".
-- 상품명: Jahresreport → "annual report", Lebenskarte → "life map", Kompatibilitäts-Check → "compatibility check". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 영어로, 구간 개수는 "8 life phases of ten years"라고 쓰세요. 금액은 "$9.90"/"$24.90" 형식입니다.
-- 무료 리포트의 유료 리포트 구매 유도 블록은 다음 영어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Your Saju annual report 2027 — $9.90", 그다음 "What you will get:" 아래 불릿 5개(Your personal theme for 2027 / 12 monthly chapters with personal Saju impulses / Reflection questions about love, work and personal growth / Your personal strengths and possible inner tensions / A yearly compass with concrete questions for your own decisions), 마무리 "A personal reflection report based on the Saju tradition. It is not a scientific personality diagnosis, and it is not a certain prediction of the future."
+- 상품명: Jahresreport → "annual report", Lebenskarte → "life map", Kompatibilitäts-Check → "compatibility check". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 영어로, 구간 개수는 "8 life phases of ten years"라고 쓰세요. 금액은 "$10.00"/"$24.90" 형식입니다.
+- 무료 리포트의 유료 리포트 구매 유도 블록은 다음 영어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Your Saju annual report 2027 — $10.00", 그다음 "What you will get:" 아래 불릿 5개(Your personal theme for 2027 / 12 monthly chapters with personal Saju impulses / Reflection questions about love, work and personal growth / Your personal strengths and possible inner tensions / A yearly compass with concrete questions for your own decisions), 마무리 "A personal reflection report based on the Saju tradition. It is not a scientific personality diagnosis, and it is not a certain prediction of the future."
 - 마지막 면책 문구는 영어로: "This content is offered for entertainment and personal reflection. It does not replace medical or psychological advice."
 - 분량 기준(단어 수)은 영어 단어 기준으로 동일하게 적용합니다(영어는 스페인어/독일어보다 단어 수가 적게 나오는 경향이 있으니 기준 미달이 되지 않도록 구체적 예시를 충분히 넣으세요).
 - 출력은 순수 영어 텍스트만. 한글/한자/독일어/프랑스어/스페인어 단어(예: "Holz", "Feuer", "Du", "dein", "vous", "tú")가 섞이지 않게 하세요.
@@ -611,7 +611,7 @@ EN_STRINGS = {
         "Just write to us if the report is not right for you."
     ),
     "promo": "Would you like to see how well you connect with another person?",
-    "promo_link": "→ Saju compatibility check ($9.90)",
+    "promo_link": "→ Saju compatibility check ($10.00)",
     "footer_questions": "Questions? Write to us at",
     "footer_links": [
         ("en/legal-notice", "Legal notice"),
