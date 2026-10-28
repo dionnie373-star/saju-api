@@ -61,14 +61,14 @@
           <h2 class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Your free Saju profile</h2>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <label for="birthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
-            <input id="birthdate" type="date" min="1900-01-01" max="2100-12-31" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            <input id="birthdate" type="date" min="1900-01-01" max="2026-10-28" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
           </div>
           <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
             <summary style="cursor: pointer; font-size: 13.5px; color: #4A4239;">Add your birth time <span style="color: #675E55;">(optional – makes your profile more precise)</span></summary>
             <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
               <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Birth time</label>
-              <select id="birthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">I don't know</option><option value="23:30">11 pm–11:59 pm (late night)</option><option value="00:30">12 am–1 am (after midnight)</option><option value="02:00">1–3 am</option><option value="04:00">3–5 am</option><option value="06:00">5–7 am</option><option value="08:00">7–9 am</option><option value="10:00">9–11 am</option><option value="12:00">11 am–1 pm</option><option value="14:00">1–3 pm</option><option value="16:00">3–5 pm</option><option value="18:00">5–7 pm</option><option value="20:00">7–9 pm</option><option value="22:00">9–11 pm</option></select>
-              <span style="font-size: 12px; color: #675E55;">Without a birth time we calculate only three pillars. With the time, your profile becomes more precise.</span>
+              <input id="birthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+              <span style="font-size: 12px; color: #675E55;">Leave it empty if you don't know it – we then calculate three pillars. We use local solar time, so a birth near midnight can fall on the neighbouring hour or day.</span>
             </div>
           </details>
           <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -177,6 +177,7 @@
   }
 
   function render(d) {
+    var rh = document.querySelector('#resultSection h2'); if (rh) rh.setAttribute('tabindex', '-1');
     var pn = $('resPlaceNote'); if (pn) { pn.textContent = d.place_note || ''; pn.style.display = d.place_note ? 'block' : 'none'; }
     var P = $('resPillars'); P.textContent = '';
     ['year', 'month', 'day', 'hour'].forEach(function (k, i) {
@@ -219,7 +220,11 @@
     });
     var sec = $('resultSection');
     sec.style.display = 'flex';
-    setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+    setTimeout(function () {
+      var rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      sec.scrollIntoView({ behavior: rm ? 'auto' : 'smooth', block: 'start' });
+      if (rh) { try { rh.focus({ preventScroll: true }); } catch (e3) {} }
+    }, 60);
     if ('IntersectionObserver' in window) {
       var up = $('resInterest');
       if (up) { try {
@@ -265,7 +270,7 @@
   $('resInterestBtn').addEventListener('click', function () {
     ev('res_up_paid');
     this.style.display = 'none';
-    var m = $('resInterestMsg'); m.style.display = 'block';
+    var m = $('resInterestMsg'); m.style.display = 'block'; m.setAttribute('tabindex', '-1'); try { m.focus(); } catch (e4) {}
   });
 })();
 </script>

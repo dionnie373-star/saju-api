@@ -281,6 +281,48 @@ _COUNTRY_ALIASES = {"usa": "united states", "us": "united states", "u.s.": "unit
                     "russia": "russian federation"}
 
 
+_REGION_ALIASES = {
+    "al": "alabama", "ak": "alaska", "az": "arizona", "ar": "arkansas", "ca": "california", "co": "colorado",
+    "ct": "connecticut", "de": "delaware", "fl": "florida", "ga": "georgia", "hi": "hawaii", "id": "idaho",
+    "il": "illinois", "in": "indiana", "ia": "iowa", "ks": "kansas", "ky": "kentucky", "la": "louisiana",
+    "me": "maine", "md": "maryland", "ma": "massachusetts", "mi": "michigan", "mn": "minnesota",
+    "ms": "mississippi", "mo": "missouri", "mt": "montana", "ne": "nebraska", "nv": "nevada",
+    "nh": "new hampshire", "nj": "new jersey", "nm": "new mexico", "ny": "new york", "nc": "north carolina",
+    "nd": "north dakota", "oh": "ohio", "ok": "oklahoma", "or": "oregon", "pa": "pennsylvania",
+    "ri": "rhode island", "sc": "south carolina", "sd": "south dakota", "tn": "tennessee", "tx": "texas",
+    "ut": "utah", "vt": "vermont", "va": "virginia", "wa": "washington", "wv": "west virginia",
+    "wi": "wisconsin", "wy": "wyoming", "dc": "district of columbia",
+    "on": "ontario", "qc": "quebec", "bc": "british columbia", "ab": "alberta", "mb": "manitoba",
+    "sk": "saskatchewan", "ns": "nova scotia", "nb": "new brunswick",
+    "nsw": "new south wales", "vic": "victoria", "qld": "queensland", "wa_au": "western australia",
+}
+# 모호해서 국가가 주어졌는데 지오코딩이 확인해 주지 못하면 내장 표를 믿지 않는 이름
+_AMBIGUOUS_HEADS = {"cordoba", "córdoba", "valencia", "santiago", "san jose", "san josé", "la paz", "paris", "london",
+                    "lima", "kingston", "george town", "georgetown", "alexandria", "rome", "athens", "dublin",
+                    "hyderabad", "birmingham", "manchester", "victoria", "salvador", "cambridge"}
+
+
+def _split_place(key):
+    """'City, Country' / 'City, Region, Country' / 'City - Country' / 'City (Country)' / 'City Country' -> (head, country_or_region)."""
+    for ch in (" - ", "/", "(", ")", ";"):
+        key = key.replace(ch, ",")
+    parts = [p.strip() for p in key.split(",") if p.strip()]
+    if not parts:
+        return key.strip(), ""
+    head = parts[0]
+    tail = parts[-1] if len(parts) > 1 else ""
+    if not tail:
+        import country_defaults
+        words = head.split()
+        for n in (2, 1):  # 쉼표 없이 'Lagos Nigeria' 처럼 쓴 경우: 끝 단어(들)가 알려진 나라 이름이면 분리
+            if len(words) > n:
+                cand = " ".join(words[-n:])
+                cand = _COUNTRY_ALIASES.get(cand, cand)
+                if cand in country_defaults.COUNTRIES:
+                    return " ".join(words[:-n]), cand
+    return head, tail
+
+
 def _lookup_location(city_name, lang="de"):
     """도시 이름 -> (경도, 시간대, 출처). 1) 내장 표 2) 무료 지오코딩 API 3) 기본값 순으로 시도.
 
@@ -290,11 +332,11 @@ def _lookup_location(city_name, lang="de"):
     여부는 별도로 알아야 한다).
     """
     key = city_name.strip().lower()
-    # "City, Country" / "City, Region, Country" 입력: 첫 조각=도시, 마지막 조각=국가
-    parts = [p.strip() for p in key.split(",") if p.strip()]
-    head = parts[0] if parts else key
-    country_part = parts[-1] if len(parts) > 1 else ""
+    head, country_part = _split_place(key)
+    country_part = _REGION_ALIASES.get(country_part, country_part) if len(country_part) <= 3 else country_part
     country_part = _COUNTRY_ALIASES.get(country_part, country_part)
+    if not country_part:
+        head = key if key in KNOWN_CITY_LONGITUDE else head
     import world_cities
     if not country_part:
         if key in KNOWN_CITY_LONGITUDE:
@@ -308,6 +350,7 @@ def _lookup_location(city_name, lang="de"):
         return lon, tz, "country_fallback"
     # 국가가 주어지면 같은 이름의 다른 나라 도시(Paris, Texas 등)와 혼동하지 않도록 지오코딩을 먼저 본다.
 
+    geocode_answered = False
     try:
         import urllib.parse
         import urllib.request
@@ -317,12 +360,14 @@ def _lookup_location(city_name, lang="de"):
             "https://geocoding-api.open-meteo.com/v1/search?name="
             + urllib.parse.quote(head or city_name)
             + ("&count=10" if country_part else "&count=1")
+            + "&language=" + (lang if lang in ("de", "fr", "es", "en") else "en")
             + "&format=json"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "saju-api/1.0"})
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=3) as resp:
             data = _json.loads(resp.read().decode("utf-8"))
         results = data.get("results") or []
+        geocode_answered = True
         if country_part and results:
             want = country_part.strip().lower()
             matched = [
@@ -340,9 +385,10 @@ def _lookup_location(city_name, lang="de"):
         pass
 
     # 지오코딩 실패(네트워크·미등록): 내장 표를 마지막으로 시도
-    if head in KNOWN_CITY_LONGITUDE:
+    trust_table = not (country_part and (geocode_answered or head in _AMBIGUOUS_HEADS))
+    if trust_table and head in KNOWN_CITY_LONGITUDE:
         return KNOWN_CITY_LONGITUDE[head], KNOWN_CITY_TIMEZONE.get(head, DEFAULT_TIMEZONE), "known_city"
-    wc = world_cities.lookup_world_city(head)
+    wc = world_cities.lookup_world_city(head) if trust_table else None
     if wc:
         return wc[0], wc[1], "known_city"
 
@@ -352,7 +398,7 @@ def _lookup_location(city_name, lang="de"):
 
     import logging
     logging.getLogger(__name__).warning(
-        "[location] default_fallback used: city=%r lang=%s (geocoding failed or no result)", city_name, lang
+        "[location] default_fallback used: lang=%s (geocoding failed or no result)", lang
     )
     if lang in _LANG_DEFAULT_LOCATION:
         lon, tz = _LANG_DEFAULT_LOCATION[lang]
@@ -1298,6 +1344,9 @@ def _rate_limited(bucket: str, key: str, *, max_count: int, window_seconds: floa
     now = time.time()
     cutoff = now - window_seconds
     with _RATE_LIMIT_LOCK:
+        if len(_RATE_LIMIT_HISTORY) > 500:  # 오래된 키(IP) 정리: 메모리에 계속 남지 않게
+            for k in [k for k, h in _RATE_LIMIT_HISTORY.items() if not h or h[-1] < cutoff]:
+                _RATE_LIMIT_HISTORY.pop(k, None)
         history = _RATE_LIMIT_HISTORY.setdefault((bucket, key), [])
         while history and history[0] < cutoff:
             history.pop(0)
@@ -1384,15 +1433,16 @@ def profile_view_route():
     if _rate_limited("profile_ip", _client_ip(), max_count=30, window_seconds=3600):
         msg = "Too many requests. Please try again later." if view_lang == "en" else _msg("too_many", calc_lang)
         return jsonify({"ok": False, "error": msg}), 429
+    city_in = str(payload.get("birth_city") or "").strip()[:100]
     calc_payload = {
-        "birth_date": payload.get("birth_date"),
-        "birth_time": payload.get("birth_time") or "",
-        "birth_city": payload.get("birth_city"),
+        "birth_date": str(payload.get("birth_date") or ""),
+        "birth_time": str(payload.get("birth_time") or "")[:8],
+        "birth_city": city_in,
         "lang": calc_lang,
         "target_years": [2026, 2027],
     }
     _bd = str(calc_payload.get("birth_date") or "")[:4]
-    if not (_bd.isdigit() and 1900 <= int(_bd) <= 2100):
+    if not city_in or not (_bd.isdigit() and 1900 <= int(_bd) <= 2100):
         bad0 = {"de": "Bitte prüfe Geburtsdatum und Geburtsort.", "fr": "Veuillez vérifier la date et le lieu de naissance.",
                 "es": "Comprueba la fecha y el lugar de nacimiento.", "en": "Please check the date and place of birth."}
         return jsonify({"ok": False, "error": bad0[view_lang]}), 400

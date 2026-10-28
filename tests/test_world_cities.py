@@ -41,9 +41,11 @@ class WorldCityTests(unittest.TestCase):
     def test_known_without_network(self):
         with mock.patch("urllib.request.urlopen", side_effect=OSError("offline")):
             for q, tz in [("Lagos", "Africa/Lagos"), ("Lagos, Nigeria", "Africa/Lagos"), ("MANILA", "Asia/Manila"),
-                          ("Ho Chi Minh City", "Asia/Ho_Chi_Minh"), ("Paris, France", "Europe/Paris")]:
+                          ("Ho Chi Minh City", "Asia/Ho_Chi_Minh")]:
                 lon, zone, src = app_module._lookup_location(q, "de")
                 self.assertEqual((zone, src), (tz, "known_city"), q)
+            # 모호한 이름(Paris 등)은 오프라인이면 나라 기준으로 근사한다
+            self.assertEqual(app_module._lookup_location("Paris, France", "de")[1], "Europe/Paris")
 
     def test_country_filter_picks_matching_result(self):
         results = [
@@ -79,3 +81,24 @@ class CountryFallbackTests(unittest.TestCase):
         import zoneinfo, country_defaults
         for lon, tz in country_defaults.COUNTRIES.values():
             zoneinfo.ZoneInfo(tz)
+
+
+class PlaceParsingTests(unittest.TestCase):
+    def test_split_variants(self):
+        sp = app_module._split_place
+        self.assertEqual(sp("lagos nigeria"), ("lagos", "nigeria"))
+        self.assertEqual(sp("mumbai, maharashtra, india"), ("mumbai", "india"))
+        self.assertEqual(sp("lagos (nigeria)"), ("lagos", "nigeria"))
+        self.assertEqual(sp("paris, tx"), ("paris", "tx"))
+        self.assertEqual(sp("ho chi minh city"), ("ho chi minh city", ""))
+
+    def test_us_state_abbreviation_uses_geocoder_not_table(self):
+        fake = {"results": [{"name": "Paris", "country": "United States", "admin1": "Texas", "country_code": "US",
+                             "longitude": -95.55, "timezone": "America/Chicago"}]}
+        class R:
+            def read(self): return json.dumps(fake).encode()
+            def __enter__(self): return self
+            def __exit__(self, *a): return False
+        with mock.patch("urllib.request.urlopen", return_value=R()):
+            lon, tz, src = app_module._lookup_location("Paris, TX", "en")
+        self.assertEqual((tz, src), ("America/Chicago", "geocoded"))
