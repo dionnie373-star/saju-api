@@ -29,7 +29,7 @@ class EnglishPurchasePageTests(unittest.TestCase):
             self.assertIn(pid, self.html)
         for pid in ("746476", "746480", "746481", "746748", "746751", "746753", "740708"):
             self.assertNotIn(pid, self.html)
-        for price in ("$9.90", "$24.90"):
+        for price in ("$10.00", "$24.90"):
             self.assertIn(price, self.html)
         self.assertIn("https://www.checkout-ds24.com/product/", self.html)
 
