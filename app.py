@@ -1550,6 +1550,30 @@ _BOT_UA_RE = re.compile(
 _HIT_PATH_RE = re.compile(r"^/[a-z0-9/_-]{0,40}$")
 
 
+_ONE_HOSTS = ("palja.one", "www.palja.one")
+
+
+def _site_for_request(path: str = "") -> str:
+    """요청 호스트/경로로 사이트 구분(de/en/fr/es). 호스트·경로만 보고 개인정보는 저장하지 않는다."""
+    try:
+        if _is_fr_host():
+            return "fr"
+        if _is_es_host():
+            return "es"
+        host = (request.host or "").split(":")[0].lower()
+        if host in _ONE_HOSTS:
+            return "en"
+        if not path:
+            from urllib.parse import urlparse
+            path = urlparse(request.headers.get("Referer", "") or "").path or ""
+        p = (path or "").lower()
+        if p == "/en" or p.startswith("/en/"):
+            return "en"
+    except Exception:  # noqa: BLE001
+        pass
+    return "de"
+
+
 @app.route("/api/hit", methods=["POST"])
 def api_hit():
     """페이지 방문 1회 집계 (일자/출처/경로별 카운트만 저장, 개인정보 없음)."""
@@ -1562,7 +1586,7 @@ def api_hit():
         src = src if _SRC_RE.match(src) else "none"
         path = (data.get("path") or "/").strip().lower()
         path = path if _HIT_PATH_RE.match(path) else "/"
-        orders_store.record_hit(src, path)
+        orders_store.record_hit(src, path, _site_for_request(path))
     except Exception as e:  # noqa: BLE001
         print(f"hit record failed: {e}", flush=True)
     return ("", 204)
@@ -1585,7 +1609,7 @@ def api_ev():
             return ("", 204)
         src = (data.get("src") or "").strip().lower()
         src = src if _SRC_RE.match(src) else "none"
-        orders_store.record_event(src, ev)
+        orders_store.record_event(src, ev, _site_for_request())
     except Exception as e:  # noqa: BLE001
         print(f"event record failed: {e}", flush=True)
     return ("", 204)
@@ -1614,76 +1638,103 @@ def admin_dashboard():
         days = max(1, min(int(request.args.get("days", "14")), 90))
     except ValueError:
         days = 14
-    hits = orders_store.hits_stats(days)
-    evs = orders_store.events_stats(days)
-    sign = orders_store.signups_daily(days)
-    ords = orders_store.orders_daily(days)
-    by_day = {}
-    by_src = {}
-    for r in hits:
-        d = by_day.setdefault(r["day"], {"v": 0, "s": 0, "o": 0})
-        d["v"] += r["n"]
-        by_src.setdefault(r["src"], {"v": 0, "s": 0})["v"] += r["n"]
-    for r in sign:
-        d = by_day.setdefault(r["day"], {"v": 0, "s": 0, "o": 0})
-        d["s"] += r["count"]
-        by_src.setdefault(r["src"], {"v": 0, "s": 0})["s"] += r["count"]
-    for r in ords:
-        d = by_day.setdefault(r["day"], {"v": 0, "s": 0, "o": 0})
-        d["o"] += r["count"]
+    import html as _h
     e = lambda x: _h.escape(str(x))
-    tv = sum(v["v"] for v in by_day.values())
-    ts = sum(v["s"] for v in by_day.values())
-    to = sum(v["o"] for v in by_day.values())
-    rows_day = "".join(
-        f"<tr><td>{e(d)}</td><td>{v['v']}</td><td>{v['s']}</td><td>{v['o']}</td></tr>"
-        for d, v in sorted(by_day.items(), reverse=True)
+    SITES = ("de", "en", "fr", "es")
+    SITE_LABEL = {"de": "palja.de (DE)", "en": "palja.one·/en (EN)", "fr": "palja.fr (FR)", "es": "palja.es (ES)"}
+    hv = {}      # (day, site, src) -> n
+    for r in orders_store.hits_stats(days):
+        _p, _s = orders_store.split_site(r["path"])
+        k = (r["day"], _s, r["src"]); hv[k] = hv.get(k, 0) + r["n"]
+    evn = {}     # (day, site, src, ev) -> n
+    for r in orders_store.events_stats(days):
+        _e, _s = orders_store.split_site(r["ev"])
+        k = (r["day"], _s, r["src"], _e); evn[k] = evn.get(k, 0) + r["n"]
+    free = {}    # (day, site, src) -> n  (무료 가입, 언어=사이트)
+    for r in orders_store.signups_daily(days):
+        _l = str(r.get("lang") or "de").lower(); _l = _l if _l in SITES else "de"
+        k = (r["day"], _l, r["src"]); free[k] = free.get(k, 0) + r["count"]
+    legacy_orders = {}
+    for r in orders_store.orders_daily(days):
+        legacy_orders[r["day"]] = legacy_orders.get(r["day"], 0) + r["count"]
+
+    def ev_sum(day=None, site=None, ev=()):
+        return sum(n for (d, s, _src, x), n in evn.items() if x in ev and (day is None or d == day) and (site is None or s == site))
+
+    def hv_sum(day=None, site=None, src=None):
+        return sum(n for (d, s, sr), n in hv.items() if (day is None or d == day) and (site is None or s == site) and (src is None or sr == src))
+
+    def fr_sum(day=None, site=None):
+        return sum(n for (d, s, _sr), n in free.items() if (day is None or d == day) and (site is None or s == site))
+
+    BUY = ("buy_open", "res_up_paid", "res_up_premium")
+    all_days = sorted({k[0] for k in hv} | {k[0] for k in evn} | {k[0] for k in free} | set(legacy_orders), reverse=True)
+
+    def th(*cols):
+        return "<tr>" + "".join(f"<th>{e(c)}</th>" for c in cols) + "</tr>"
+
+    def td(*cells):
+        return "<tr>" + "".join(f"<td>{e(c)}</td>" for c in cells) + "</tr>"
+
+    # 1) 사이트별 합계
+    tot_rows = ""
+    for s in SITES:
+        tot_rows += td(SITE_LABEL[s], hv_sum(site=s), fr_sum(site=s), ev_sum(site=s, ev=BUY), ev_sum(site=s, ev=("order_paid",)))
+    tot_rows += td("합계", hv_sum(), fr_sum(), ev_sum(ev=BUY), ev_sum(ev=("order_paid",)))
+    # 2) 일별 × 사이트 접속자(페이지뷰)
+    day_rows = ""
+    for d in all_days:
+        per = [hv_sum(day=d, site=s) for s in SITES]
+        day_rows += td(d, *per, sum(per), fr_sum(day=d), ev_sum(day=d, ev=BUY), ev_sum(day=d, ev=("order_paid",)), legacy_orders.get(d, 0))
+    # 3) 접속 루트(src) × 사이트
+    srcs = sorted({k[2] for k in hv} | {k[2] for k in free}, key=lambda s: -hv_sum(src=s))
+    src_rows = "".join(
+        td(sr, *[hv_sum(site=s, src=sr) for s in SITES], hv_sum(src=sr)) for sr in srcs
     )
-    rows_src = "".join(
-        f"<tr><td>{e(s)}</td><td>{v['v']}</td><td>{v['s']}</td>"
-        f"<td>{(str(round(100 * v['s'] / v['v'], 1)) + '%') if v['v'] else '–'}</td></tr>"
-        for s, v in sorted(by_src.items(), key=lambda kv: -kv[1]["v"])
-    )
-    ev_tot = {}
-    ev_src = {}
-    for r in evs:
-        ev_tot[r["ev"]] = ev_tot.get(r["ev"], 0) + r["n"]
-        ev_src.setdefault(r["src"], {})[r["ev"]] = ev_src.setdefault(r["src"], {}).get(r["ev"], 0) + r["n"]
-    _ev_labels = [
-        ("view_form", "가입 폼이 화면에 보임"), ("taste", "생년월일 입력 → 맛보기 카드"),
-        ("start", "폼 입력 시작"), ("val_err", "필수 항목 누락(클릭했지만 막힘)"),
-        ("submit", "제출 클릭(검증 통과)"), ("ok", "가입 성공"),
-        ("err", "서버 오류 응답"), ("neterr", "연결 오류"), ("buy_open", "유료 구매 시도"), ("sticky", "하단 고정 버튼 클릭(모바일)"),
-        ("res_ok", "[웹 결과] 결과 화면 표시"), ("res_err", "[웹 결과] 오류"), ("res_up_view", "[웹 결과] 유료 안내가 화면에 보임"),
-        ("res_up_paid", "[웹 결과] Jahresreport 클릭"), ("res_up_premium", "[웹 결과] Lebenskarte 클릭"),
-        ("res_pdf_open", "[웹 결과] PDF 메일 입력 열기"), ("res_pdf_ok", "[웹 결과] PDF 메일 신청 성공"),
+    # 4) 구매 단계(사이트별 누적)
+    steps = [
+        ("페이지뷰", lambda s: hv_sum(site=s)),
+        ("가입 폼이 보임", lambda s: ev_sum(site=s, ev=("view_form",))),
+        ("입력 시작", lambda s: ev_sum(site=s, ev=("start",))),
+        ("맛보기 카드", lambda s: ev_sum(site=s, ev=("taste",))),
+        ("제출 클릭", lambda s: ev_sum(site=s, ev=("submit",))),
+        ("무료 프로필 신청 성공", lambda s: fr_sum(site=s)),
+        ("웹 결과 화면 표시", lambda s: ev_sum(site=s, ev=("res_ok",))),
+        ("유료 안내가 보임", lambda s: ev_sum(site=s, ev=("res_up_view",))),
+        ("연간 리포트 클릭", lambda s: ev_sum(site=s, ev=("res_up_paid",))),
+        ("프리미엄 클릭", lambda s: ev_sum(site=s, ev=("res_up_premium",))),
+        ("구매 시도(주문서 열기)", lambda s: ev_sum(site=s, ev=("buy_open",))),
+        ("결제 완료(실주문, 테스트 제외)", lambda s: ev_sum(site=s, ev=("order_paid",))),
     ]
-    rows_ev = "".join(
-        f"<tr><td>{e(lbl)}</td><td>{ev_tot.get(k, 0)}</td></tr>" for k, lbl in _ev_labels
-    )
-    rows_evsrc = "".join(
-        f"<tr><td>{e(s)}</td><td>{m.get('view_form', 0)}</td><td>{m.get('start', 0)}</td>"
-        f"<td>{m.get('submit', 0)}</td><td>{m.get('ok', 0)}</td></tr>"
-        for s, m in sorted(ev_src.items(), key=lambda kv: -kv[1].get("view_form", 0))
-    )
+    step_rows = "".join(td(lbl, *[fn(s) for s in SITES], sum(fn(s) for s in SITES)) for lbl, fn in steps)
+    # 5) 일별 구매 단계(사이트별, 활동 있는 날만)
+    dfun_rows = ""
+    for d in all_days:
+        for s in SITES:
+            v = [hv_sum(day=d, site=s), ev_sum(day=d, site=s, ev=("view_form",)), fr_sum(day=d, site=s),
+                 ev_sum(day=d, site=s, ev=("res_up_view",)), ev_sum(day=d, site=s, ev=BUY), ev_sum(day=d, site=s, ev=("order_paid",))]
+            if any(v):
+                dfun_rows += td(d, SITE_LABEL[s], *v)
+    ts = fr_sum(); tv = hv_sum(); to = ev_sum(ev=("order_paid",)) + sum(legacy_orders.values())
     page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
 <title>Palja Stats</title><style>
-body{{font:15px/1.5 system-ui,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;color:#2a2420;background:#f6efe2}}
+body{{font:15px/1.5 system-ui,sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#2a2420;background:#f6efe2}}
 h1{{font-size:20px}} h2{{font-size:16px;margin-top:28px}} table{{border-collapse:collapse;width:100%}}
 th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:first-child,td:first-child{{text-align:left}}
 .k{{display:flex;gap:12px;flex-wrap:wrap}} .k div{{background:#fff8ea;border:1px solid #d9cfbd;border-radius:10px;padding:10px 14px;min-width:120px}}
-.k b{{font-size:24px;display:block}} small{{color:#7a6f60}}</style></head><body>
+.k b{{font-size:24px;display:block}} small{{color:#7a6f60}} .w{{overflow-x:auto}}</style></head><body>
 <h1>Palja 통계 · 최근 {days}일 (UTC)</h1>
-<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필(웹 결과 + PDF)</div><div><b>{to}</b>주문</div></div>
-<h2>일별</h2><table><tr><th>날짜</th><th>페이지뷰</th><th>무료</th><th>주문</th></tr>{rows_day or '<tr><td colspan=4>–</td></tr>'}</table>
-<h2>채널별 (src)</h2><table><tr><th>src</th><th>페이지뷰</th><th>무료</th><th>전환율</th></tr>{rows_src or '<tr><td colspan=4>–</td></tr>'}</table>
-<h2>가입 퍼널 (이벤트 집계 시작 이후)</h2><table><tr><th>단계</th><th>횟수</th></tr>{rows_ev}</table>
-<h2>채널별 퍼널</h2><table><tr><th>src</th><th>폼 보임</th><th>입력 시작</th><th>제출</th><th>성공</th></tr>{rows_evsrc or '<tr><td colspan=5>–</td></tr>'}</table>
-<p><small>페이지뷰 = 홈페이지 JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
-주문 = 처리된 결제(테스트 주문 포함 가능, 메모리 모드에선 비어 있음).
-전환율 = 무료 프로필 ÷ 페이지뷰(채널별, 대략값. 방문일과 가입일이 다를 수 있음).
-집계는 배포 이후부터 시작.</small></p></body></html>"""
+<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문(전체, 기존 포함)</div></div>
+<h2>사이트별 합계</h2><div class="w"><table>{th("사이트","페이지뷰","무료 프로필","구매 클릭","결제 완료")}{tot_rows}</table></div>
+<h2>일별 접속자(페이지뷰) · 사이트별</h2><div class="w"><table>{th("날짜","DE","EN","FR","ES","합계","무료","구매 클릭","결제 완료(신규)","주문(기존 합계)")}{day_rows or '<tr><td colspan=10>–</td></tr>'}</table></div>
+<h2>접속 루트(src) × 사이트 (페이지뷰)</h2><div class="w"><table>{th("src","DE","EN","FR","ES","합계")}{src_rows or '<tr><td colspan=6>–</td></tr>'}</table></div>
+<h2>구매 단계별 진행 현황 · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{step_rows}</table></div>
+<h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 클릭","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
+<p><small>페이지뷰 = JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
+사이트 구분은 이번 배포 이후부터 정확함: 호스트(palja.fr/palja.es/palja.one)와 /en 경로로 분류하며, 배포 이전 기록은 전부 DE로 표시됨(FR/ES 도메인 방문이 섞여 있을 수 있음).
+EN은 palja.de/en과 palja.one을 합산. 무료 프로필은 신청 언어 기준. 결제 완료(신규)는 이번 배포 이후 실결제만(테스트 제외), 「주문(기존 합계)」은 사이트 구분 없는 기존 처리 건수(테스트 포함 가능).
+전환율은 방문일과 가입일이 달라 대략값.</small></p></body></html>"""
     return Response(page, 200, {"Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"})
 
 
@@ -2449,6 +2500,12 @@ def _digistore24_webhook_impl():
     response_dict, status = _start_fulfillment(
         _DIGISTORE24_PROVIDER, order_id, pending_token, tier, custom_data, email
     )
+    if status == 200 and request.form.get("api_mode", "") != "test":
+        try:  # 사이트별 결제 완료 집계(개인정보 없음)
+            _l = str(custom_data.get("lang") or "de").lower()
+            orders_store.record_event("none", "order_paid", _l if _l in ("en", "fr", "es") else "de")
+        except Exception as e:  # noqa: BLE001
+            print(f"order_paid event failed: {e}", flush=True)
     return jsonify(response_dict), status
 
 

@@ -51,6 +51,24 @@ class DashboardTests(unittest.TestCase):
         self.assertIn("ig-bio", t)
         self.assertIn("<b>1</b>무료 프로필", t)
 
+    def test_sites_are_split_by_host_and_path(self):
+        ua = {"User-Agent": "Mozilla/5.0 (iPhone) Safari"}
+        self.c.post("/api/hit", json={"src": "ig-bio", "path": "/en/"}, headers=ua)
+        self.c.post("/api/hit", json={"src": "ig-bio", "path": "/"}, headers=ua)
+        self.c.post("/api/hit", json={"src": "tt-bio", "path": "/"}, headers={**ua, "Host": "palja.fr"})
+        self.c.post("/api/ev", json={"ev": "res_up_paid", "src": "ig-bio"}, headers={**ua, "Referer": "https://palja.de/en/"})
+        os.environ["ADMIN_DASH_PASSWORD"] = "correct-horse-battery"
+        t = self.c.get("/admin/dashboard", headers=self._auth("correct-horse-battery")).get_data(as_text=True)
+        import re
+        row = lambda lbl: re.search(r"<tr><td>" + re.escape(lbl) + r"</td>(.*?)</tr>", t).group(1)
+        self.assertEqual(row("palja.de (DE)"), "<td>1</td><td>0</td><td>0</td><td>0</td>")
+        self.assertEqual(row("palja.one·/en (EN)"), "<td>1</td><td>0</td><td>1</td><td>0</td>")
+        self.assertEqual(row("palja.fr (FR)"), "<td>1</td><td>0</td><td>0</td><td>0</td>")
+        self.assertEqual(row("palja.es (ES)"), "<td>0</td><td>0</td><td>0</td><td>0</td>")
+        self.assertEqual(orders_store.split_site("/x|fr"), ("/x", "fr"))
+        self.assertEqual(orders_store.split_site("/x"), ("/x", "de"))
+        self.assertIn("<b>3</b>페이지뷰", t)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -415,8 +415,25 @@ def _ensure_hits_table(conn):
         )
 
 
-def record_hit(src: str, path: str) -> None:
-    """오늘(UTC) 날짜의 (src, path) 카운트를 1 올린다."""
+SITES = ("de", "en", "fr", "es")
+
+
+def _enc(base: str, site: str) -> str:
+    """사이트 정보를 기존 PK(path/ev)에 접미사로 담는다(스키마 변경 없음). de는 기존 행과 동일."""
+    return base if site in ("", "de", None) else f"{base}|{site}"
+
+
+def split_site(key: str):
+    """'/x|fr' -> ('/x', 'fr'); 접미사 없으면 ('/x', 'de')."""
+    base, sep, site = (key or "").rpartition("|")
+    if sep and site in SITES:
+        return base, site
+    return key, "de"
+
+
+def record_hit(src: str, path: str, site: str = "de") -> None:
+    """오늘(UTC) 날짜의 (src, path[, site]) 카운트를 1 올린다."""
+    path = _enc(path, site)
     day = time.strftime("%Y-%m-%d", time.gmtime())
     if _use_db():
         conn = _get_conn()
@@ -472,8 +489,9 @@ def _ensure_events_table(conn):
         )
 
 
-def record_event(src: str, ev: str) -> None:
-    """오늘(UTC) 날짜의 (src, ev) 퍼널 이벤트 카운트를 1 올린다. 개인정보 없음."""
+def record_event(src: str, ev: str, site: str = "de") -> None:
+    """오늘(UTC) 날짜의 (src, ev[, site]) 퍼널 이벤트 카운트를 1 올린다. 개인정보 없음."""
+    ev = _enc(ev, site)
     day = time.strftime("%Y-%m-%d", time.gmtime())
     if _use_db():
         conn = _get_conn()
@@ -530,11 +548,11 @@ def signups_daily(days: int = 14) -> list:
                     "src TEXT NOT NULL, interest TEXT NOT NULL, lang TEXT NOT NULL)"
                 )
                 cur.execute(
-                    "SELECT (created_at at time zone 'utc')::date::text, src, count(*) FROM signup_meta "
-                    "WHERE created_at > now() - make_interval(days => %s) GROUP BY 1, 2 ORDER BY 1 DESC",
+                    "SELECT (created_at at time zone 'utc')::date::text, src, count(*), lang FROM signup_meta "
+                    "WHERE created_at > now() - make_interval(days => %s) GROUP BY 1, 2, 4 ORDER BY 1 DESC",
                     (int(days),),
                 )
-                return [{"day": r[0], "src": r[1], "count": r[2]} for r in cur.fetchall()]
+                return [{"day": r[0], "src": r[1], "count": r[2], "lang": r[3]} for r in cur.fetchall()]
         finally:
             conn.close()
     cutoff = time.time() - days * 86400
@@ -542,9 +560,9 @@ def signups_daily(days: int = 14) -> list:
     with _MEM_SIGNUP_META_LOCK:
         for ts, src, _i, _l in _MEM_SIGNUP_META:
             if ts >= cutoff:
-                k = (time.strftime("%Y-%m-%d", time.gmtime(ts)), src)
+                k = (time.strftime("%Y-%m-%d", time.gmtime(ts)), src, _l)
                 out[k] = out.get(k, 0) + 1
-    return [{"day": k[0], "src": k[1], "count": v} for k, v in sorted(out.items(), reverse=True)]
+    return [{"day": k[0], "src": k[1], "count": v, "lang": k[2]} for k, v in sorted(out.items(), reverse=True)]
 
 
 def orders_daily(days: int = 14) -> list:
