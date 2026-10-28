@@ -287,6 +287,15 @@ def _lookup_location(city_name, lang="de"):
     key = city_name.strip().lower()
     if key in KNOWN_CITY_LONGITUDE:
         return KNOWN_CITY_LONGITUDE[key], KNOWN_CITY_TIMEZONE.get(key, DEFAULT_TIMEZONE), "known_city"
+    # "City, Country" 입력: 쉼표 앞 도시명으로 내장 표를 먼저 본다(국가는 지오코딩 필터에 쓴다).
+    head, _, country_part = (p.strip() for p in key.partition(","))
+    if head and head in KNOWN_CITY_LONGITUDE:
+        return KNOWN_CITY_LONGITUDE[head], KNOWN_CITY_TIMEZONE.get(head, DEFAULT_TIMEZONE), "known_city"
+    import world_cities
+    if not country_part:
+        wc = world_cities.lookup_world_city(head)
+        if wc:
+            return wc[0], wc[1], "known_city"
 
     try:
         import urllib.parse
@@ -295,13 +304,22 @@ def _lookup_location(city_name, lang="de"):
 
         url = (
             "https://geocoding-api.open-meteo.com/v1/search?name="
-            + urllib.parse.quote(city_name)
-            + "&count=1&format=json"
+            + urllib.parse.quote(head or city_name)
+            + ("&count=10" if country_part else "&count=1")
+            + "&format=json"
         )
         req = urllib.request.Request(url, headers={"User-Agent": "saju-api/1.0"})
         with urllib.request.urlopen(req, timeout=5) as resp:
             data = _json.loads(resp.read().decode("utf-8"))
         results = data.get("results") or []
+        if country_part and results:
+            want = country_part.strip().lower()
+            matched = [
+                r for r in results
+                if want in {str(r.get("country", "")).lower(), str(r.get("country_code", "")).lower(),
+                            str(r.get("admin1", "")).lower()}
+            ]
+            results = matched[:1]
         if results:
             r = results[0]
             # Open-Meteo 지오코딩 응답에는 "timezone" 필드(IANA 이름)가 같이 온다.
@@ -309,6 +327,11 @@ def _lookup_location(city_name, lang="de"):
             return float(r["longitude"]), tz_name, "geocoded"
     except Exception:
         pass
+
+    # 지오코딩 실패(네트워크·미등록): 내장 세계 도시 표를 마지막으로 시도
+    wc = world_cities.lookup_world_city(head)
+    if wc:
+        return wc[0], wc[1], "known_city"
 
     import logging
     logging.getLogger(__name__).warning(
@@ -929,9 +952,16 @@ def en_redirect():
     return redirect("/en/")
 
 
-@app.route("/en/", methods=["GET"])
-def en_page():
-    return send_from_directory(EN_SITE_DIR, "index.html")
+_EN_PAGES = {"": "index.html", "privacy": "privacy.html", "legal-notice": "legal-notice.html"}
+
+
+@app.route("/en/", defaults={"page": ""}, methods=["GET"])
+@app.route("/en/<page>", methods=["GET"])
+def en_page(page):
+    filename = _EN_PAGES.get(page)
+    if not filename:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return send_from_directory(EN_SITE_DIR, filename)
 
 
 # 프랑스어 파일럿 사이트(/fr/) — 결제 제공사가 확정되기 전이라 noindex 상태로 공개.
