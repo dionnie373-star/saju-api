@@ -1018,7 +1018,8 @@ def en_redirect():
     return redirect("/en/")
 
 
-_EN_PAGES = {"": "index.html", "privacy": "privacy.html", "legal-notice": "legal-notice.html"}
+_EN_PAGES = {"": "index.html", "privacy": "privacy.html", "legal-notice": "legal-notice.html",
+             "terms": "terms.html", "refund": "refund.html", "thank-you": "thank-you.html"}
 
 
 @app.route("/en/", defaults={"page": ""}, methods=["GET"])
