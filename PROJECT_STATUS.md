@@ -765,3 +765,11 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
   무료 프로필 집계(signup_meta)는 /profile 성공 시 기록, /signup은 via_result면 기록 생략(중복 방지).
 - FR/ES 페이지에도 익명 방문/이벤트 집계 스크립트를 추가(방침 문구 갱신). DE/FR/ES 방침에 웹 즉시 결과 문구 추가.
 - /en/ 영어 파일럿(noindex): 무료 결과 + "영어 리포트 관심" 버튼(fake door, 이벤트 res_up_paid). 영어 상품·결제·법적 고지는 아직 없음.
+
+## 2026-10-29 영어(글로벌) 버전 + Digistore24 USD 상품 3종 승인 요청
+- 페이지: palja.de/en/ (index, privacy, legal-notice, terms, refund, thank-you), noindex. 국가 폴백(country_defaults.py), `/profile` 즉석 결과.
+- DS24 상품(USD): 756320 연간 리포트 $10.00 / 756325 생활지도 프리미엄 $24.90 / 756333 궁합 $10.00. app.py 기본 ID 맵 + en/index.html 반영. 가격은 DS24 최소 ≈$10 때문에 9.90 → 10.00으로 올림.
+- 테스트 구매 3종(TEST PAY) 완료, 영어 PDF 메일 3종 수신(사용자 확인 "메일 다 왔어"). PDF 내용 정독 검수는 아직.
+- Trusted Badge: US Inc. 체크리스트가 배지 추가를 요구 → 영어 전용 배지 생성(판매 48991, 감사 48992, 소득 면책 OFF), en/index.html·en/thank-you.html에 삽입, 개인정보 방침에 고지. (DE/FR/ES 배지는 10/13 DS24 요청으로 제거된 상태 그대로.)
+- 승인 요청: 3개 상품 모두 US Inc./MSLW(아일랜드)/GmbH에 "지금 승인 요청" 저장 확인(재로딩으로 확인). 요청 절차: 저장 클릭 → 체크리스트 모달 3개 동의 → 저장 한 번 더.
+- 남은 위험: 법적 문서는 AI 초안(변호사 검토 전); 도메인 palja.one 미구매; 실제 모델 영어 리포트 품질 장기 검증 필요; 배지 재삽입이 DE 컴플라이언스 요청(10/13)과 충돌할 수 있어 문의 필요 시 티켓 #3916303.
