@@ -102,3 +102,23 @@ class PlaceParsingTests(unittest.TestCase):
         with mock.patch("urllib.request.urlopen", return_value=R()):
             lon, tz, src = app_module._lookup_location("Paris, TX", "en")
         self.assertEqual((tz, src), ("America/Chicago", "geocoded"))
+
+
+class CountryCodeTests(unittest.TestCase):
+    def test_two_letter_country_codes_not_swallowed_by_state_aliases(self):
+        for q, cc, tz in [("Hamburg, DE", "DE", "Europe/Berlin"), ("Vancouver, CA", "CA", "America/Vancouver"),
+                          ("Jakarta, ID", "ID", "Asia/Jakarta")]:
+            fake = {"results": [{"name": "X", "country": "Somewhere", "country_code": cc, "admin1": "Y",
+                                 "longitude": 1.0, "timezone": tz}]}
+            class R:
+                def read(self, _f=fake): return json.dumps(_f).encode()
+                def __enter__(self): return self
+                def __exit__(self, *a): return False
+            with mock.patch("urllib.request.urlopen", return_value=R()):
+                lon, zone, src = app_module._lookup_location(q, "en")
+            self.assertEqual((zone, src), (tz, "geocoded"), q)
+
+    def test_non_string_city_does_not_crash(self):
+        with mock.patch("urllib.request.urlopen", side_effect=OSError("offline")):
+            for v in (123, None, ["x"], "   "):
+                self.assertEqual(app_module._lookup_location(v, "en")[2], "default_fallback")

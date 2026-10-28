@@ -294,7 +294,7 @@ _REGION_ALIASES = {
     "wi": "wisconsin", "wy": "wyoming", "dc": "district of columbia",
     "on": "ontario", "qc": "quebec", "bc": "british columbia", "ab": "alberta", "mb": "manitoba",
     "sk": "saskatchewan", "ns": "nova scotia", "nb": "new brunswick",
-    "nsw": "new south wales", "vic": "victoria", "qld": "queensland", "wa_au": "western australia",
+    "nsw": "new south wales", "vic": "victoria", "qld": "queensland",
 }
 # 모호해서 국가가 주어졌는데 지오코딩이 확인해 주지 못하면 내장 표를 믿지 않는 이름
 _AMBIGUOUS_HEADS = {"cordoba", "córdoba", "valencia", "santiago", "san jose", "san josé", "la paz", "paris", "london",
@@ -331,10 +331,13 @@ def _lookup_location(city_name, lang="de"):
     (경도는 사주 계산 내부의 진태양시 보정에만 쓰이고, 실제 시간대 오프셋/서머타임
     여부는 별도로 알아야 한다).
     """
+    city_name = str(city_name or "")
     key = city_name.strip().lower()
     head, country_part = _split_place(key)
-    country_part = _REGION_ALIASES.get(country_part, country_part) if len(country_part) <= 3 else country_part
+    raw_part = country_part
+    country_part = _REGION_ALIASES.get(raw_part, raw_part) if len(raw_part) <= 3 else raw_part
     country_part = _COUNTRY_ALIASES.get(country_part, country_part)
+    want_set = {raw_part, country_part}  # 'DE', 'CA' 등 국가 코드와 주 약어가 겹치므로 원문도 함께 비교
     if not country_part:
         head = key if key in KNOWN_CITY_LONGITUDE else head
     import world_cities
@@ -369,11 +372,10 @@ def _lookup_location(city_name, lang="de"):
         results = data.get("results") or []
         geocode_answered = True
         if country_part and results:
-            want = country_part.strip().lower()
             matched = [
                 r for r in results
-                if want in {str(r.get("country", "")).lower(), str(r.get("country_code", "")).lower(),
-                            str(r.get("admin1", "")).lower()}
+                if want_set & {str(r.get("country", "")).lower(), str(r.get("country_code", "")).lower(),
+                               str(r.get("admin1", "")).lower()}
             ]
             results = matched[:1]
         if results:
@@ -392,8 +394,9 @@ def _lookup_location(city_name, lang="de"):
     if wc:
         return wc[0], wc[1], "known_city"
 
-    if country_part in country_defaults.COUNTRIES:
-        lon, tz = country_defaults.COUNTRIES[country_part]
+    cc = country_part if country_part in country_defaults.COUNTRIES else (raw_part if raw_part in country_defaults.COUNTRIES else "")
+    if cc:
+        lon, tz = country_defaults.COUNTRIES[cc]
         return lon, tz, "country_fallback"
 
     import logging
@@ -1338,14 +1341,19 @@ _RATE_LIMIT_LOCK = threading.Lock()
 _RATE_LIMIT_HISTORY = {}
 
 
+_RATE_LIMIT_LAST_SWEEP = 0.0
+
+
 def _rate_limited(bucket: str, key: str, *, max_count: int, window_seconds: float) -> bool:
     """(bucket, key) 조합이 window_seconds 동안 max_count번을 넘게 요청했으면
     True. 넘지 않았으면 이번 요청을 기록하고 False를 반환한다."""
     now = time.time()
     cutoff = now - window_seconds
     with _RATE_LIMIT_LOCK:
-        if len(_RATE_LIMIT_HISTORY) > 500:  # 오래된 키(IP) 정리: 메모리에 계속 남지 않게
-            for k in [k for k, h in _RATE_LIMIT_HISTORY.items() if not h or h[-1] < cutoff]:
+        global _RATE_LIMIT_LAST_SWEEP
+        if now - _RATE_LIMIT_LAST_SWEEP > 60:  # 1분에 한 번, 1시간 넘게 조용한 키(IP 등)를 정리
+            _RATE_LIMIT_LAST_SWEEP = now
+            for k in [k for k, h in _RATE_LIMIT_HISTORY.items() if not h or h[-1] < now - 3600]:
                 _RATE_LIMIT_HISTORY.pop(k, None)
         history = _RATE_LIMIT_HISTORY.setdefault((bucket, key), [])
         while history and history[0] < cutoff:
