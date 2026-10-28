@@ -61,7 +61,7 @@
           <h2 class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Your free Saju profile</h2>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <label for="birthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
-            <input id="birthdate" type="date" min="1900-01-01" max="2026-10-28" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            <input id="birthdate" type="date" min="1900-01-01" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
           </div>
           <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
             <summary style="cursor: pointer; font-size: 13.5px; color: #4A4239;">Add your birth time <span style="color: #675E55;">(optional – makes your profile more precise)</span></summary>
@@ -176,6 +176,10 @@
     else { errorEl.textContent = ''; errorEl.style.display = 'none'; }
   }
 
+  try { $('birthdate').max = new Date().toISOString().slice(0, 10); } catch (e5) {}
+  ['birthdate', 'birthtime', 'birthplace'].forEach(function (id) {
+    var el = $(id); if (el) el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('submitBtn').click(); } });
+  });
   function render(d) {
     var rh = document.querySelector('#resultSection h2'); if (rh) rh.setAttribute('tabindex', '-1');
     var pn = $('resPlaceNote'); if (pn) { pn.textContent = d.place_note || ''; pn.style.display = d.place_note ? 'block' : 'none'; }
