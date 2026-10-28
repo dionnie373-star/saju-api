@@ -189,7 +189,7 @@ T = {
         "y_zero": "{The} is missing in your profile – 2027 brings this theme in from outside. ",
         "y_high": "{The} is already strong in you – 2027 may strengthen it further. ",
         "y_mid": "{The} is present in you – 2027 may bring it into play. ",
-        "y_close": "This is an overview for reflection, not a prediction.",
+        "y_close": "This is an overview for reflection, not a prediction. The annual report shows the year month by month.",
     },
 }
 

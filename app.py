@@ -1009,7 +1009,7 @@ def legal_page(page):
     return send_from_directory(STATIC_SITE_DIR, filename)
 
 
-# 영어 파일럿(/en/): 무료 즉시 결과 + "영어 리포트 관심" 버튼만(영어 상품·결제·법적 고지는 아직 없음) → noindex.
+# 영어 사이트(/en/): 무료 즉시 결과 + Digistore24 유료 상품(USD 756320/756325/756333) + 법적 고지 페이지. 아직 noindex.
 EN_SITE_DIR = os.path.join(STATIC_SITE_DIR, "en")
 
 
@@ -2152,6 +2152,19 @@ for _es_env, _es_default, _es_tier in (
     _es_id = os.environ.get(_es_env, _es_default).strip()
     if _es_id:
         DIGISTORE24_PRODUCT_TIER_MAP[_es_id] = _es_tier
+
+# 영어 사이트용 Digistore24 상품(2026-10-29 생성, USD, 승인 요청 전):
+#   756320 -> Palja EN Annual Report (USD 9.90)
+#   756325 -> Palja EN Life Map Premium (USD 24.90)
+#   756333 -> Palja EN Compatibility Check (USD 9.90)
+for _en_env, _en_default, _en_tier in (
+    ("DIGISTORE24_PRODUCT_ID_PAID_EN", "756320", "paid"),
+    ("DIGISTORE24_PRODUCT_ID_PREMIUM_EN", "756325", "premium"),
+    ("DIGISTORE24_PRODUCT_ID_COMPATIBILITY_EN", "756333", "compatibility"),
+):
+    _en_id = os.environ.get(_en_env, _en_default).strip()
+    if _en_id:
+        DIGISTORE24_PRODUCT_TIER_MAP[_en_id] = _en_tier
 
 _DIGISTORE24_PROVIDER = "digistore24"
 

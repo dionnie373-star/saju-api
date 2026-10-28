@@ -57,7 +57,7 @@ def stub_free_report():
     for i, h in enumerate(["The five elements", "Your elements", "2026: a look back", "2027: a preview"]):
         parts += [f"## {h}", "", _para(i, "your energy", "Water", "Wood", 12), ""]
     parts += [
-        "### Your Saju annual report 2027 — €9.90", "",
+        "### Your Saju annual report 2027 — $9.90", "",
         "What you will get:",
         "- Your personal theme for 2027",
         "- 12 monthly chapters with personal Saju impulses",
@@ -180,14 +180,14 @@ class EnglishPromptTests(unittest.TestCase):
 
     def test_required_rules_present(self):
         required = {
-            "free_report_prompt.json": ["€9.90", "800 to 1,200 words", "never \"Gold\"", "Never British spelling"],
+            "free_report_prompt.json": ["$9.90", "800 to 1,200 words", "never \"Gold\"", "Never British spelling"],
             "paid_report_prompt.json": ["2,500 to 3,500 words", "8 life phases of ten years", "last chance",
                                         "reveals", "guarantees", "About this reading", "[CALCULATED FACTS]"],
-            "premium_report_prompt.json": ["3,400 to 4,400 words", "€24.90", "8", "last chance", "for the first time",
+            "premium_report_prompt.json": ["3,400 to 4,400 words", "$24.90", "8", "last chance", "for the first time",
                                            "reveals", "guarantees", "Your life at a glance",
                                            "The decisions of your life depend only on you"],
             "compatibility_report_prompt.json": ["750 to 1,050 words", "do not address a reader as \"you\"",
-                                                 "Never speak about \"the man\" or \"the woman\"", "€9.90"],
+                                                 "Never speak about \"the man\" or \"the woman\"", "$9.90"],
         }
         for name, phrases in required.items():
             text = self.load(name)["messages"][0]["content"]
@@ -507,7 +507,7 @@ class EnglishPipelineEndToEndTests(unittest.TestCase):
         self.assertEqual(rec["subject"], "Your Palja annual report is ready 📖")
         self.assertEqual(rec["attachment_name"], "Palja-Annual-Report.pdf")
         self.assertIn("60 days", rec["html_body"])
-        self.assertIn("Saju compatibility check (€9.90)", rec["html_body"])
+        self.assertIn("Saju compatibility check ($9.90)", rec["html_body"])
         text = self.assert_pdf(rec, "Your Saju annual report", "Contents", "January", "December", "About this reading")
         if text:
             self.assertNotIn("Inhalt", text)
