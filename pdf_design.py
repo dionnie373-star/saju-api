@@ -45,6 +45,7 @@ ELEMENT_NAMES = {
     "de": {"목": "Holz", "화": "Feuer", "토": "Erde", "금": "Metall", "수": "Wasser"},
     "fr": {"목": "Bois", "화": "Feu", "토": "Terre", "금": "Métal", "수": "Eau"},
     "es": {"목": "Madera", "화": "Fuego", "토": "Tierra", "금": "Metal", "수": "Agua"},
+    "en": {"목": "Wood", "화": "Fire", "토": "Earth", "금": "Metal", "수": "Water"},
 }
 
 STRINGS = {
@@ -102,6 +103,24 @@ STRINGS = {
         "hour_note": "Sin la hora de nacimiento no se calcula el pilar de la hora. "
                      "La distribución de elementos se basa entonces en los otros tres pilares.",
         "footer_line": (os.environ.get("ES_DOMAIN", "").strip() or "palja.de/es") + "  ·  El Saju coreano para la reflexión personal",
+    },
+    "en": {
+        "overview": "Your profile at a glance",
+        "overview_named": "Profile at a glance: {name}",
+        "chart_title": "Your five elements",
+        "chart_note": "Number of elements in your pillars (heavenly stems and earthly branches).",
+        "pillars_title": "Your four pillars",
+        "chart_title_named": "The five elements",
+        "chart_note_named": "Number of elements in the pillars (heavenly stems and earthly branches).",
+        "pillars_title_named": "The four pillars",
+        "cols": ["Hour", "Day", "Month", "Year"],
+        "rows": ["Heavenly stem", "Earthly branch"],
+        "unknown": "unknown",
+        "table_note": "The characters are the Korean names of the heavenly stems (top) and the earthly branches "
+                      "(bottom), the building blocks of each pillar. The matching element is shown below them.",
+        "hour_note": "Without a birth time, no hour pillar is calculated. "
+                     "The element distribution is then based on the other three pillars.",
+        "footer_line": (os.environ.get("EN_DOMAIN", "").strip() or "palja.de/en") + "  ·  Korean Saju for personal reflection",
     },
 }
 

@@ -1,6 +1,6 @@
-"""언어별(독일어 de / 프랑스어 fr / 스페인어 es) 리포트 설정.
+"""언어별(독일어 de / 프랑스어 fr / 스페인어 es / 영어 en) 리포트 설정.
 
-report_pipeline이 lang 값("de"|"fr"|"es")에 따라 가져다 쓰는 순수 데이터 모듈이다.
+report_pipeline이 lang 값("de"|"fr"|"es"|"en")에 따라 가져다 쓰는 순수 데이터 모듈이다.
 독일어(de)는 기존 report_pipeline의 상수/템플릿을 그대로 쓰고(회귀 방지),
 여기에는 "프랑스어" 설정만 둔다.
 
@@ -13,7 +13,7 @@ report_pipeline이 lang 값("de"|"fr"|"es")에 따라 가져다 쓰는 순수 �
 
 import re
 
-SUPPORTED_LANGS = ("de", "fr", "es")
+SUPPORTED_LANGS = ("de", "fr", "es", "en")
 
 
 def normalize_lang(value):
@@ -416,10 +416,220 @@ ES_STRINGS = {
 }
 FR_STRINGS["promo_anchor"] = "compatibilite"
 
+
+# ===========================================================================
+# 영어(en) — 2026-10-28 (feature/en-global). 전 세계 독자(영국/미국 제외, 비원어민 다수) 대상.
+# 설계 결정(사람 검토 필요):
+#  - 호칭은 "you"(영어에는 tu/vous 구분이 없다). 궁합 리포트는 두 사람이 함께 읽으므로 이름/"both"/"they"
+#    3인칭으로 쓴다(es와 같은 원칙). 프롬프트로만 강제한다("you"는 무료/연간/프리미엄에서 필수라 코드로 막을 수 없음).
+#  - 오행: Wood / Fire / Earth / Metal / Water (금(金)을 "Gold"로 쓰지 않는다).
+#  - 철자: 미국식 중립(center, color, behavior, recognize, practice). 영국식 철자는 기계 검사에서 걸러낸다.
+#  - 쉬운 국제 영어: 짧은 문장, 관용구/문화 종속 표현 금지(관용구 목록은 기계 검사).
+#  - 통화는 기존 상품과 같은 EUR("€9.90", "€24.90"). 영어 상품의 실제 판매 통화가 정해지면 프롬프트/문구 교체.
+# ===========================================================================
+
+_EN_PROMPT_OVERRIDE = """\
+[언어 전환 지시 — 최우선. 아래 본문의 "독일어" 관련 모든 문구보다 이 블록이 우선합니다]
+이 리포트는 독일어가 아니라 **영어**로 작성합니다. 아래 본문에 나오는 "독일어", 독일어 예시 문장/소제목/용어는 전부 같은 의도의 영어로 바꿔서 적용하세요.
+- 출력 언어: 쉬운 국제 영어(plain, neutral international English). 독자는 전 세계에 있고 비원어민이 많습니다. 짧은 문장(대부분 20단어 이하), 흔한 단어, 축약형(don't 등) 없이 완전한 형태, 능동태. 관용구·문화 종속 표현(스포츠/명절/학제 비유)·유행어(journey, navigate, unlock, embrace, tapestry, dance) 금지. 직역투, 존재하지 않는 신조어, 어색한 관청체, 이중부정 금지(독일어 때와 동일).
+- 철자: 미국식 중립 철자로 통일(center, color, behavior, favor, recognize, organize, practice, program, gray, judgment, neighbor, analyze). 영국식 철자(centre, colour, behaviour, realise, practise 등)는 쓰지 마세요.
+- 호칭: 독자는 항상 "you/your"(단수). 본문의 "du" 규칙은 "you" 규칙으로 읽으세요. 궁합 리포트에서는 두 사람이 함께 읽으므로 "you/your"로 말을 걸지 말고 이름, "both", "the two of them" 3인칭으로 쓰세요. 두 사람에게 하는 복수 명령형도 금지입니다.
+- 오행 이름은 반드시 이 다섯 단어만: "Wood"(목), "Fire"(화), "Earth"(토), "Metal"(금), "Water"(수). 금(金)을 "Gold"라고 쓰지 마세요. (본문의 Holz/Feuer/Erde/Metall/Wasser/Gold 규칙을 이 단어들로 읽으세요.)
+- 한국 전통 표기: 기본은 "Korean"(예: "the Korean Saju tradition"). "Chinese"로 한정하지 마세요. 역사적 정확성이 필요할 때만 "East Asian"을 보조로 쓰세요. "BaZi" 대신 "Saju"(예: "Saju annual report")를 기본으로 쓰세요.
+- 금지 단어(본문의 Schicksal 등 독일어 금지어 대신 이것을 적용): "destiny"/"fate"/"fated"/"fateful"/"fatality"(부정문에서도 쓰지 말고 "path", "year", "phase"로 대체), "empirical", "scientific/scientifically"(연간 리포트 마무리의 부정형 문장 제외), "studies show/prove", "statistically significant", "validated", "reveals/proves/guarantees/demonstrates"(단정).
+- 독일어에만 해당하는 문법/연어 규칙(Leistungen erbracht, Bedarf nach/an, kein/nicht ein 등)은 영어에 적용되지 않으므로 무시하세요.
+- 성별: 독자의 성별·가족 상황·직업을 가정하지 마세요. 궁합 리포트에서 성별 정보가 "keine Angabe"/"not specified"이면 이름을 반복해 쓰세요.
+- 월 이름은 영어로("January" … "December"). 챕터 소제목은 예를 들어 "January — Resources that are ready to show"처럼 동사 없는 짧은 명사구로 쓰세요.
+- 본문의 독일어 예시 소제목은 다음 영어로 대응하세요: "Dein Jahr auf einen Blick" → "Your year at a glance"; "Monate, in denen vieles leichter fließen kann" → "Months in which things may flow more easily"; "Monate für mehr Achtsamkeit" → "Months for more attention".
+- 상품명: Jahresreport → "annual report", Lebenskarte → "life map", Kompatibilitäts-Check → "compatibility check". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 영어로, 구간 개수는 "8 life phases of ten years"라고 쓰세요. 금액은 "€9.90"/"€24.90" 형식입니다.
+- 무료 리포트의 유료 리포트 구매 유도 블록은 다음 영어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Your Saju annual report 2027 — €9.90", 그다음 "What you will get:" 아래 불릿 5개(Your personal theme for 2027 / 12 monthly chapters with personal Saju impulses / Reflection questions about love, work and personal growth / Your personal strengths and possible inner tensions / A yearly compass with concrete questions for your own decisions), 마무리 "A personal reflection report based on the Saju tradition. It is not a scientific personality diagnosis, and it is not a certain prediction of the future."
+- 마지막 면책 문구는 영어로: "This content is offered for entertainment and personal reflection. It does not replace medical or psychological advice."
+- 분량 기준(단어 수)은 영어 단어 기준으로 동일하게 적용합니다(영어는 스페인어/독일어보다 단어 수가 적게 나오는 경향이 있으니 기준 미달이 되지 않도록 구체적 예시를 충분히 넣으세요).
+- 출력은 순수 영어 텍스트만. 한글/한자/독일어/프랑스어/스페인어 단어(예: "Holz", "Feuer", "Du", "dein", "vous", "tú")가 섞이지 않게 하세요.
+
+--- 아래부터 원래 지시문 ---
+"""
+
+_EN_PROMPT_CLOSING = """
+
+[최종 확인 — 가장 중요, 출력 직전에 반드시 지킬 것]
+위 지시문에는 독일어 예시가 많지만, 실제 출력은 **처음부터 끝까지 영어**여야 합니다. 제목·소제목·본문·불릿·면책 문구 전부 영어이고, 독자 호칭은 "you"(궁합은 이름/both 3인칭), 오행은 Wood/Fire/Earth/Metal/Water, 철자는 미국식 중립입니다. 독일어 단어(und, der, die, das, ist, nicht, dein, Jahr, Energie 등)가 하나라도 섞이면 안 됩니다. 순수 영어 텍스트만 출력하세요.
+"""
+
+PROMPT_BLOCKS["en"] = (_EN_PROMPT_OVERRIDE, _EN_PROMPT_CLOSING, "영어")
+
+# "destiny"/"fate" 계열. "destination"은 \b 경계로 제외된다. fatal(ity)는 "fatality"만 잡는다.
+EN_DESTINY_RE = re.compile(
+    r"\bdestin(?:y|ies|ed)\b|\bfate[sd]?\b|\bfateful(?:ly)?\b|\bfatalit(?:y|ies)\b|\bfatalis(?:m|tic|tically)\b",
+    re.IGNORECASE)
+_EN_ASSERT_VERBS = r"(?:reveals?|proves?|proven|guarantees?|guaranteed|demonstrates?|demonstrated)"
+EN_BANNED_REGEXES = [
+    (EN_DESTINY_RE, "destiny/fate/fatality"),
+    (re.compile(r"\bempirical(?:ly)?\b", re.IGNORECASE), "empirical"),
+    (re.compile(r"\bscientific(?:ally)?\b|\bscience-based\b|\bevidence-based\b", re.IGNORECASE), "scientific"),
+    (re.compile(r"\bstudies\s+(?:show|prove|demonstrate|confirm|have shown)\b|\bresearch\s+(?:shows|proves|confirms)\b", re.IGNORECASE), "studies show"),
+    (re.compile(r"\bstatistically\s+significant\b", re.IGNORECASE), "statistically significant"),
+    (re.compile(r"\bvalidated?\b", re.IGNORECASE), "validated"),
+    (re.compile(r"\b" + _EN_ASSERT_VERBS + r"\b", re.IGNORECASE), "reveals/proves/guarantees/demonstrates"),
+    (re.compile(
+        r"\bunique opportunity\b|\brare opportunity\b|\bonce[- ]in[- ]a[- ]lifetime\b|\blast chance\b|\bfinal chance\b|"
+        r"\bideal (?:moment|time)\b|\bperfect (?:moment|time)\b|\bdecisive moment\b|\bnow is the time\b|\bit is time to\b|"
+        r"\bfor the first time\b|\bheart(?:s)? (?:racing|pounding|beating fast)\b|\bracing heart\b", re.IGNORECASE),
+     "표현 금지(희소성/긴박감/범위 밖 단정)"),
+    # 천간/지지 직역: "Fire of heaven", "heavenly Fire", "Fire in the sky"
+    (re.compile(
+        r"\b(?:wood|fire|earth|metal|water)\s+(?:of|from|in|on)\s+(?:the\s+)?(?:heaven|heavens|sky)\b|"
+        r"\b(?:heavenly|celestial)\s+(?:wood|fire|earth|metal|water|element)s?\b", re.IGNORECASE),
+     "천간/지지 직역('Fire of heaven' 등)"),
+    # 독자 성별을 가정하는 이중 표기: "he or she", "his/her", "(s)he"
+    (re.compile(r"\bhe\s+or\s+she\b|\bhis\s+or\s+her\b|\bhim\s+or\s+her\b|\bhis/her\b|\bhe/she\b|\bs/he\b|\(s\)he\b", re.IGNORECASE),
+     "성별 이중 표기('he or she' 등)"),
+]
+# 영국식 철자(미국식 중립으로 통일). 대표적인 -our/-ise/-re/-ogue/기타만 명시한다.
+EN_BRITISH_SPELLING_RE = re.compile(
+    r"\b(?:colour\w*|favour\w*|behaviour\w*|honour\w*|labour\w*|neighbour\w*|flavour\w*|rumour\w*|humour\w*|"
+    r"centre[sd]?|centring|metre|fibre|theatre|"
+    r"realis\w+|recognis\w+|organis\w+|analys(?:e|ed|es|ing)|summaris\w+|emphasis(?:e|ed|es|ing)|prioritis\w+|"
+    r"familiaris\w+|apologis\w+|criticis(?:e|ed|es|ing)|minimis\w+|maximis\w+|stabilis\w+|harmonis\w+|"
+    r"practis(?:e|ed|es|ing)|licence|defence|offence|judgement|programme[sd]?|grey|ageing|learnt|spelt|"
+    r"whilst|amongst|cosy)\b",
+    re.IGNORECASE)
+# 쉬운 국제 영어 규칙: 관용구/유행어/문화 종속 표현(프롬프트가 금지한 목록).
+EN_IDIOM_RE = re.compile(
+    r"\bat the end of the day\b|\bon the same page\b|\bgo(?:es|ing)? with the flow\b|\bcomfort zone\b|\broller\s?coaster\b|"
+    r"\bball is in your court\b|\bbreak the ice\b|\bthink outside the box\b|\bgame[- ]changer\b|\btip of the iceberg\b|"
+    r"\bsilver lining\b|\bdouble-edged sword\b|\bin a nutshell\b|\bpiece of cake\b|\bhit the ground running\b|"
+    r"\btapestry\b|\bunlock(?:s|ed|ing)?\s+(?:your|the|new)\b|\bdelve\b", re.IGNORECASE)
+# 타 언어 혼입(독일어/프랑스어/스페인어 단어, 한글)
+EN_GERMAN_LEAK_RE = re.compile(r"\b(?:Holz|Feuer|Erde|Metall|Wasser|Dein|Deine|Jahresreport|Lebenskarte)\b")
+EN_FRENCH_LEAK_RE = re.compile(r"\b(?:vous|votre|vos|Bois|Feu|Terre|Métal|Eau|rapport annuel)\b")
+EN_SPANISH_LEAK_RE = re.compile(r"\b(?:usted|ustedes|Madera|Fuego|Tierra|Agua|informe anual|mapa de vida)\b")
+EN_GERMAN_STOPWORDS_RE = re.compile(r"\b(?:und|der|das|nicht|dein|deine|deinen|ein|eine|mit|auch|wird|ist)\b")
+EN_ROMANCE_STOPWORDS_RE = re.compile(r"\b(?:les|des|une|est|dans|los|las|una|para|esta|este|pero)\b")
+EN_HANGUL_RE = re.compile(r"[ᄀ-ᇿ㄰-㆏가-힣]")
+# 면책 문구의 부정형은 허용한다: "It is not a scientific personality diagnosis"는 과학적 근거를 암시하지 않고
+# 선을 긋는 문장이다(fr/es와 동일 원칙). 같은 문장 안에서 부정어 뒤 80자 이내의 scientific만 제외한다.
+EN_NEGATED_SCIENCE_RE = re.compile(
+    r"\b(?:not|no|nor|neither|never|without|isn't|aren't|doesn't|cannot)\b[^.!?\n]{0,80}?\bscien(?:tific(?:ally)?|ce-based)\b",
+    re.IGNORECASE)
+# "validated"도 같은 방식으로 "not validated"를 허용하지는 않는다(과학 검증 암시 단어 자체를 피한다).
+
+
+def en_mechanical_issues(report_text):
+    issues = []
+    report_text = EN_NEGATED_SCIENCE_RE.sub(" ", report_text)
+    german_hits = EN_GERMAN_STOPWORDS_RE.findall(report_text)
+    if len(german_hits) >= 3:
+        issues.append(
+            f"리포트가 영어가 아니라 독일어로 작성됨(독일어 단어 {len(german_hits)}개 감지) — "
+            f"전체를 순수 영어로 다시 작성해야 함"
+        )
+    romance_hits = EN_ROMANCE_STOPWORDS_RE.findall(report_text)
+    if len(romance_hits) >= 3:
+        issues.append(
+            f"리포트가 영어가 아니라 프랑스어/스페인어로 작성됨(해당 언어 기능어 {len(romance_hits)}개 감지) — "
+            f"전체를 순수 영어로 다시 작성해야 함"
+        )
+    for rx, label in EN_BANNED_REGEXES:
+        if rx.search(report_text):
+            issues.append(f"금지 단어 '{label}' 포함됨")
+    if re.search(r"\belement\s+Gold\b|\bthe\s+Gold\b|\bGold\s+element\b", report_text):
+        issues.append("'Gold'라는 단어로 금(金)을 표현함 - 반드시 'Metal'로 써야 함")
+    british = sorted({m.lower() for m in EN_BRITISH_SPELLING_RE.findall(report_text)})
+    if british:
+        issues.append(f"영국식 철자 사용됨: {', '.join(british[:8])} — 미국식 중립 철자(center, color, behavior, recognize, practice)로 통일해야 함")
+    idioms = sorted({m.group(0).lower() for m in EN_IDIOM_RE.finditer(report_text)})
+    if idioms:
+        issues.append(f"관용구/유행어 사용됨: {', '.join(idioms[:6])} — 쉬운 국제 영어로 바꿔야 함")
+    if EN_GERMAN_LEAK_RE.search(report_text):
+        issues.append("독일어 단어(Holz/Feuer/Erde/Metall/Wasser/Dein 등)가 섞여 있음 - 전부 영어로 바꿔야 함")
+    if EN_FRENCH_LEAK_RE.search(report_text):
+        issues.append("프랑스어 단어(vous/votre/Bois/Feu 등)가 섞여 있음 - 전부 영어로 바꿔야 함")
+    if EN_SPANISH_LEAK_RE.search(report_text):
+        issues.append("스페인어 단어(usted/Madera/Fuego 등)가 섞여 있음 - 전부 영어로 바꿔야 함")
+    if EN_HANGUL_RE.search(report_text):
+        issues.append("한글이 섞여 있음 - 전부 영어로 바꿔야 함")
+    return issues
+
+
+EN_STRINGS = {
+    "toc_heading": "Contents",
+    "you_are_here": "YOU ARE HERE",
+    "lifemap_heading": "Your life map at a glance",
+    "axis_labels": {
+        "재물운": "Resources",
+        "관계운": "Relationships",
+        "직업운": "Talents & work",
+        "총운": "Stability",
+    },
+    "free": {
+        "pdf_title": "Your Saju profile",
+        "subtitle_named": "Prepared for {name}",
+        "subtitle_anon": "Your personal five-elements profile",
+        "filename": "Palja-Profile.pdf",
+        "subject": "Your free Saju profile is ready ✨",
+        "intro": (
+            "your personal five-elements profile, based on the Korean Saju tradition, "
+            "is ready. You can find it as a PDF attached to this email."
+        ),
+    },
+    "paid": {
+        "pdf_title": "Your Saju annual report",
+        "subtitle_named": "Prepared for {name}",
+        "subtitle_anon": "Your personal annual report",
+        "filename": "Palja-Annual-Report.pdf",
+        "subject": "Your Palja annual report is ready 📖",
+        "intro": (
+            "thank you for your purchase. Your personal annual report, based on the Korean Saju tradition "
+            "and covering all 12 months in detail, is attached to this email as a PDF."
+        ),
+    },
+    "premium": {
+        "pdf_title": "Your Saju life map",
+        "subtitle_named": "Prepared for {name}",
+        "subtitle_anon": "Your personal life map",
+        "filename": "Palja-Life-Map.pdf",
+        "subject": "Your Palja life map is ready 🧭",
+        "intro": (
+            "thank you for your purchase. Your personal life map, based on the Korean Saju tradition "
+            "and covering your ten-year life phases, is attached to this email as a PDF."
+        ),
+    },
+    "compatibility": {
+        "pdf_title": "Your Saju compatibility",
+        "filename": "Palja-Compatibility.pdf",
+        "subject": "Your Saju compatibility check is ready 💫",
+        "intro": "thank you for your purchase. Your Saju compatibility check is attached to this email as a PDF.",
+    },
+    "hello": "Hello{name_suffix},",
+    "disclaimer": (
+        "Palja is offered for entertainment and personal reflection. "
+        "It does not replace medical or psychological advice."
+    ),
+    "withdrawal_confirmation": (
+        "You have 60 days: our voluntary money-back guarantee applies to this purchase. "
+        "Just write to us if the report is not right for you."
+    ),
+    "promo": "Would you like to see how well you connect with another person?",
+    "promo_link": "→ Saju compatibility check (€9.90)",
+    "footer_questions": "Questions? Write to us at",
+    "footer_links": [
+        ("en/legal-notice", "Legal notice"),
+        ("en/privacy", "Privacy"),
+    ],
+    "promo_anchor": "compatibility",
+    "geo_notice": (
+        "Note: we could not find the place of birth {cities} with certainty. "
+        "For the calculation we used approximate coordinates in central Germany. "
+        "In rare cases this can slightly change the hour that was used. "
+        "If you have questions, write to us at dionnie373@gmail.com."
+    ),
+}
+
 # lang → 문구 사전 (de는 report_pipeline/pdf_design의 기존 상수를 그대로 쓴다)
-STRINGS = {"fr": FR_STRINGS, "es": ES_STRINGS}
+STRINGS = {"fr": FR_STRINGS, "es": ES_STRINGS, "en": EN_STRINGS}
 
 # lang → 면책 부정형/금지어 검사 함수, "숙명" 계열 정규식과 라벨
-MECHANICAL_ISSUES = {"fr": fr_mechanical_issues, "es": es_mechanical_issues}
-DESTINY_RE = {"fr": FR_DESTIN_RE, "es": ES_DESTINO_RE}
-DESTINY_LABEL = {"de": "Schicksal", "fr": "destin", "es": "destino"}
+MECHANICAL_ISSUES = {"fr": fr_mechanical_issues, "es": es_mechanical_issues, "en": en_mechanical_issues}
+DESTINY_RE = {"fr": FR_DESTIN_RE, "es": ES_DESTINO_RE, "en": EN_DESTINY_RE}
+DESTINY_LABEL = {"de": "Schicksal", "fr": "destin", "es": "destino", "en": "destiny"}
