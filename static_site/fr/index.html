@@ -773,7 +773,7 @@
       });
       var data = {};
       try { data = await res.json(); } catch (e) {}
-      if (!res.ok || data.ok === false) { ev('res_err'); setStatus('error', L.err_gen); return; }
+      if (!res.ok || data.ok === false) { ev('res_err'); setStatus('error', data.error || L.err_gen); return; }
       ev('res_ok');
       render(data);
       setStatus('idle');

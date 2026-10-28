@@ -73,3 +73,31 @@ class ProfileViewTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ProfilePlaceTests(unittest.TestCase):
+    def test_unknown_place_with_time_is_rejected_without_time_ok(self):
+        orig = app_module._lookup_location
+        app_module._lookup_location = lambda city, lang="de": (10.45, "Europe/Berlin", "default_fallback")
+        try:
+            c = app_module.app.test_client()
+            app_module._RATE_LIMIT_HISTORY.clear()
+            r = c.post("/profile", json={"birth_date": "1990-05-15", "birth_time": "14:00", "birth_city": "Nowhereville", "lang": "en"})
+            self.assertEqual(r.status_code, 422)
+            self.assertEqual(r.get_json()["code"], "place_not_found")
+            app_module._RATE_LIMIT_HISTORY.clear()
+            r = c.post("/profile", json={"birth_date": "1990-05-15", "birth_time": "", "birth_city": "Nowhereville", "lang": "en"})
+            self.assertEqual(r.status_code, 200)
+        finally:
+            app_module._lookup_location = orig
+
+
+class EnglishPilotPageTests(unittest.TestCase):
+    def test_en_page_served_noindex(self):
+        c = app_module.app.test_client()
+        r = c.get("/en/")
+        self.assertEqual(r.status_code, 200)
+        body = r.get_data(as_text=True)
+        self.assertIn('id="resultSection"', body)
+        self.assertIn("noindex", body)
+        self.assertEqual(c.get("/en").status_code, 302)

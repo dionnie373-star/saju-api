@@ -920,6 +920,20 @@ def legal_page(page):
     return send_from_directory(STATIC_SITE_DIR, filename)
 
 
+# 영어 파일럿(/en/): 무료 즉시 결과 + "영어 리포트 관심" 버튼만(영어 상품·결제·법적 고지는 아직 없음) → noindex.
+EN_SITE_DIR = os.path.join(STATIC_SITE_DIR, "en")
+
+
+@app.route("/en", methods=["GET"])
+def en_redirect():
+    return redirect("/en/")
+
+
+@app.route("/en/", methods=["GET"])
+def en_page():
+    return send_from_directory(EN_SITE_DIR, "index.html")
+
+
 # 프랑스어 파일럿 사이트(/fr/) — 결제 제공사가 확정되기 전이라 noindex 상태로 공개.
 # 무료 프로필(/signup, lang=fr)만 실제로 동작하고 유료 버튼은 "곧 이용 가능" 안내를 보인다.
 _FR_PAGES = {
@@ -1337,6 +1351,16 @@ def profile_view_route():
                "es": "Comprueba la fecha y el lugar de nacimiento.", "en": "Please check the date and place of birth."}
         return jsonify({"ok": False, "error": bad[view_lang]}), e.status
     import profile_view
+
+    # 출생지를 못 찾아 기본 도시(독일 시간대)로 대체된 경우, 출생 시각을 넣었다면 시주/일주가 틀어질 수 있다.
+    # 틀린 결과를 보여주느니 더 큰 도시를 입력하게 한다(시각을 모르면 영향이 작아 그대로 진행).
+    if (calc_result.get("input", {}).get("longitude_source") == "default_fallback"
+            and (calc_payload.get("birth_time") or "").strip()):
+        nf = {"de": "Den Geburtsort konnten wir nicht finden. Bitte gib die nächstgrößere Stadt an (z. B. Berlin) oder lass die Geburtszeit leer.",
+              "fr": "Nous n'avons pas trouvé ce lieu de naissance. Indiquez la plus grande ville proche (par ex. Paris) ou laissez l'heure vide.",
+              "es": "No encontramos ese lugar de nacimiento. Indica la ciudad grande más cercana (p. ej. Madrid) o deja la hora en blanco.",
+              "en": "We couldn't find that birth place. Please enter the nearest larger city (e.g. London) or leave the birth time empty."}
+        return jsonify({"ok": False, "error": nf[view_lang], "code": "place_not_found"}), 422
 
     view = profile_view.build_profile_view(calc_result, view_lang)
     view["ok"] = True
