@@ -2153,6 +2153,19 @@ for _es_env, _es_default, _es_tier in (
     if _es_id:
         DIGISTORE24_PRODUCT_TIER_MAP[_es_id] = _es_tier
 
+# 영어 사이트용 Digistore24 상품(2026-10-29 생성, USD, 승인 요청 전):
+#   756320 -> Palja EN Annual Report (USD 9.90)
+#   756325 -> Palja EN Life Map Premium (USD 24.90)
+#   756333 -> Palja EN Compatibility Check (USD 9.90)
+for _en_env, _en_default, _en_tier in (
+    ("DIGISTORE24_PRODUCT_ID_PAID_EN", "756320", "paid"),
+    ("DIGISTORE24_PRODUCT_ID_PREMIUM_EN", "756325", "premium"),
+    ("DIGISTORE24_PRODUCT_ID_COMPATIBILITY_EN", "756333", "compatibility"),
+):
+    _en_id = os.environ.get(_en_env, _en_default).strip()
+    if _en_id:
+        DIGISTORE24_PRODUCT_TIER_MAP[_en_id] = _en_tier
+
 _DIGISTORE24_PROVIDER = "digistore24"
 
 # 개인정보 노출 버그 수정(2026-10-03, 외부 코드 리뷰로 지적됨): 예전에는
