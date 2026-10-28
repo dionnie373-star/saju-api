@@ -302,6 +302,10 @@ def _lookup_location(city_name, lang="de"):
         wc = world_cities.lookup_world_city(head)
         if wc:
             return wc[0], wc[1], "known_city"
+    import country_defaults
+    if not country_part and key in country_defaults.COUNTRIES and key not in KNOWN_CITY_LONGITUDE:
+        lon, tz = country_defaults.COUNTRIES[key]
+        return lon, tz, "country_fallback"
     # 국가가 주어지면 같은 이름의 다른 나라 도시(Paris, Texas 등)와 혼동하지 않도록 지오코딩을 먼저 본다.
 
     try:
@@ -341,6 +345,10 @@ def _lookup_location(city_name, lang="de"):
     wc = world_cities.lookup_world_city(head)
     if wc:
         return wc[0], wc[1], "known_city"
+
+    if country_part in country_defaults.COUNTRIES:
+        lon, tz = country_defaults.COUNTRIES[country_part]
+        return lon, tz, "country_fallback"
 
     import logging
     logging.getLogger(__name__).warning(
@@ -1407,11 +1415,18 @@ def profile_view_route():
         nf = {"de": "Den Geburtsort konnten wir nicht finden. Bitte gib die nächstgrößere Stadt an (z. B. Berlin) oder lass die Geburtszeit leer.",
               "fr": "Nous n'avons pas trouvé ce lieu de naissance. Indiquez la plus grande ville proche (par ex. Paris) ou laissez l'heure vide.",
               "es": "No encontramos ese lugar de nacimiento. Indica la ciudad grande más cercana (p. ej. Madrid) o deja la hora en blanco.",
-              "en": "We couldn't find that birth place. Please enter the nearest larger city (e.g. Nairobi) or leave the birth time empty."}
+              "en": "We couldn't find that birth place. Please enter the nearest larger city with its country (e.g. Nairobi, Kenya) or leave the birth time empty."}
         return jsonify({"ok": False, "error": nf[view_lang], "code": "place_not_found"}), 422
 
     view = profile_view.build_profile_view(calc_result, view_lang)
     view["ok"] = True
+    if calc_result.get("input", {}).get("longitude_source") == "country_fallback":
+        view["place_note"] = {
+            "de": "Den genauen Ort haben wir nicht gefunden – wir haben mit dem Land gerechnet. Die Stundensäule kann leicht abweichen.",
+            "fr": "Nous n'avons pas trouvé la ville exacte – le calcul s'appuie sur le pays. Le pilier de l'heure peut légèrement différer.",
+            "es": "No encontramos la ciudad exacta – calculamos con el país. El pilar de la hora puede variar ligeramente.",
+            "en": "We couldn't find the exact city, so we used the country. Your hour pillar may differ slightly.",
+        }[view_lang]
     _record_signup_meta(payload, view_lang)  # (출처, 관심사, 언어)만 집계. 개인정보 없음
     return jsonify(view)
 

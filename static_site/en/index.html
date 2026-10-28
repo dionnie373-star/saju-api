@@ -73,7 +73,7 @@
           </details>
           <div style="display: flex; flex-direction: column; gap: 6px;">
             <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="color: #C1442E;">*</span></label>
-            <input id="birthplace" type="text" required placeholder="e.g. Lagos, Nigeria" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            <input id="birthplace" type="text" required placeholder="City, Country (e.g. Lagos, Nigeria)" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
             <span style="font-size: 12px; color: #675E55;">Add the country if the city name is common (for example: Georgetown, Guyana). We use the place to set the correct time zone.</span>
           </div>
           <input id="email" type="hidden">
@@ -94,6 +94,7 @@
         <h2 class="display" style="margin:0;font-size:28px;font-weight:500;">Your Five Elements profile</h2>
         <p style="margin:0;font-size:14.5px;color:#6B625A;">Your pillars in Saju – free and instant</p>
       </div>
+      <p id="resPlaceNote" role="status" style="display:none;margin:0 0 12px;font-size:13.5px;color:#4A4239;background:#F3EEE4;border-radius:8px;padding:10px 12px;"></p>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
       <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Distribution of the Five Elements</h3>
@@ -176,6 +177,7 @@
   }
 
   function render(d) {
+    var pn = $('resPlaceNote'); if (pn) { pn.textContent = d.place_note || ''; pn.style.display = d.place_note ? 'block' : 'none'; }
     var P = $('resPillars'); P.textContent = '';
     ['year', 'month', 'day', 'hour'].forEach(function (k, i) {
       var p = d.pillars[k];

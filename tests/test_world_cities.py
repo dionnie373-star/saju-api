@@ -61,3 +61,21 @@ class WorldCityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CountryFallbackTests(unittest.TestCase):
+    def test_country_only_and_city_with_country_fallback(self):
+        import app
+        from unittest import mock
+        with mock.patch("urllib.request.urlopen", side_effect=OSError("offline")):
+            lon, tz, src = app._lookup_location("Nigeria")
+            self.assertEqual((tz, src), ("Africa/Lagos", "country_fallback"))
+            lon, tz, src = app._lookup_location("Smalltown Xyz, Kenya")
+            self.assertEqual((tz, src), ("Africa/Nairobi", "country_fallback"))
+            # 시간대가 여러 개인 나라는 근사하지 않는다
+            self.assertEqual(app._lookup_location("Smalltown Xyz, Brazil")[2], "default_fallback")
+
+    def test_country_table_timezones_valid(self):
+        import zoneinfo, country_defaults
+        for lon, tz in country_defaults.COUNTRIES.values():
+            zoneinfo.ZoneInfo(tz)
