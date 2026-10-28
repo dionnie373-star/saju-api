@@ -178,7 +178,7 @@ T = {
             "목": "Growth and momentum are then less “built in” – you can cultivate them on purpose, for example by learning something new.",
             "화": "Warmth and expression are then less “built in” – you can look for them on purpose, through meeting people, movement or creativity.",
             "토": "Grounding and routine are then less “built in” – you can build them on purpose, with small rituals.",
-            "금": "Structure and boundaries are then less “built in” – you can practise them on purpose, with clear agreements.",
+            "금": "Structure and boundaries are then less “built in” – you can practice them on purpose, with clear agreements.",
             "수": "Calm and retreat are then less “built in” – you can plan for them on purpose, with real breaks.",
         },
         "balanced": "All five elements are present – in this respect your profile looks balanced. ",

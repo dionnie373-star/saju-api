@@ -944,7 +944,8 @@ def _report_text_to_flowables(report_text, lang="de"):
             # 기호처럼 안 보였음 — reportlab의 bulletText로 실제 불릿을 그린다.
             flowables.append(Paragraph(safe, _PDF_STYLES["bullet"], bulletText="•"))
         elif kind == "pullquote":
-            flowables.append(Paragraph(f"„{safe}“", _PDF_STYLES["pullquote"]))
+            quote = f"“{safe}”" if lang == "en" else f"„{safe}“"
+            flowables.append(Paragraph(quote, _PDF_STYLES["pullquote"]))
         else:
             flowables.append(Paragraph(safe, _PDF_STYLES["body"]))
     return _keep_headings_with_next(flowables)
@@ -1657,6 +1658,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
         "de": {"female": "weiblich", "male": "männlich", "none": "keine Angabe"},
         "fr": {"female": "féminin", "male": "masculin", "none": "non précisé"},
         "es": {"female": "femenino", "male": "masculino", "none": "no indicado"},
+        "en": {"female": "female", "male": "male", "none": "not specified"},
     }[lang]
     gender_a = _GENDER_LABELS.get((payload.get("gender_a") or "").strip().lower(), _GENDER_LABELS["none"])
     gender_b = _GENDER_LABELS.get((payload.get("gender_b") or "").strip().lower(), _GENDER_LABELS["none"])

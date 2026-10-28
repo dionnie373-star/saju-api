@@ -1162,21 +1162,25 @@ _MSG = {
         "de": "Bitte gib eine gültige E-Mail-Adresse und eine Nachricht an.",
         "fr": "Veuillez indiquer une adresse e-mail valide et un message.",
         "es": "Indica una dirección de correo válida y un mensaje.",
+        "en": "Please enter a valid email address and a message.",
     },
     "too_many": {
         "de": "Zu viele Anfragen. Bitte versuche es später erneut.",
         "fr": "Trop de demandes. Veuillez réessayer plus tard.",
         "es": "Demasiadas solicitudes. Inténtalo de nuevo más tarde.",
+        "en": "Too many requests. Please try again later.",
     },
     "contact_failed": {
         "de": "Die Nachricht konnte nicht gesendet werden. Bitte schreib uns direkt per E-Mail.",
         "fr": "Le message n'a pas pu être envoyé. Veuillez nous écrire directement par e-mail.",
         "es": "No se pudo enviar el mensaje. Escríbenos directamente por correo electrónico.",
+        "en": "The message could not be sent. Please write to us directly by email.",
     },
     "signup_recent": {
         "de": "Für diese E-Mail-Adresse wurde bereits vor Kurzem ein kostenloses Profil angefordert. Bitte schau in deinem Postfach nach oder versuche es in ein paar Minuten erneut.",
         "fr": "Un profil gratuit a déjà été demandé récemment pour cette adresse e-mail. Vérifiez votre boîte de réception ou réessayez dans quelques minutes.",
         "es": "Ya se solicitó un perfil gratuito para este correo hace poco. Revisa tu bandeja de entrada o inténtalo de nuevo en unos minutos.",
+        "en": "A free profile was already requested for this email address a short time ago. Please check your inbox or try again in a few minutes.",
     },
 }
 
@@ -1408,6 +1412,13 @@ def signup():
     except CalcError as e:
         return jsonify({"ok": False, "error": str(e)}), e.status
 
+    # 영어: 출생지를 못 찾아 독일 기본값으로 대체됐는데 출생 시각이 있으면 시주/일주가 틀어진다.
+    # 웹 결과(/profile)와 같은 기준으로 더 큰 도시를 입력하게 한다(de/fr/es 동작은 그대로).
+    if (_lang == "en" and calc_result.get("input", {}).get("longitude_source") == "default_fallback"
+            and str(payload.get("birth_time") or "").strip()):
+        return jsonify({"ok": False, "code": "place_not_found",
+                        "error": "We couldn't find that birth place. Please enter the nearest larger city with its country (e.g. Nairobi, Kenya) or leave the birth time empty."}), 422
+
     from report_pipeline import PipelineError, run_free_signup
 
     try:
@@ -1437,9 +1448,9 @@ def profile_view_route():
         return jsonify({"ok": False, "error": "bad json"}), 400
     raw_lang = str(payload.get("lang") or "").strip().lower()
     view_lang = raw_lang if raw_lang in ("de", "fr", "es", "en") else "de"
-    calc_lang = view_lang if view_lang != "en" else "de"
+    calc_lang = view_lang  # en도 자기 언어로 계산(지오코딩 국가명 언어가 /signup과 같아야 PDF와 웹 결과의 기둥이 일치)
     if _rate_limited("profile_ip", _client_ip(), max_count=30, window_seconds=3600):
-        msg = "Too many requests. Please try again later." if view_lang == "en" else _msg("too_many", calc_lang)
+        msg = _msg("too_many", calc_lang)
         return jsonify({"ok": False, "error": msg}), 429
     city_in = str(payload.get("birth_city") or "").strip()[:100]
     calc_payload = {
@@ -2190,7 +2201,8 @@ def create_pending_order():
     # 반복)은 막아야 한다 — /signup보다는 느슨하게(아직 Claude 호출/메일 발송
     # 비용이 발생하는 단계가 아니므로) 설정.
     if _rate_limited("pending_order_ip", _client_ip(), max_count=60, window_seconds=3600):
-        return jsonify({"ok": False, "error": "Zu viele Anfragen. Bitte versuche es später erneut."}), 429
+        _pl = "en" if str(payload.get("lang") or "").strip().lower() == "en" else "de"
+        return jsonify({"ok": False, "error": _msg("too_many", _pl)}), 429
 
     orders_store.sweep_expired_pending_orders(_PENDING_ORDER_TTL_SECONDS)
     token = secrets.token_urlsafe(24)
