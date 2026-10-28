@@ -23,7 +23,11 @@
   a { color: #C1442E; }
   a:hover { color: #9C3624; }
   input:focus { outline: 2px solid #C1442E; outline-offset: 2px; }
-  button:focus-visible { outline: 2px solid #211D1A; outline-offset: 2px; }
+  button:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid #211D1A; outline-offset: 2px; }
+  select:focus, textarea:focus { outline: 2px solid #C1442E; outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   ::placeholder { color: #675E55; }
   #stickyCta { display: none; }
   @media (max-width: 640px) {
@@ -77,11 +81,12 @@
             <span style="font-size: 12px; color: #675E55;">Add the country if the city name is common (for example: Georgetown, Guyana). We use the place to set the correct time zone.</span>
           </div>
           <input id="email" type="hidden">
+          <div style="display:none;"><select id="gender" aria-hidden="true" tabindex="-1"><option value="">-</option><option value="female">Female</option><option value="male">Male</option></select></div>
           <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">See my profile now</button>
           <p id="errorMsg" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
           <p id="infoMsg" role="status" aria-live="polite" style="margin: 0; font-size: 13.5px; color: #4A4239; text-align: center; line-height: 1.55; display: none;"></p>
           <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.5;">Free · Result instantly on this page · no email needed</p>
-          <p style="margin: 0; font-size: 11.5px; color: #675E55; text-align: center; line-height: 1.5;">We use your details only to calculate your profile. We do not store them. Read our <a href="/en/privacy" style="color: inherit; text-decoration: underline;">Privacy Policy</a>.</p>
+          <p style="margin: 0; font-size: 11.5px; color: #675E55; text-align: center; line-height: 1.5;">For the free profile we use your details only to calculate it. We do not store them. Read our <a href="/en/privacy" style="color: inherit; text-decoration: underline;">Privacy Policy</a>.</p>
         </div>
       </div>
     </div>
@@ -103,11 +108,25 @@
       <div id="resTexts" style="display:flex;flex-direction:column;gap:14px;"></div>
       <p style="margin:0;font-size:12.5px;color:#675E55;text-align:center;line-height:1.55;">This short reading is calculated directly from your pillars. For entertainment and self-reflection – not a prediction.</p>
 
-      <div id="resInterest" style="background:#F3EEE4;border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:10px;text-align:center;align-items:center;">
-        <h3 class="display" style="margin:0;font-size:20px;font-weight:500;">Want a deeper reading?</h3>
-        <p style="margin:0;max-width:540px;font-size:14.5px;line-height:1.6;color:#6B625A;">We may build a detailed English annual report for 2027, month by month. Let us know if you would like it – it helps us decide what to build first.</p>
-        <button type="button" id="resInterestBtn" style="padding:12px 20px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Yes, I'm interested</button>
-        <p id="resInterestMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;display:none;">Thank you! We have noted your interest (nothing about you was stored).</p>
+      <div id="resUpsell" style="display:flex;flex-direction:column;gap:18px;margin-top:8px;">
+        <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
+          <h3 class="display" style="margin:0;font-size:22px;font-weight:500;">Want to go deeper?</h3>
+          <p style="margin:0 auto;max-width:560px;font-size:14.5px;line-height:1.6;color:#6B625A;">Your free profile gives a first look. The annual report guides you through all 12 months of 2027. The life map also shows your ten-year life phases.</p>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;justify-content:center;">
+          <div style="flex:1 1 280px;max-width:380px;background:#211D1A;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;color:#FAF7F1;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><h4 style="margin:0;font-size:17px;font-weight:600;">Annual Report</h4><span class="display" style="font-size:19px;font-weight:600;white-space:nowrap;">$9.90</span></div>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#E8E2D8;"><li><strong>Monthly themes</strong> for all 12 months</li><li>Deeper views on relationships, work and your goals</li><li>Your personal compass for the year</li><li><strong>PDF file</strong> that you can keep</li></ul>
+            <button type="button" id="resBuyPaid" style="margin-top:auto;padding:12px 16px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Get the annual report — $9.90</button>
+          </div>
+          <div style="flex:1 1 280px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><h4 style="margin:0;font-size:17px;font-weight:600;">Life Map Premium</h4><span class="display" style="font-size:19px;font-weight:600;white-space:nowrap;">$24.90</span></div>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li>Everything in the annual report</li><li><strong>Your ten-year life phases (Daewoon)</strong></li><li><strong>PDF file</strong> – your personal guide for reflection</li></ul>
+            <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Get the life map — $24.90</button>
+          </div>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.6;color:#675E55;text-align:center;">Prices are in US dollars. Taxes may be added at checkout depending on your country. Payment is processed by Digistore24.com. 60-day money-back guarantee (<a href="/en/refund" style="color:inherit;text-decoration:underline;">details</a>).</p>
+        <p style="margin:0;font-size:13.5px;line-height:1.6;color:#4A4239;text-align:center;">Curious how you match with another person? <a href="#compatibility" style="color:inherit;text-decoration:underline;">See the Compatibility Check ($9.90)</a></p>
       </div>
     </div>
   </div>
@@ -130,13 +149,232 @@
       <p style="margin: 0;">Saju is a Korean tradition. In Korea it is also called “Palja” (팔자), which means “eight characters”. Your birth year, month, day and hour each give two characters: eight in total. They show how the Five Elements – Wood, Fire, Earth, Metal and Water – are mixed in your chart.</p>
       <p style="margin: 0;">People use Saju to reflect on themselves: what they like to do, what they may need more of, and which themes the new year may bring. It is a cultural tradition and a way to ask good questions. It is not science and it cannot tell you what will happen.</p>
       <h3 style="margin: 18px 0 0; font-size: 18px; font-weight: 600; color: #211D1A; text-align: center;">Questions and answers</h3>
-      <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Is it really free?</summary><p style="margin: 8px 0 0;">Yes. The profile on this page is free, and you do not need an email address.</p></details>
-      <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Do you store my birth details?</summary><p style="margin: 8px 0 0;">No. We use them once to calculate your profile and do not keep them. We only count visits and button clicks without any personal data. Details are in our <a href="/en/privacy">Privacy Policy</a>.</p></details>
+      <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Is it really free?</summary><p style="margin: 8px 0 0;">Yes. The profile on this page is free, and you do not need an email address. The annual report, the life map and the compatibility check are optional paid products.</p></details>
+      <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Do you store my birth details?</summary><p style="margin: 8px 0 0;">Not for the free profile. We use your details once to calculate it and do not keep them. If you order a paid report, we keep your order details briefly until payment is complete and the report is sent. Details are in our <a href="/en/privacy">Privacy Policy</a>.</p></details>
       <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Why do you ask for my place of birth?</summary><p style="margin: 8px 0 0;">Clocks differ around the world. We use your place to find the time zone and the sun position at your birth. This makes the hour pillar more accurate.</p></details>
       <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">I don't know my birth time. Can I still use it?</summary><p style="margin: 8px 0 0;">Yes. Choose “I don't know”. We then calculate three pillars (year, month, day) and show the result without the hour pillar. A birth certificate or family may help you find the time.</p></details>
       <details style="border-top: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Is this fortune telling?</summary><p style="margin: 8px 0 0;">No. Saju is a traditional way to think about yourself. Our texts are meant for entertainment and self-reflection. They do not predict the future and are not medical, psychological, legal or financial advice.</p></details>
       <details style="border-top: 1px solid #E6DFD2; border-bottom: 1px solid #E6DFD2; padding: 12px 0;"><summary style="cursor: pointer; font-weight: 600;">Which calendar do you use?</summary><p style="margin: 8px 0 0;">Saju does not use the normal months of the Gregorian calendar. It uses the solar terms, so the Saju year starts around 4 February. Our calculation handles this for you.</p></details>
     </section>
+  </div>
+
+  <!-- Preise: Gratis vs. Jahresreport / Lebenskarte -->
+  <div id="pricing" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #FAF7F1;">
+    <div style="width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 40px;">
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+        <h2 class="display" style="margin: 0; font-size: 28px; font-weight: 500; text-align: center;">How far do you want to go?</h2>
+        <p style="margin: 0; font-size: 15px; color: #6B625A; text-align: center; max-width: 520px;">The free profile is your starting point. The annual report stays with you all year, month by month.</p>
+      </div>
+      <div style="display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;">
+
+        <div style="flex: 1 1 280px; max-width: 380px; background: #F3EEE4; border: 1px solid #E4DCD1; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Free profile</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">$0</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
+            <li>Your Five Elements distribution</li>
+            <li>A first look at your personality</li>
+            <li>A short preview of the year ahead</li>
+          </ul>
+        </div>
+
+        <div style="flex: 1 1 280px; max-width: 380px; background: #211D1A; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; color: #FAF7F1;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Annual Report</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">$9.90</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #E8E2D8;">
+            <li><strong>Monthly themes</strong> for all 12 months</li>
+            <li><strong>Deeper views</strong> on relationships, work and your personal goals</li>
+            <li>Monthly questions for reflection and your personal compass for the year</li>
+            <li><strong>PDF file</strong> to keep and read again</li>
+          </ul>
+          <button type="button" id="buyPaidBtn" style="margin-top: auto; padding: 12px 18px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+            Order the annual report — $9.90
+          </button>
+          <span style="font-size: 12px; color: #C9C0B4; text-align: center;">Secure payment by card, PayPal and more</span>
+        </div>
+
+        <div style="flex: 1 1 280px; max-width: 380px; background: #FFFFFF; border: 2px solid #C1442E; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Life Map Premium</h3>
+            <span class="display" style="font-size: 20px; font-weight: 600;">$24.90</span>
+          </div>
+          <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
+            <li>Everything in the annual report</li>
+            <li><strong>Your ten-year life phases (Daewoon)</strong></li>
+            <li>Questions for reflection on relationships, work and your priorities</li>
+            <li><strong>PDF file</strong> – your personal guide to your life phases</li>
+          </ul>
+          <button type="button" id="buyPremiumBtn" style="margin-top: auto; padding: 12px 18px; background: #211D1A; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+            Order the life map — $24.90
+          </button>
+          <span style="font-size: 12px; color: #675E55; text-align: center;">Secure payment by card, PayPal and more</span>
+        </div>
+
+      </div>
+
+      <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center;">Prices are in US dollars. Taxes may be added at checkout depending on your country. Payment is processed by Digistore24.com.</p>
+      <p style="margin: 0 auto; max-width: 640px; font-size: 12.5px; line-height: 1.6; color: #675E55; text-align: center;">Palja offers a personal reading based on the Korean Saju tradition. The content is for entertainment and self-reflection. It is not a scientific personality analysis, not medical, psychological, legal or financial advice, and not a reliable prediction of future events.</p>
+
+      <div style="max-width: 640px; margin: 0 auto; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 10px; padding: 16px 20px; box-sizing: border-box; font-size: 13.5px; line-height: 1.65; color: #4A4239; text-align: center;">
+        <strong>60-day money-back guarantee – no reason needed.</strong><br>
+        If the report is not right for you, send a short email to <a href="mailto:dionnie373@gmail.com" style="color: inherit; text-decoration: underline;">dionnie373@gmail.com</a> within 60 days after your purchase and we refund the full price (<a href="/en/refund" style="color: inherit; text-decoration: underline;">refund details</a>).<br>
+        <span style="color: #6B625A;">Our reports are digital products (PDF files). We deliver them by email only.</span>
+      </div>
+
+      <p id="checkoutError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+      <div style="width: 100%; overflow-x: auto;">
+        <table class="cmpTable" style="width: 100%; border-collapse: collapse; background: #FAF7F1; border: 1px solid #E4DCD1; border-radius: 12px; overflow: hidden; font-size: 14.5px;">
+          <caption class="sr">Free profile compared with the annual report</caption>
+          <thead>
+            <tr style="background: #EDE6D9;">
+              <th scope="col" style="text-align: left; padding: 16px 20px; font-weight: 600; color: #3B3630;">Content</th>
+              <th scope="col" style="text-align: center; padding: 16px 20px; font-weight: 600; color: #3B3630; width: 160px;">Free</th>
+              <th scope="col" style="text-align: center; padding: 16px 20px; font-weight: 600; color: #3B3630; width: 160px;">Annual Report</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Your Five Elements distribution</td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;"><span aria-hidden="true">✓</span><span class="sr">Included</span></td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;"><span aria-hidden="true">✓</span><span class="sr">Included</span></td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Personality overview</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Short and general</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">In depth and personal</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">A look at the year ahead</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">Short preview</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">All 12 months, one by one</td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Monthly themes for reflection</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 17px;"><span aria-hidden="true">–</span><span class="sr">Not included</span></td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;"><span aria-hidden="true">✓</span><span class="sr">Included</span></td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Views on relationships, work and goals</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 17px;"><span aria-hidden="true">–</span><span class="sr">Not included</span></td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;"><span aria-hidden="true">✓</span><span class="sr">Included</span></td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Personal compass for the year</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 17px;"><span aria-hidden="true">–</span><span class="sr">Not included</span></td>
+              <td style="text-align: center; padding: 14px 20px; color: #2F6F4E; font-size: 17px;"><span aria-hidden="true">✓</span><span class="sr">Included</span></td>
+            </tr>
+            <tr style="border-top: 1px solid #E4DCD1;">
+              <td style="padding: 14px 20px; color: #4A4239;">Format</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">On this page</td>
+              <td style="text-align: center; padding: 14px 20px; color: #6B625A; font-size: 13px;">PDF file to keep</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kompatibilitäts-Check -->
+  <div id="compatibility" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #F3EEE4;">
+    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
+      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #675E55;">Extra</span>
+      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">How well do you match with another person?</h2>
+      <p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">Sometimes the difference is easy to see: one person has no Water element at all, and the other person has a lot of it. Does this balance each other, or does it cause friction? The Compatibility Check gives a traditional Saju reading of such interactions between two charts and invites you to think about what you share and where you differ.</p>
+      <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">Enter two dates of birth and receive the reading as a PDF by email. You can order it again for as many people as you like.</p>
+
+      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">You</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">First name (optional)</label>
+              <input id="compatName_a" type="text" autocomplete="off" placeholder="Your first name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
+              <input id="compatDate_a" type="date" min="1900-01-01" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Birth time (optional)</label>
+              <input id="compatTime_a" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Place of birth <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_a" type="text" autocomplete="off" placeholder="e.g. Lagos, Nigeria" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Gender <span style="font-weight: 400; color: #675E55;">(optional, for the wording of the text)</span></label>
+              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Not specified</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="divers">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">The other person</h3>
+            <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #675E55;">First name and gender are optional. Enter details of another person only if that person agrees.</p>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">First name (optional)</label>
+              <input id="compatName_b" type="text" autocomplete="off" placeholder="Their first name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
+              <input id="compatDate_b" type="date" min="1900-01-01" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Birth time (optional)</label>
+              <input id="compatTime_b" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Place of birth <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_b" type="text" autocomplete="off" placeholder="e.g. Manila, Philippines" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Gender <span style="font-weight: 400; color: #675E55;">(optional, for the wording of the text)</span></label>
+              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Not specified</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="divers">Other</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Email address (we send the PDF here) <span style="color: #C1442E;">*</span></label>
+          <input id="compatEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <p id="compatError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Check compatibility — $9.90
+        </button>
+        <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">Price in US dollars. Taxes may be added at checkout depending on your country. Secure payment by card, PayPal and more. Payment is processed by Digistore24.com.</p>
+        <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">60-day money-back guarantee – no reason needed (<a href="/en/refund" style="color: inherit; text-decoration: underline;">details</a>). Digital product: we deliver a PDF by email. <a href="/en/terms" style="color: inherit; text-decoration: underline;">Terms of Sale</a> · <a href="/en/privacy" style="color: inherit; text-decoration: underline;">Privacy Policy</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kaufdialog: Eingabefelder erscheinen beim Klick auf einen Kaufbutton, danach Weiterleitung zu Digistore24 (kein Verzichts-Checkbox) -->
+  <div id="buyModal" role="dialog" aria-modal="true" aria-labelledby="buyModalTitle" style="display:none; position: fixed; inset: 0; z-index: 1000; background: rgba(33,29,26,0.55); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
+    <div style="background: #FFFFFF; border-radius: 12px; width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; padding: 24px 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 60px rgba(33,29,26,0.3);">
+      <h2 id="buyModalTitle" class="display" style="margin: 0; font-size: 20px; font-weight: 600;">Your details for the report</h2>
+      <p id="mProduct" style="margin: 0; font-size: 14px; font-weight: 600; color: #211D1A;"></p>
+      <p style="margin: 0; font-size: 13.5px; color: #6B625A; line-height: 1.55;">Enter your birth details. You then go directly to secure payment at Digistore24.</p>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label><input id="mBirthdate" type="date" min="1900-01-01" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Birth time (optional)</label><input id="mBirthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="color: #C1442E;">*</span></label><input id="mBirthplace" type="text" autocomplete="off" placeholder="City, Country (e.g. Lagos, Nigeria)" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Email address <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><span style="font-size: 12px; color: #675E55;">We send your report to this address.</span></div>
+      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Gender (needed for the Life Map Premium) <span style="color: #C1442E;">*</span></label>
+        <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Please choose</option><option value="female">Female</option><option value="male">Male</option></select>
+        <span style="font-size: 12px; color: #675E55;">Used only to calculate the direction of your ten-year life phases.</span></div>
+      <p id="mError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; line-height: 1.5; display: none;"></p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <button type="button" id="mGo" style="flex: 1 1 180px; padding: 13px 18px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">Continue to payment</button>
+        <button type="button" id="mCancel" style="flex: 0 1 auto; padding: 13px 18px; background: #FFFFFF; color: #4A4239; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; cursor: pointer;">Cancel</button>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: #675E55; line-height: 1.6;">Payment is processed by Digistore24.com. Prices are in US dollars. Taxes may be added at checkout depending on your country. 60-day money-back guarantee (<a href="/en/refund" target="_blank" rel="noopener">details</a>). By continuing you confirm that you have read our <a href="/en/terms" target="_blank" rel="noopener">Terms of Sale</a> and <a href="/en/privacy" target="_blank" rel="noopener">Privacy Policy</a>. See also the <a href="/en/legal-notice" target="_blank" rel="noopener">Legal notice</a>.</p>
+    </div>
   </div>
 
   <div style="width: 100%; box-sizing: border-box; padding: 40px 6vw; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
@@ -147,10 +385,173 @@
       <a href="/en/terms" style="color: #6B625A;">Terms of Sale</a>
       <a href="/en/refund" style="color: #6B625A;">Refunds</a>
       <a href="/en/privacy" style="color: #6B625A;">Privacy Policy</a>
+      <a href="#compatibility" style="color: #6B625A;">Compatibility Check</a>
       <a href="mailto:dionnie373@gmail.com" style="color: #6B625A;">Contact</a>
     </div>
   </div>
 </div>
+
+<script>
+(function () {
+  // Digistore24 has no embedded checkout. The buttons open our own dialog for the birth data,
+  // store the order data on our server (/orders/pending) and redirect to the Digistore24 order page
+  // with the email and only a random token ("custom"). No personal data is put into the URL except the email.
+  var DIGISTORE24_PRODUCT_IDS = {
+    paid: '756320',          // Palja EN Annual Report - USD 9.90
+    premium: '756325',       // Palja EN Life Map Premium - USD 24.90
+    compatibility: '756333', // Palja EN Compatibility Check - USD 9.90
+  };
+  var PRODUCT_LABEL = { paid: 'Annual Report — $9.90', premium: 'Life Map Premium — $24.90' };
+  var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
+  function $(id) { return document.getElementById(id); }
+  function ev(n) { if (window.paljaEv) { paljaEv(n); } }
+
+  // Affiliate tracking: ?aff=ID or #aff=ID is kept in memory only and added to the order link.
+  var affiliateId = (function () {
+    try {
+      var q = new URLSearchParams(window.location.search).get('aff');
+      var h = (window.location.hash || '').replace(/^#/, '');
+      var v = q || (h.indexOf('aff=') === 0 ? h.slice(4) : '');
+      return /^[A-Za-z0-9_-]{2,40}$/.test(v) ? v : '';
+    } catch (e) { return ''; }
+  })();
+
+  async function createPendingOrderToken(orderData) {
+    var resp = await fetch('/orders/pending', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData),
+    });
+    var body = await resp.json().catch(function () { return {}; });
+    if (!resp.ok || !body.token) {
+      throw new Error(body.error || 'Your order could not be prepared. Please try again.');
+    }
+    return body.token;
+  }
+
+  function buildDigistore24Url(productId, email, token) {
+    var params = new URLSearchParams();
+    params.set('email', email);
+    params.set('custom', token);
+    if (affiliateId) { params.set('aff', affiliateId); }
+    return DIGISTORE24_ORDER_FORM_BASE + productId + '?' + params.toString();
+  }
+
+  var checkoutErrorEl = $('checkoutError');
+  var buyModalEl = $('buyModal');
+  var buyModalTier = null;
+  var lastOpener = null;
+
+  function showCheckoutError(msg) {
+    var m = $('mError');
+    if (buyModalEl.style.display === 'flex') { m.textContent = msg; m.style.display = 'block'; return; }
+    checkoutErrorEl.textContent = msg;
+    checkoutErrorEl.style.display = 'block';
+  }
+
+  async function openCheckout(tier, btnEl) {
+    checkoutErrorEl.style.display = 'none';
+    var birthdate = $('birthdate').value.trim();
+    var birthtime = $('birthtime').value.trim();
+    var birthplace = $('birthplace').value.trim();
+    var email = $('email').value.trim();
+    var gender = $('gender').value.trim();
+
+    if (!birthdate) { showCheckoutError('Please enter your date of birth.'); return; }
+    if (!birthplace) { showCheckoutError('Please enter your place of birth.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCheckoutError('Please enter a valid email address.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('For the Life Map Premium, please choose your gender.'); return; }
+    var productId = DIGISTORE24_PRODUCT_IDS[tier];
+    if (!productId) { showCheckoutError('This report cannot be ordered yet. Please come back soon.'); return; }
+
+    var orderData = { email: email, birth_date: birthdate, birth_time: birthtime, birth_city: birthplace, lang: 'en' };
+    if (gender) { orderData.gender = gender; }
+
+    ev('buy_open');
+    var originalLabel = btnEl ? btnEl.textContent : null;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Preparing …'; }
+    try {
+      var token = await createPendingOrderToken(orderData);
+      window.location.href = buildDigistore24Url(productId, email, token);
+    } catch (e) {
+      showCheckoutError(e.message || 'Your order could not be prepared. Please try again.');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
+    }
+  }
+
+  var MAP = [['mBirthdate', 'birthdate'], ['mBirthtime', 'birthtime'], ['mBirthplace', 'birthplace'], ['mEmail', 'email'], ['mGender', 'gender']];
+  function openBuyModal(tier, opener) {
+    buyModalTier = tier;
+    lastOpener = opener || document.activeElement;
+    MAP.forEach(function (p) { var s = $(p[1]); if (s) $(p[0]).value = s.value; });
+    $('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
+    $('mProduct').textContent = PRODUCT_LABEL[tier] || '';
+    $('mError').style.display = 'none';
+    buyModalEl.style.display = 'flex';
+    $('mBirthdate').focus();
+  }
+  function closeBuyModal() {
+    if (buyModalEl.style.display !== 'flex') return;
+    buyModalEl.style.display = 'none';
+    if (lastOpener && lastOpener.focus) { try { lastOpener.focus(); } catch (e) {} }
+  }
+  window.paljaOpenBuy = openBuyModal;
+  $('buyPaidBtn').addEventListener('click', function () { openBuyModal('paid', this); });
+  $('buyPremiumBtn').addEventListener('click', function () { openBuyModal('premium', this); });
+  $('mCancel').addEventListener('click', closeBuyModal);
+  buyModalEl.addEventListener('click', function (e) { if (e.target === buyModalEl) closeBuyModal(); });
+  document.addEventListener('keydown', function (e) {
+    if (buyModalEl.style.display !== 'flex') return;
+    if (e.key === 'Escape') { closeBuyModal(); return; }
+    if (e.key === 'Tab') {
+      var f = Array.prototype.filter.call(buyModalEl.querySelectorAll('input, select, button, a[href]'), function (n) { return n.offsetParent !== null && !n.disabled; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
+  $('mGo').addEventListener('click', function (e) {
+    MAP.forEach(function (p) { var d = $(p[1]); if (d) d.value = $(p[0]).value; });
+    openCheckout(buyModalTier, e.currentTarget);
+  });
+  try { var today = new Date().toISOString().slice(0, 10); ['mBirthdate', 'compatDate_a', 'compatDate_b'].forEach(function (i) { $(i).max = today; }); } catch (e) {}
+
+  // Compatibility Check: two people, then Digistore24.
+  var compatErrorEl = $('compatError');
+  function showCompatError(msg) { compatErrorEl.textContent = msg; compatErrorEl.style.display = 'block'; }
+  function val(id) { return $(id).value.trim(); }
+
+  async function openCompatCheckout(e) {
+    compatErrorEl.style.display = 'none';
+    var dateA = val('compatDate_a'), cityA = val('compatCity_a'), dateB = val('compatDate_b'), cityB = val('compatCity_b'), email = val('compatEmail');
+    if (!dateA || !cityA) { showCompatError('Please enter your date and place of birth first.'); return; }
+    if (!dateB || !cityB) { showCompatError('Please enter the date and place of birth of the other person.'); return; }
+    if (!email || email.indexOf('@') === -1) { showCompatError('Please enter a valid email address.'); return; }
+    var productId = DIGISTORE24_PRODUCT_IDS.compatibility;
+    if (!productId) { showCompatError('The Compatibility Check cannot be ordered yet. Please come back soon.'); return; }
+
+    var orderData = {
+      email: email,
+      name_a: val('compatName_a'), birth_date_a: dateA, birth_time_a: val('compatTime_a'), birth_city_a: cityA, gender_a: val('compatGender_a'),
+      name_b: val('compatName_b'), birth_date_b: dateB, birth_time_b: val('compatTime_b'), birth_city_b: cityB, gender_b: val('compatGender_b'),
+      lang: 'en',
+    };
+    ev('buy_open');
+    var btnEl = e ? e.currentTarget : null;
+    var originalLabel = btnEl ? btnEl.textContent : null;
+    if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Preparing …'; }
+    try {
+      var token = await createPendingOrderToken(orderData);
+      window.location.href = buildDigistore24Url(productId, email, token);
+    } catch (err) {
+      showCompatError(err.message || 'Your order could not be prepared. Please try again.');
+      if (btnEl) { btnEl.disabled = false; btnEl.textContent = originalLabel; }
+    }
+  }
+  $('buyCompatBtn').addEventListener('click', openCompatCheckout);
+})();
+</script>
 
 <script>
 (function () {
@@ -232,7 +633,7 @@
       if (rh) { try { rh.focus({ preventScroll: true }); } catch (e3) {} }
     }, 60);
     if ('IntersectionObserver' in window) {
-      var up = $('resInterest');
+      var up = $('resUpsell');
       if (up) { try {
         var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { ev('res_up_view'); io.disconnect(); } }, { threshold: 0.4 });
         io.observe(up);
@@ -272,12 +673,9 @@
     }
   });
 
-  // Fake door: counts anonymous interest in English reports (no personal data).
-  $('resInterestBtn').addEventListener('click', function () {
-    ev('res_up_paid');
-    this.style.display = 'none';
-    var m = $('resInterestMsg'); m.style.display = 'block'; m.setAttribute('tabindex', '-1'); try { m.focus(); } catch (e4) {}
-  });
+  // Result upsell: same purchase dialogs as in the price section (birth data is pre-filled from the form).
+  $('resBuyPaid').addEventListener('click', function () { ev('res_up_paid'); window.paljaOpenBuy('paid', this); });
+  $('resBuyPremium').addEventListener('click', function () { ev('res_up_premium'); window.paljaOpenBuy('premium', this); });
 })();
 </script>
 

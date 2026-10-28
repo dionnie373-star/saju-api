@@ -1009,7 +1009,7 @@ def legal_page(page):
     return send_from_directory(STATIC_SITE_DIR, filename)
 
 
-# 영어 파일럿(/en/): 무료 즉시 결과 + "영어 리포트 관심" 버튼만(영어 상품·결제·법적 고지는 아직 없음) → noindex.
+# 영어 사이트(/en/): 무료 즉시 결과 + Digistore24 유료 상품(USD 756320/756325/756333) + 법적 고지 페이지. 아직 noindex.
 EN_SITE_DIR = os.path.join(STATIC_SITE_DIR, "en")
 
 
