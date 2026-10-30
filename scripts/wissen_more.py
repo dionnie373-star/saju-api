@@ -198,4 +198,67 @@ MORE = [
 <p>Das Ddi ist nur der Erdzweig der Jahressäule, also eins von acht Zeichen im Geburtsbild. Wie sich die Tiere zum Jahr 2027 verhalten, steht in <a href="/wissen/chinesisches-horoskop-2027">Chinesisches Horoskop 2027</a>. Und wie man sein Tier richtig bestimmt, erklärt <a href="/wissen/chinesisches-tierkreiszeichen-berechnen">dieser Beitrag</a>.</p>
 """,
 },
+{
+ "slug": "tagessaeule-ilju-saju",
+ "src": "seo-ilju",
+ "title": "Tagessäule im Saju (Ilju): Was dein Geburtstag verrät",
+ "desc": "Die Tagessäule (Ilju, 日柱) gilt im Saju als dein „Ich“. Was Tagesstamm und Tageszweig bedeuten, welche zehn Himmelsstämme es gibt und warum man den Tag nicht aus dem Jahr ableiten kann.",
+ "h1": "Tagessäule im Saju (Ilju): Was dein Geburtstag verrät",
+ "lead": "Von den vier Säulen eines Saju-Geburtsbilds ist die Tagessäule die persönlichste: Sie hängt allein an deinem Geburtstag. Hier steht, was Ilju bedeutet, wofür der Tagesstamm traditionell steht und wie du ihn für dein Profil nutzen kannst.",
+ "body": """
+<h2>Was ist die Tagessäule?</h2>
+<p>Das Saju-Geburtsbild besteht aus vier Säulen: Jahr, Monat, Tag und Stunde. Jede Säule hat zwei Zeichen, oben einen <strong>Himmelsstamm</strong> und unten einen <strong>Erdzweig</strong>. Die Tagessäule heißt auf Koreanisch <em>Ilju</em> (일주, 日柱). Sie wird aus dem Kalendertag berechnet, nicht aus dem Geburtsjahr, und wiederholt sich in einem festen 60-Tage-Rhythmus.</p>
+
+<h2>Warum steht der Tagesstamm für das „Ich“?</h2>
+<p>Das obere Zeichen der Tagessäule, der <strong>Tagesstamm</strong> (일간, 日干), gilt in der klassischen Lehre als Bezugspunkt des ganzen Geburtsbilds. Alle anderen Zeichen werden in ihrem Verhältnis zu ihm gelesen: Was nährt ihn, was fordert ihn, was gleicht ihm? Deshalb sagt man im Saju oft verkürzt, der Tagesstamm sei „du selbst“. Das ist ein traditionelles Bild, keine Messung.</p>
+
+<h2>Die zehn Himmelsstämme</h2>
+<p>Es gibt zehn Stämme: je ein Yang- und ein Yin-Zeichen für jedes der fünf Elemente.</p>
+<table class="t"><tr><th>Stamm</th><th>Koreanisch</th><th>Element</th><th>Polarität</th></tr>
+<tr><td>甲</td><td>gap (갑)</td><td>Holz</td><td>Yang</td></tr>
+<tr><td>乙</td><td>eul (을)</td><td>Holz</td><td>Yin</td></tr>
+<tr><td>丙</td><td>byeong (병)</td><td>Feuer</td><td>Yang</td></tr>
+<tr><td>丁</td><td>jeong (정)</td><td>Feuer</td><td>Yin</td></tr>
+<tr><td>戊</td><td>mu (무)</td><td>Erde</td><td>Yang</td></tr>
+<tr><td>己</td><td>gi (기)</td><td>Erde</td><td>Yin</td></tr>
+<tr><td>庚</td><td>gyeong (경)</td><td>Metall</td><td>Yang</td></tr>
+<tr><td>辛</td><td>sin (신)</td><td>Metall</td><td>Yin</td></tr>
+<tr><td>壬</td><td>im (임)</td><td>Wasser</td><td>Yang</td></tr>
+<tr><td>癸</td><td>gye (계)</td><td>Wasser</td><td>Yin</td></tr></table>
+
+<h2>Und der Tageszweig?</h2>
+<p>Unter dem Stamm steht der Tageszweig, eines der zwölf Tiere. Er wird traditionell als das Umfeld gelesen, in dem das „Ich“ lebt, oft auch mit Partnerschaft und Nähe verbunden. Welche Tiere es gibt, erklärt <a href="/wissen/koreanisches-tierkreiszeichen-ddi">Koreanisches Tierkreiszeichen (Ddi)</a>.</p>
+
+<h2>Warum kannst du deinen Ilju nicht schnell selbst ausrechnen?</h2>
+<p>Die Tage laufen in einem fortlaufenden Zyklus aus 60 Kombinationen, der sich nicht an Monaten oder Jahren orientiert. Man braucht dafür eine Kalendertabelle oder eine Berechnung ab einem bekannten Starttag. Außerdem beginnt ein Saju-Tag nicht bei jedem Verfahren zur gleichen Uhrzeit, was bei Geburten um Mitternacht eine Rolle spielen kann. Wer sicher gehen will, lässt sein Profil berechnen und prüft die Zeit der Geburt.</p>
+
+<h2>Wie liest man die Tagessäule?</h2>
+<p>Allein genommen sagt der Tagesstamm wenig. Erst im Zusammenspiel mit den anderen Säulen ergibt sich ein Bild, etwa welche der <a href="/wissen/fuenf-elemente-saju">fünf Elemente</a> stark oder schwach vertreten sind. Mehr zum Aufbau steht in <a href="/wissen/vier-saeulen-saju">Die vier Säulen im Saju</a>.</p>
+""",
+},
+{
+ "slug": "gapja-60er-zyklus-hwangap",
+ "src": "seo-gapja",
+ "title": "Der 60er-Zyklus im Saju: Gapja und der koreanische 60. Geburtstag",
+ "desc": "Warum es im chinesischen und koreanischen Kalender nur 60 Jahreskombinationen gibt, was Gapja (甲子) bedeutet und warum Koreaner den 60. Geburtstag als Hwangap feiern.",
+ "h1": "Der 60er-Zyklus im Saju: Gapja und der koreanische 60. Geburtstag",
+ "lead": "Zehn Himmelsstämme und zwölf Tiere ergeben im ostasiatischen Kalender einen Zyklus von 60 Jahren. Hier erfährst du, wie er aufgebaut ist, warum 2027 das Feuer-Schaf ist und was es mit dem koreanischen Hwangap auf sich hat.",
+ "body": """
+<h2>Wie entsteht der 60er-Zyklus?</h2>
+<p>Die zehn <a href="/wissen/tagessaeule-ilju-saju">Himmelsstämme</a> und die zwölf Erdzweige (die Tiere) werden der Reihe nach kombiniert: Stamm 1 mit Zweig 1, Stamm 2 mit Zweig 2 und so weiter. Nach zehn Schritten beginnen die Stämme von vorn, nach zwölf die Zweige. Beide Reihen treffen erst nach <strong>60</strong> Schritten wieder gleichzeitig am Anfang zusammen. Das ist das kleinste gemeinsame Vielfache von 10 und 12.</p>
+<p>Deshalb gibt es nur 60 Kombinationen und nicht 120: Es kommen nur Paare vor, bei denen Stamm und Zweig die gleiche Polarität haben (Yang mit Yang, Yin mit Yin).</p>
+
+<h2>Gapja: der Anfang</h2>
+<p>Die erste Kombination heißt 甲子 (<em>Gapja</em>, 갑자): Yang-Holz-Stamm und Ratte. Koreanisch sagt man „Gapja“ auch sprichwörtlich für ein langes Kapitel oder eine Zeitspanne. Zuletzt begann der Zyklus 1984, das nächste Gapja-Jahr ist 2044.</p>
+
+<h2>Wo steht 2027?</h2>
+<p>2027 ist das Jahr 丁未 (<em>Jeongmi</em>), das 44. Jahr des Zyklus, das Feuer-Schaf. Das Vorjahr 2026 ist 丙午, das Feuer-Pferd. Mehr dazu steht in <a href="/wissen/chinesisches-horoskop-2027">Chinesisches Horoskop 2027</a>. Zur Erinnerung: Das Saju-Jahr beginnt mit Lichun, etwa am 4. Februar, nicht am 1. Januar.</p>
+
+<h2>Hwangap: der 60. Geburtstag in Korea</h2>
+<p>Wer 60 Jahre alt wird, hat den Zyklus einmal durchlaufen und ist wieder bei seinem Geburtsjahr-Zeichen angekommen. In Korea feiert man das traditionell als <strong>Hwangap</strong> (환갑, 回甲) mit einem großen Familienfest. Früher, als die Lebenserwartung niedriger war, galt das als besonderer Meilenstein. Heute wird oft eher der 70. Geburtstag gefeiert, aber das Wort ist geblieben.</p>
+
+<h2>Und im Saju-Profil?</h2>
+<p>Das Jahr der Geburt steht in der Jahressäule, einer von vier <a href="/wissen/vier-saeulen-saju">Säulen</a>. Auch Monat, Tag und Stunde laufen in eigenen 60er-Zyklen. Dein Profil zeigt, welche Kombination in jeder Säule steht.</p>
+""",
+},
 ]
