@@ -152,7 +152,7 @@ PAGE = """<!doctype html>
   <p class="note">{disclaimer}</p>
 </div>
 <script>
-try {{ var s = {src_js}; var q = (new URLSearchParams(location.search).get('src') || '').toLowerCase(); if (q) s = q; if (navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([JSON.stringify({{src: s, path: location.pathname}})], {{type: 'application/json'}})); }} catch (e) {{}}
+try {{ var s = {src_js}; var q = (new URLSearchParams(location.search).get('src') || '').toLowerCase(); if (q) s = q; if (localStorage.getItem('palja_nohit') !== '1' && navigator.sendBeacon) navigator.sendBeacon('/api/hit', new Blob([JSON.stringify({{src: s, path: location.pathname}})], {{type: 'application/json'}})); }} catch (e) {{}}
 </script>
 </body>
 </html>
