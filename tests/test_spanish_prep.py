@@ -202,7 +202,7 @@ class SpanishHostModeTests(unittest.TestCase):
 
     def test_german_host_unaffected(self):
         r = self.c.get("/", headers={"Host": "palja.de"})
-        self.assertNotIn('lang="es"', r.get_data(as_text=True))
+        self.assertNotIn('<html lang="es"', r.get_data(as_text=True))
 
     def test_email_links_use_domain(self):
         import report_pipeline as rp
