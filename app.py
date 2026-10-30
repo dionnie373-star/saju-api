@@ -936,6 +936,8 @@ def landing_page():
         return _serve_fr_html("index.html")
     if _is_es_host():
         return _serve_es_html("index.html")
+    if _is_one_host():
+        return _serve_en_html("index.html", "")
     return send_from_directory(STATIC_SITE_DIR, "index.html")
 
 
@@ -1028,7 +1030,28 @@ def en_page(page):
     filename = _EN_PAGES.get(page)
     if not filename:
         return jsonify({"ok": False, "error": "Not found"}), 404
+    if _is_one_host():
+        return _serve_en_html(filename, page)
     return send_from_directory(EN_SITE_DIR, filename)
+
+
+def _is_one_host():
+    return (request.host or "").split(":")[0].lower() in _ONE_HOSTS
+
+
+def _serve_en_html(filename, page):
+    """palja.one(영어 전용 도메인): palja.de/en 파일 그대로 서빙하되, 검색 노출용으로 noindex를 빼고
+    canonical을 palja.one 기준으로 붙인다(감사 페이지는 noindex 유지)."""
+    import re as _re
+    with open(os.path.join(EN_SITE_DIR, filename), encoding="utf-8") as f:
+        html = f.read()
+    if filename != "thank-you.html":
+        html = _re.sub(r'<meta name="robots" content="noindex[^>]*>', "", html)
+        canon = "https://palja.one/" + ("" if not page else f"en/{page}")
+        html = html.replace("</head>", f'<link rel="canonical" href="{canon}">\n</head>', 1)
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
 
 
 # 프랑스어 파일럿 사이트(/fr/) — 결제 제공사가 확정되기 전이라 noindex 상태로 공개.
@@ -1248,6 +1271,9 @@ def favicon():
 
 @app.route("/robots.txt", methods=["GET"])
 def robots_txt():
+    if _is_one_host():
+        return Response("User-agent: *\nAllow: /\nDisallow: /en/thank-you\n\nSitemap: https://palja.one/sitemap.xml\n",
+                        mimetype="text/plain")
     if _is_es_host():
         if _es_public():
             d = _es_domain()
@@ -1272,6 +1298,12 @@ def google_site_verification():
 
 @app.route("/sitemap.xml", methods=["GET"])
 def sitemap_xml():
+    if _is_one_host():
+        urls = ["", "en/privacy", "en/legal-notice", "en/terms", "en/refund"]
+        body = "".join(f"<url><loc>https://palja.one/{u}</loc></url>" for u in urls)
+        return Response('<?xml version="1.0" encoding="UTF-8"?>'
+                        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + body + "</urlset>",
+                        mimetype="application/xml")
     if _is_es_host():
         d = _es_domain()
         urls = ["", "aviso-legal", "condiciones", "privacidad", "desistimiento", "contacto"]
