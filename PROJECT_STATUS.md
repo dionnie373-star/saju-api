@@ -773,3 +773,10 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - Trusted Badge: US Inc. 체크리스트가 배지 추가를 요구 → 영어 전용 배지 생성(판매 48991, 감사 48992, 소득 면책 OFF), en/index.html·en/thank-you.html에 삽입, 개인정보 방침에 고지. (DE/FR/ES 배지는 10/13 DS24 요청으로 제거된 상태 그대로.)
 - 승인 요청: 3개 상품 모두 US Inc./MSLW(아일랜드)/GmbH에 "지금 승인 요청" 저장 확인(재로딩으로 확인). 요청 절차: 저장 클릭 → 체크리스트 모달 3개 동의 → 저장 한 번 더.
 - 남은 위험: 법적 문서는 AI 초안(변호사 검토 전); 도메인 palja.one 미구매; 실제 모델 영어 리포트 품질 장기 검증 필요; 배지 재삽입이 DE 컴플라이언스 요청(10/13)과 충돌할 수 있어 문의 필요 시 티켓 #3916303.
+
+## 2026-10-31 palja.one 개통 + 언어 전환 버튼
+- palja.one: app.py 호스트 모드(루트=영어 사이트, canonical, robots/sitemap), Render 커스텀 도메인 인증·인증서 완료, DNS는 INWX(@ A 216.24.57.1, www CNAME palja-api.onrender.com). INWX 기본 주차 A 레코드(185.181.104.242, 이름 공란)는 삭제함(남기면 Render 인증 실패). `*` 와일드카드 A는 그대로.
+- Search Console: https://palja.one/ URL 접두어 속성 등록(HTML 파일 자동 인증), /sitemap.xml 제출, 홈 색인 요청.
+- DE 색인 요청: /wissen/, yin-und-yang-saju, saju-und-bazi-unterschied, koreanisches-tierkreiszeichen-ddi. 나머지 DE 지식글·ES/FR 홈은 이미 색인됨.
+- 4개 홈에 언어 전환 드롭다운(DE/FR/ES/EN)과 hreflang(x-default=palja.one) 추가(main 푸시, 188f5ad).
+- Digistore24 승인 현황: DE·FR·ES 상품 승인(FR/ES 프리미엄도 목록상 승인 표시, 사이트 버튼 복구 여부 미확인), EN 3개는 DS-de 승인/DS-us·DS-ie 보류. 승인팀(genehmigung@digistore24.com) 스레드에 국가 무관 판매 가능 범위·절차 문의 발송(10/31 03:12), 답변 대기. FR/ES를 DS-us에 요청하려면 배지 확인 항목 때문에 배지 재삽입 필요(보류).
