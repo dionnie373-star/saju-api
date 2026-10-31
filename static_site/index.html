@@ -177,7 +177,7 @@
         <p id="resTypNote" style="margin:8px 0 0;font-size:11.5px;color:#A79E93;max-width:520px;line-height:1.5;"></p>
       </div>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
-      <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
+      <div id="resBarsCard" style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Verteilung der Fünf Elemente</h3>
         <div id="resBars" style="display:flex;flex-direction:column;gap:9px;"></div>
       </div>
@@ -751,7 +751,7 @@
   };
   function renderTyp(d) {
     var box = $('resTyp'); if (!box) { return; }
-    var t = d.typ; if (!t || !t.code) { box.style.display = 'none'; return; }
+    var t = d.typ; if (!t || !t.code) { box.style.display = 'none'; var bc0 = document.getElementById('resBarsCard'); if (bc0) { bc0.style.display = ''; } return; }
     var link = window.location.origin + '/t/' + t.code, png = '/t/' + t.code + '.png';
     $('resTypImg').src = '/typ-img/' + t.img + '.png';
     $('resTypName').textContent = t.name; $('resTypSub').textContent = t.subtitle; $('resTypLine').textContent = t.line;
@@ -794,6 +794,7 @@
       };
     }
     box.style.display = 'flex';
+    var bc = document.getElementById('resBarsCard'); if (bc) { bc.style.display = 'none'; }
     var sc = document.getElementById('stickyCta'); if (sc) { sc.style.display = 'none'; }
     ev('card_view');
   }
