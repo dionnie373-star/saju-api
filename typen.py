@@ -100,7 +100,7 @@ EL_NAME = {
 _SUB = {
     "de": {"single": "{a} steht im Vordergrund", "duo": "{a} am stärksten vertreten · {b} als zweites Element",
            "balanced": "Alle fünf Elemente sind sichtbar"},
-    "en": {"single": "{a} is most represented", "duo": "A blend of {a} and {b}",
+    "en": {"single": "{a} is the most represented element", "duo": "A blend of {a} and {b}",
            "balanced": "All five elements are visible"},
     "fr": {"single": "L'élément {a} est le plus représenté", "duo": "Un mélange de {a} et de {b}",
            "balanced": "Les cinq éléments sont visibles"},
@@ -109,13 +109,13 @@ _SUB = {
 }
 _MISS = {
     "de": "{x} erscheint in dieser vereinfachten Übersicht nicht.",
-    "en": "{x} doesn't appear in this simplified overview.",
+    "en": "{x} doesn't show up in this simplified view.",
     "fr": "L'élément {x} n'apparaît pas dans cet aperçu simplifié.",
     "es": "El elemento {x} no aparece en esta versión simplificada.",
 }
 _NOTE = {
     "de": NOTE[0],
-    "en": "A playful simplification of the five elements based on the visible characters – not a full Saju analysis or classical reading. For entertainment and self-reflection only.",
+    "en": "A playful overview of the five elements based on the visible characters – not a full Saju analysis or traditional reading. For entertainment and self-reflection only.",
     "fr": "Une simplification ludique des cinq éléments à partir des caractères visibles – ni analyse Saju complète ni lecture classique. Pour le divertissement et la réflexion personnelle.",
     "es": "Una simplificación lúdica de los cinco elementos a partir de los caracteres visibles – ni un análisis Saju completo ni una lectura clásica. Solo para entretenimiento y reflexión personal.",
 }

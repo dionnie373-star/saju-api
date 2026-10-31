@@ -28,7 +28,7 @@ TXT = {
     "es": {"head": "Mi perfil Saju", "day": "Elemento del día", "type": "Tipo {n}", "dist": "Mis cinco elementos",
            "hook": "¿Cuál es tu tipo de elementos?", "host": "palja.es", "note": "Para entretenimiento y reflexión"},
     "en": {"head": "My Saju profile", "day": "Day element", "type": "{n} type", "dist": "My five elements",
-           "hook": "Which element type are you?", "host": "palja.one", "note": "For entertainment and self-reflection"},
+           "hook": "What's your element type?", "host": "palja.one", "note": "For entertainment and self-reflection"},
 }
 
 
