@@ -157,6 +157,24 @@
         <p style="margin:0;font-size:14.5px;color:#6B625A;">Tus pilares en el Saju: gratis e inmediato</p>
       </div>
       <p id="resPlaceNote" role="status" style="display:none;margin:0 0 12px;font-size:13.5px;color:#4A4239;background:#F3EEE4;border-radius:8px;padding:10px 12px;"></p>
+      <div id="resTyp" style="display:none;background:#FFFDF9;border:1px solid #E6DFD2;border-radius:14px;padding:22px 20px;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+        <p style="margin:0;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:#8A8074;">Tu tipo de elementos</p>
+        <img id="resTypImg" alt="" width="240" style="display:block;max-width:60%;height:auto;margin:6px 0 2px;">
+        <div id="resTypCounts" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px;"></div>
+        <h3 id="resTypName" class="display" style="margin:0;font-size:30px;font-weight:600;line-height:1.15;color:#211D1A;"></h3>
+        <p id="resTypSub" style="margin:0;font-size:14px;color:#6B625A;"></p>
+        <p id="resTypLine" class="display" style="margin:8px 0 6px;font-size:19px;line-height:1.4;max-width:520px;color:#211D1A;"></p>
+        <div id="resTypMiss" style="font-size:12.5px;color:#8A8074;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px;">
+          <button type="button" id="shShare" style="display:none;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Compartir</button>
+          <button type="button" id="shDl" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;cursor:pointer;">Guardar la tarjeta</button>
+          <button type="button" id="shCopy" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;cursor:pointer;">Copiar enlace</button>
+          <a id="shMail" href="#" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;text-decoration:none;">Enviar por correo</a>
+        </div>
+        <p id="shToast" role="status" aria-live="polite" style="margin:4px 0 0;min-height:18px;font-size:13px;color:#3F7A63;"></p>
+        <p style="margin:0;font-size:12px;color:#8A8074;max-width:480px;line-height:1.5;">El enlace solo contiene la distribución de tus cinco elementos: sin fecha de nacimiento, sin nombre, sin lugar.</p>
+        <p id="resTypNote" style="margin:8px 0 0;font-size:11.5px;color:#A79E93;max-width:520px;line-height:1.5;"></p>
+      </div>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
       <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Distribución de los cinco elementos</h3>
@@ -685,6 +703,60 @@
   var L = {"btn_idle": "Ver mi perfil ahora", "btn_loading": "Calculando …", "btn_retry": "Reintentar", "info_loading": "Tu perfil se está calculando; solo tarda un momento.", "err_date": "Por favor, indica tu fecha de nacimiento.", "err_city": "Para la hora de nacimiento, indica también el lugar.", "err_net": "No se pudo conectar con el servidor. Inténtalo de nuevo más tarde.", "err_gen": "Algo salió mal. Inténtalo de nuevo más tarde.", "pil": ["Año", "Mes", "Día", "Hora"], "pil_none": "no indicada", "chart_u": "de", "pdf_sending": "Creando – tarda de 1 a 2 minutos …", "pdf_ok": "¡Listo! Tu PDF va de camino y suele llegar a tu bandeja de entrada en pocos minutos. Revisa también la carpeta de spam.", "pdf_bad": "Por favor, indica un correo electrónico válido.", "lang": "es"};
   var KO_EL = { wood: '나무', fire: '불', earth: '흙', metal: '쇠', water: '물' };
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
+  var SH = {
+    share: function (n) { return 'Mi tipo de elementos: ' + n + ' – ¿y el tuyo?'; },
+    subj: function (n) { return 'Mi tipo de elementos en Palja: ' + n; },
+    body: function (n, l) { return 'Mira qué tipo de elementos soy: ' + n + '.\n\n' + l + '\n\n¿Y tú? Gratis en palja.es'; },
+    copied: 'Enlace copiado', fail: 'No ha funcionado.'
+  };
+  function renderTyp(d) {
+    var box = $('resTyp'); if (!box) { return; }
+    var t = d.typ; if (!t || !t.code) { box.style.display = 'none'; return; }
+    var link = window.location.origin + '/t/' + t.code, png = '/t/' + t.code + '.png';
+    $('resTypImg').src = '/typ-img/' + t.img + '.png';
+    $('resTypName').textContent = t.name; $('resTypSub').textContent = t.subtitle; $('resTypLine').textContent = t.line;
+    $('resTypNote').textContent = t.note;
+    var cb = $('resTypCounts'); cb.textContent = '';
+    (d.counts || []).forEach(function (c) {
+      var col = mk('div', 'display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px;');
+      var circ = mk('div', 'width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;' + (c.n ? 'background:' + COLORS[c.key] + ';color:#fff;' : 'border:2px solid #E6DFD2;color:#B9AFA2;'), String(c.n));
+      col.appendChild(circ);
+      col.appendChild(mk('div', 'font-size:15px;font-weight:600;color:' + (c.n ? '#211D1A' : '#B9AFA2') + ";font-family:'Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;", KO_EL[c.key]));
+      col.appendChild(mk('div', 'font-size:12px;color:' + (c.n ? '#6B625A' : '#B9AFA2') + ';', c.name));
+      cb.appendChild(col);
+    });
+    var miss = $('resTypMiss'); miss.textContent = '';
+    (t.missing || []).forEach(function (m) { var p = document.createElement('div'); p.textContent = m; miss.appendChild(p); });
+    var toast = $('shToast'); function say(m) { toast.textContent = m; setTimeout(function () { if (toast.textContent === m) { toast.textContent = ''; } }, 3500); }
+    $('shMail').href = 'mailto:?subject=' + encodeURIComponent(SH.subj(t.name)) + '&body=' + encodeURIComponent(SH.body(t.name, link));
+    $('shMail').onclick = function () { ev('card_mail'); };
+    $('shCopy').onclick = function () {
+      ev('card_copy');
+      var done = function () { say(SH.copied); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(link).then(done, function () { say(SH.fail); }); }
+      else { try { var ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch (e) { say(SH.fail); } }
+    };
+    function getBlob() { return fetch(png).then(function (r) { if (!r.ok) { throw new Error('x'); } return r.blob(); }); }
+    $('shDl').onclick = function () {
+      ev('card_dl');
+      getBlob().then(function (b) { var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'palja-tipo-elementos.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000); }).catch(function () { say(SH.fail); });
+    };
+    var sb = $('shShare');
+    if (navigator.share) {
+      sb.style.display = 'inline-block';
+      sb.onclick = function () {
+        ev('card_share');
+        getBlob().then(function (b) {
+          var f = new File([b], 'palja-tipo-elementos.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [f] })) { return navigator.share({ files: [f], text: SH.share(t.name) + ' ' + link }); }
+          return navigator.share({ text: SH.share(t.name), url: link });
+        }).catch(function (e) { if (e && e.name !== 'AbortError') { say(SH.fail); } });
+      };
+    }
+    box.style.display = 'flex';
+    var sc = document.getElementById('stickyCta'); if (sc) { sc.style.display = 'none'; }
+    ev('card_view');
+  }
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
   var infoEl = document.getElementById('infoMsg');
@@ -728,6 +800,7 @@
       }
       P.appendChild(card);
     });
+    renderTyp(d);
     var pn = $('resPlaceNote'); if (pn) { pn.textContent = d.place_note || ''; pn.style.display = d.place_note ? 'block' : 'none'; }
     var B = $('resBars'); B.textContent = '';
     var max = Math.max.apply(null, d.counts.map(function (c) { return c.n; })) || 1;
@@ -737,7 +810,7 @@
       var track = mk('div', 'flex:1;background:#EFE8DB;border-radius:6px;height:12px;overflow:hidden;');
       track.appendChild(mk('div', 'height:100%;border-radius:6px;background:' + COLORS[c.key] + ';width:' + (c.n ? Math.max(8, Math.round(100 * c.n / max)) : 0) + '%;'));
       row.appendChild(track);
-      row.appendChild(mk('span', 'flex:0 0 52px;text-align:right;color:#6B625A;', c.n + ' ' + L.chart_u + ' ' + d.total));
+      row.appendChild(mk('span', 'flex:0 0 52px;text-align:right;color:#6B625A;', String(c.n)));
       B.appendChild(row);
     });
     var T = $('resTexts'); T.textContent = '';
