@@ -86,9 +86,44 @@ def _bg(w, h):
     return Image.composite(im, edge, v)
 
 
+def _wrap(d, text, font, maxw):
+    words, lines, cur = text.split(" "), [], ""
+    for w in words:
+        trial = (cur + " " + w).strip()
+        if d.textlength(trial, font=font) <= maxw or not cur:
+            cur = trial
+        else:
+            lines.append(cur)
+            cur = w
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def _fit(d, text, make_font, start, maxw, minsize=40):
+    s = start
+    while s > minsize and d.textlength(text, font=make_font(s)) > maxw:
+        s -= 2
+    return make_font(s)
+
+
+def _illustration(de_name):
+    import typen
+    names = [v[1] for v in typen.SINGLE.values()] + [typen.BALANCED[1]] + [v[1] for v in typen.DUO.values()]
+    idx = names.index(de_name) + 1
+    return Image.open(os.path.join(HERE, "static_site", "img", "typen", "%02d.png" % idx)).convert("RGB")
+
+
 def render_card(view, lang="de"):
-    """view -> PNG bytes."""
+    """view -> PNG bytes. 유형 이름·일러스트·오행 개수만 담는다(개인정보 없음)."""
+    import typen
     t = TXT.get(lang, TXT["de"])
+    counts = {c["key"]: c["n"] for c in view["counts"]}
+    names = {c["key"]: c["name"] for c in view["counts"]}
+    total = max(1, int(view.get("total") or sum(counts.values())))
+    day_key = view["pillars"]["day"]["stem"]
+    ct = typen.card_texts(counts, day_key, lang)
+
     W, H = 1080, 1350
     im = _bg(W, H)
     d = ImageDraw.Draw(im)
@@ -100,42 +135,55 @@ def render_card(view, lang="de"):
     d.text((W - 72, 98), t["head"], font=_ws(30), fill=MUTE, anchor="rm")
 
     # 메인 카드
-    d.rounded_rectangle([72, 190, W - 72, 1190], radius=36, fill=CARD, outline=LINE, width=3)
+    cx0, cy0, cx1, cy1 = 72, 170, W - 72, 1150
+    d.rounded_rectangle([cx0, cy0, cx1, cy1], radius=36, fill=CARD, outline=LINE, width=3)
 
-    day_key = view["pillars"]["day"]["stem"]
-    day_name = view["pillars"]["day"]["stem_name"]
-    d.text((W // 2, 262), t["day"].upper(), font=_wb(26), fill=FAINT, anchor="mm")
-    _icon(d, day_key, W // 2, 385, 86)
-    d.text((W // 2, 565), KO[day_key], font=_ko(140), fill=INK, anchor="mm")
-    d.text((W // 2, 695), t["type"].format(n=day_name), font=_fr(54), fill=COLORS[day_key], anchor="mm")
+    # 일러스트(곱하기 합성으로 종이 배경 제거)
+    ill = _illustration(ct["de_name"])
+    scale = min(460 / ill.width, 330 / ill.height)
+    ill = ill.resize((int(ill.width * scale), int(ill.height * scale)), Image.LANCZOS)
+    ox, oy = (W - ill.width) // 2, 215 + (330 - ill.height) // 2
+    region = im.crop((ox, oy, ox + ill.width, oy + ill.height))
+    from PIL import ImageChops
+    im.paste(ImageChops.multiply(region, ill), (ox, oy))
+    d = ImageDraw.Draw(im)
 
-    d.line([(150, 755), (W - 150, 755)], fill=LINE, width=2)
+    # 유형 이름
+    fnt = _fit(d, ct["name"], _fr, 84, 880)
+    d.text((W // 2, 600), ct["name"], font=fnt, fill=INK, anchor="mm")
+    # 부제
+    sub_font = _ws(27)
+    sub_lines = _wrap(d, ct["subtitle"], sub_font, 860)
+    y = 686
+    for ln in sub_lines[:2]:
+        d.text((W // 2, y), ln, font=sub_font, fill=COLORS.get(day_key, MUTE) if False else MUTE, anchor="mm")
+        y += 36
+    # 한 줄 문구
+    line_font = _fr(34)
+    y += 30
+    for ln in _wrap(d, ct["line"], line_font, 840)[:3]:
+        d.text((W // 2, y), ln, font=line_font, fill=INK, anchor="mm")
+        y += 48
 
-    # 오행 5칸
-    d.text((W // 2, 806), t["dist"], font=_ws(28), fill=MUTE, anchor="mm")
-    counts = {c["key"]: c["n"] for c in view["counts"]}
-    names = {c["key"]: c["name"] for c in view["counts"]}
-    total = max(1, int(view.get("total") or sum(counts.values())))
+    d.line([(150, 905), (W - 150, 905)], fill=LINE, width=2)
+    d.text((W // 2, 945), t["dist"], font=_ws(26), fill=MUTE, anchor="mm")
     x0, step = 150 + 70, (W - 300 - 140) / 4.0
-    mx = max(counts.values()) or 1
     for i, key in enumerate(ORDER):
         cx = x0 + step * i
         n = counts.get(key, 0)
-        r = 36
+        r = 32
         if n == 0:
-            d.ellipse([cx - r, 905 - r, cx + r, 905 + r], outline=LINE, width=4)
-            d.text((cx, 905), "", font=_ws(20), fill=FAINT, anchor="mm")
+            d.ellipse([cx - r, 1010 - r, cx + r, 1010 + r], outline=LINE, width=4)
         else:
-            _icon(d, key, cx, 905, r)
-        d.text((cx, 977), KO[key], font=_ko(30), fill=INK if n else FAINT, anchor="mm")
-        d.text((cx, 1015), names.get(key, ""), font=_ws(21), fill=MUTE if n else FAINT, anchor="mm")
-        d.text((cx, 1049), f"{n}/{total}", font=_wb(22), fill=COLORS[key] if n else FAINT, anchor="mm")
-        _ = mx
+            _icon(d, key, cx, 1010, r)
+        d.text((cx, 1065), KO[key], font=_ko(28), fill=INK if n else FAINT, anchor="mm")
+        d.text((cx, 1097), names.get(key, ""), font=_ws(20), fill=MUTE if n else FAINT, anchor="mm")
+        d.text((cx, 1125), f"{n}/{total}", font=_wb(21), fill=COLORS[key] if n else FAINT, anchor="mm")
 
     # 하단: 광고처럼 보이지 않게 작은 서명 한 줄
-    d.text((W // 2, 1246), t["hook"], font=_ws(32), fill=MUTE, anchor="mm")
-    d.text((W // 2, 1292), t["host"], font=_wb(34), fill=RED, anchor="mm")
-    d.text((W // 2, 1328), t["note"], font=_ws(20), fill=FAINT, anchor="mm")
+    d.text((W // 2, 1206), t["hook"], font=_ws(32), fill=MUTE, anchor="mm")
+    d.text((W // 2, 1250), t["host"], font=_wb(34), fill=RED, anchor="mm")
+    d.text((W // 2, 1300), t["note"], font=_ws(20), fill=FAINT, anchor="mm")
 
     buf = io.BytesIO()
     im.save(buf, "PNG", optimize=True)
