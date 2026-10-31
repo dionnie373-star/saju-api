@@ -87,7 +87,7 @@
 
         <div id="tasteBox" aria-live="polite" style="display:none; background:#F6EFE3; border:1px solid #E6DFD2; border-radius:10px; padding:14px 16px; font-size:14px; line-height:1.55; color:#4A4239;"></div>
 
-        <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
+        <details style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
           <summary style="cursor: pointer; font-size: 13.5px; color: #4A4239;">Geburtszeit angeben <span style="color: #8A8074;">(optional – macht das Profil genauer)</span></summary>
           <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
           <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtszeit</label>
@@ -97,9 +97,9 @@
         </details>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
-          <input id="birthplace" type="text" required placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Damit wir deine Geburtszeit der richtigen Zeitzone zuordnen können.</span>
+          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional)</span></label>
+          <input id="birthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+          <span style="font-size: 12px; color: #8A8074;">Mit Geburtszeit wird das Profil durch den Geburtsort genauer.</span>
         </div>
 
         <input id="email" type="hidden">
@@ -701,7 +701,7 @@
 (function () {
   // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
-  var L = {"btn_idle": "Mein Profil jetzt ansehen", "btn_loading": "Wird berechnet …", "btn_retry": "Erneut versuchen", "info_loading": "Dein Profil wird berechnet – das dauert nur einen Moment.", "err_date": "Bitte gib dein Geburtsdatum an.", "err_city": "Bitte gib deinen Geburtsort an.", "err_net": "Verbindung zum Server nicht möglich. Bitte versuch es später erneut.", "err_gen": "Etwas ist schiefgelaufen. Bitte versuch es später erneut.", "pil": ["Jahr", "Monat", "Tag", "Stunde"], "pil_none": "nicht angegeben", "chart_u": "von", "pdf_sending": "Wird erstellt – das dauert 1 bis 2 Minuten …", "pdf_ok": "Geschafft! Dein PDF ist unterwegs und landet meist innerhalb weniger Minuten im Postfach. Schau bitte auch im Spam-Ordner nach.", "pdf_bad": "Bitte gib eine gültige E-Mail-Adresse an.", "lang": "de"};
+  var L = {"btn_idle": "Mein Profil jetzt ansehen", "btn_loading": "Wird berechnet …", "btn_retry": "Erneut versuchen", "info_loading": "Dein Profil wird berechnet – das dauert nur einen Moment.", "err_date": "Bitte gib dein Geburtsdatum an.", "err_city": "Für die Geburtszeit brauchen wir noch den Geburtsort.", "err_net": "Verbindung zum Server nicht möglich. Bitte versuch es später erneut.", "err_gen": "Etwas ist schiefgelaufen. Bitte versuch es später erneut.", "pil": ["Jahr", "Monat", "Tag", "Stunde"], "pil_none": "nicht angegeben", "chart_u": "von", "pdf_sending": "Wird erstellt – das dauert 1 bis 2 Minuten …", "pdf_ok": "Geschafft! Dein PDF ist unterwegs und landet meist innerhalb weniger Minuten im Postfach. Schau bitte auch im Spam-Ordner nach.", "pdf_bad": "Bitte gib eine gültige E-Mail-Adresse an.", "lang": "de"};
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
@@ -785,7 +785,7 @@
     if (status === 'loading') return;
     var f = formData();
     if (!f.birth_date) { ev('val_err'); setStatus('error', L.err_date); return; }
-    if (!f.birth_city) { ev('val_err'); setStatus('error', L.err_city); return; }
+    if (!f.birth_city && f.birth_time) { ev('val_err'); setStatus('error', L.err_city); return; }
     ev('submit');
     setStatus('loading');
     try {
@@ -887,9 +887,14 @@
     document.addEventListener('focusin', function (e) { if (e.target && ids[e.target.id]) { once('start'); } });
     var bd = document.getElementById('birthdate');
     if (bd) { bd.addEventListener('change', function () { setTimeout(function () { var tb = document.getElementById('tasteBox'); if (tb && tb.style.display !== 'none') { once('taste'); } }, 80); }); }
-    var sb = document.getElementById('submitBtn');
+    var sb = document.getElementById('signupCard');
     if (sb && 'IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { once('view_form'); io.disconnect(); } }, { threshold: 0.6 });
+      var vt = null;
+      var io = new IntersectionObserver(function (en) {
+        if (!en[0]) { return; }
+        if (en[0].isIntersecting) { if (!vt) { vt = setTimeout(function () { once('view_form'); io.disconnect(); }, 2000); } }
+        else if (vt) { clearTimeout(vt); vt = null; }
+      }, { threshold: 0.5 });
       io.observe(sb);
     }
   })();

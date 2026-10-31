@@ -1486,6 +1486,9 @@ def profile_view_route():
         msg = _msg("too_many", calc_lang)
         return jsonify({"ok": False, "error": msg}), 429
     city_in = str(payload.get("birth_city") or "").strip()[:100]
+    # 출생지는 출생 시각이 없으면 계산에 영향이 없다(시각 기본 12:00). 비어 있고 시각도 없으면 언어별 기본 도시로 대신한다.
+    if not city_in and not str(payload.get("birth_time") or "").strip():
+        city_in = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(calc_lang, "Berlin")
     calc_payload = {
         "birth_date": str(payload.get("birth_date") or ""),
         "birth_time": str(payload.get("birth_time") or "")[:8],

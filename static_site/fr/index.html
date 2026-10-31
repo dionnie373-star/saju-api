@@ -87,7 +87,7 @@
 
         <div id="tasteBox" aria-live="polite" style="display:none; background:#F6EFE3; border:1px solid #E6DFD2; border-radius:10px; padding:14px 16px; font-size:14px; line-height:1.55; color:#4A4239;"></div>
 
-        <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
+        <details style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
           <summary style="cursor: pointer; font-size: 13.5px; color: #4A4239;">Indiquer l'heure de naissance <span style="color: #8A8074;">(facultatif – rend le profil plus précis)</span></summary>
         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
           <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Heure de naissance</label>
@@ -97,9 +97,9 @@
         </details>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="color: #C1442E;">*</span></label>
-          <input id="birthplace" type="text" required placeholder="p. ex. Lyon" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Afin de rattacher votre heure de naissance au bon fuseau horaire.</span>
+          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif)</span></label>
+          <input id="birthplace" type="text" placeholder="p. ex. Lyon" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+          <span style="font-size: 12px; color: #8A8074;">Avec l'heure de naissance, le lieu rend le profil plus précis.</span>
         </div>
 
         <input id="email" type="hidden">
@@ -680,7 +680,7 @@
 (function () {
   // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
-  var L = {"btn_idle": "Voir mon profil maintenant", "btn_loading": "Calcul en cours …", "btn_retry": "Réessayer", "info_loading": "Votre profil est en cours de calcul – cela ne prend qu'un instant.", "err_date": "Veuillez indiquer votre date de naissance.", "err_city": "Veuillez indiquer votre lieu de naissance.", "err_net": "Connexion au serveur impossible. Veuillez réessayer plus tard.", "err_gen": "Une erreur s'est produite. Veuillez réessayer plus tard.", "pil": ["Année", "Mois", "Jour", "Heure"], "pil_none": "non indiquée", "chart_u": "sur", "pdf_sending": "Création en cours – cela prend 1 à 2 minutes …", "pdf_ok": "C'est fait ! Votre PDF est en route et arrive généralement dans votre boîte mail en quelques minutes. Pensez à vérifier vos spams.", "pdf_bad": "Veuillez indiquer une adresse e-mail valide.", "lang": "fr"};
+  var L = {"btn_idle": "Voir mon profil maintenant", "btn_loading": "Calcul en cours …", "btn_retry": "Réessayer", "info_loading": "Votre profil est en cours de calcul – cela ne prend qu'un instant.", "err_date": "Veuillez indiquer votre date de naissance.", "err_city": "Pour l'heure de naissance, indiquez aussi le lieu.", "err_net": "Connexion au serveur impossible. Veuillez réessayer plus tard.", "err_gen": "Une erreur s'est produite. Veuillez réessayer plus tard.", "pil": ["Année", "Mois", "Jour", "Heure"], "pil_none": "non indiquée", "chart_u": "sur", "pdf_sending": "Création en cours – cela prend 1 à 2 minutes …", "pdf_ok": "C'est fait ! Votre PDF est en route et arrive généralement dans votre boîte mail en quelques minutes. Pensez à vérifier vos spams.", "pdf_bad": "Veuillez indiquer une adresse e-mail valide.", "lang": "fr"};
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
@@ -764,7 +764,7 @@
     if (status === 'loading') return;
     var f = formData();
     if (!f.birth_date) { ev('val_err'); setStatus('error', L.err_date); return; }
-    if (!f.birth_city) { ev('val_err'); setStatus('error', L.err_city); return; }
+    if (!f.birth_city && f.birth_time) { ev('val_err'); setStatus('error', L.err_city); return; }
     ev('submit');
     setStatus('loading');
     try {
@@ -867,9 +867,14 @@
     document.addEventListener('focusin', function (e) { if (e.target && ids[e.target.id]) { once('start'); } });
     var bd = document.getElementById('birthdate');
     if (bd) { bd.addEventListener('change', function () { setTimeout(function () { var tb = document.getElementById('tasteBox'); if (tb && tb.style.display !== 'none') { once('taste'); } }, 80); }); }
-    var sb = document.getElementById('submitBtn');
+    var sb = document.getElementById('signupCard');
     if (sb && 'IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { once('view_form'); io.disconnect(); } }, { threshold: 0.6 });
+      var vt = null;
+      var io = new IntersectionObserver(function (en) {
+        if (!en[0]) { return; }
+        if (en[0].isIntersecting) { if (!vt) { vt = setTimeout(function () { once('view_form'); io.disconnect(); }, 2000); } }
+        else if (vt) { clearTimeout(vt); vt = null; }
+      }, { threshold: 0.5 });
       io.observe(sb);
     }
   })();

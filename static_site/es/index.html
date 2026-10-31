@@ -88,7 +88,7 @@
 
         <div id="tasteBox" aria-live="polite" style="display:none; background:#F6EFE3; border:1px solid #E6DFD2; border-radius:10px; padding:14px 16px; font-size:14px; line-height:1.55; color:#4A4239;"></div>
 
-        <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
+        <details style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
           <summary style="cursor: pointer; font-size: 13.5px; color: #4A4239;">Indicar la hora de nacimiento <span style="color: #8A8074;">(opcional – hace el perfil más preciso)</span></summary>
         <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
           <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Hora de nacimiento</label>
@@ -98,9 +98,9 @@
         </details>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lugar de nacimiento <span style="color: #C1442E;">*</span></label>
-          <input id="birthplace" type="text" required placeholder="p. ej. Madrid" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Para asignar tu hora de nacimiento a la zona horaria correcta.</span>
+          <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lugar de nacimiento <span style="font-weight:400;color:#8A8074;">(opcional)</span></label>
+          <input id="birthplace" type="text" placeholder="p. ej. Madrid" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+          <span style="font-size: 12px; color: #8A8074;">Con la hora de nacimiento, el lugar hace el perfil más preciso.</span>
         </div>
 
         <input id="email" type="hidden">
@@ -681,7 +681,7 @@
 (function () {
   // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
-  var L = {"btn_idle": "Ver mi perfil ahora", "btn_loading": "Calculando …", "btn_retry": "Reintentar", "info_loading": "Tu perfil se está calculando; solo tarda un momento.", "err_date": "Por favor, indica tu fecha de nacimiento.", "err_city": "Por favor, indica tu lugar de nacimiento.", "err_net": "No se pudo conectar con el servidor. Inténtalo de nuevo más tarde.", "err_gen": "Algo salió mal. Inténtalo de nuevo más tarde.", "pil": ["Año", "Mes", "Día", "Hora"], "pil_none": "no indicada", "chart_u": "de", "pdf_sending": "Creando – tarda de 1 a 2 minutos …", "pdf_ok": "¡Listo! Tu PDF va de camino y suele llegar a tu bandeja de entrada en pocos minutos. Revisa también la carpeta de spam.", "pdf_bad": "Por favor, indica un correo electrónico válido.", "lang": "es"};
+  var L = {"btn_idle": "Ver mi perfil ahora", "btn_loading": "Calculando …", "btn_retry": "Reintentar", "info_loading": "Tu perfil se está calculando; solo tarda un momento.", "err_date": "Por favor, indica tu fecha de nacimiento.", "err_city": "Para la hora de nacimiento, indica también el lugar.", "err_net": "No se pudo conectar con el servidor. Inténtalo de nuevo más tarde.", "err_gen": "Algo salió mal. Inténtalo de nuevo más tarde.", "pil": ["Año", "Mes", "Día", "Hora"], "pil_none": "no indicada", "chart_u": "de", "pdf_sending": "Creando – tarda de 1 a 2 minutos …", "pdf_ok": "¡Listo! Tu PDF va de camino y suele llegar a tu bandeja de entrada en pocos minutos. Revisa también la carpeta de spam.", "pdf_bad": "Por favor, indica un correo electrónico válido.", "lang": "es"};
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
@@ -765,7 +765,7 @@
     if (status === 'loading') return;
     var f = formData();
     if (!f.birth_date) { ev('val_err'); setStatus('error', L.err_date); return; }
-    if (!f.birth_city) { ev('val_err'); setStatus('error', L.err_city); return; }
+    if (!f.birth_city && f.birth_time) { ev('val_err'); setStatus('error', L.err_city); return; }
     ev('submit');
     setStatus('loading');
     try {
@@ -868,9 +868,14 @@
     document.addEventListener('focusin', function (e) { if (e.target && ids[e.target.id]) { once('start'); } });
     var bd = document.getElementById('birthdate');
     if (bd) { bd.addEventListener('change', function () { setTimeout(function () { var tb = document.getElementById('tasteBox'); if (tb && tb.style.display !== 'none') { once('taste'); } }, 80); }); }
-    var sb = document.getElementById('submitBtn');
+    var sb = document.getElementById('signupCard');
     if (sb && 'IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (en) { if (en[0] && en[0].isIntersecting) { once('view_form'); io.disconnect(); } }, { threshold: 0.6 });
+      var vt = null;
+      var io = new IntersectionObserver(function (en) {
+        if (!en[0]) { return; }
+        if (en[0].isIntersecting) { if (!vt) { vt = setTimeout(function () { once('view_form'); io.disconnect(); }, 2000); } }
+        else if (vt) { clearTimeout(vt); vt = null; }
+      }, { threshold: 0.5 });
       io.observe(sb);
     }
   })();
