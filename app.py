@@ -1789,6 +1789,26 @@ def admin_dashboard():
                  ev_sum(day=d, site=s, ev=("res_up_view",)), ev_sum(day=d, site=s, ev=BUY), ev_sum(day=d, site=s, ev=("order_paid",))]
             if any(v):
                 dfun_rows += td(d, SITE_LABEL[s], *v)
+    # 6) 공유 카드(원소 유형) 현황
+    SH_ACT = ("card_dl", "card_copy", "card_mail", "card_share")
+    sh_steps = [
+        ("유형 카드 표시", lambda s: ev_sum(site=s, ev=("card_view",))),
+        ("카드 저장", lambda s: ev_sum(site=s, ev=("card_dl",))),
+        ("링크 복사", lambda s: ev_sum(site=s, ev=("card_copy",))),
+        ("이메일로 보내기", lambda s: ev_sum(site=s, ev=("card_mail",))),
+        ("공유 버튼(휴대폰)", lambda s: ev_sum(site=s, ev=("card_share",))),
+        ("공유 행동 합계", lambda s: ev_sum(site=s, ev=SH_ACT)),
+        ("공유 링크 열람(받은 사람)", lambda s: ev_sum(site=s, ev=("card_page",))),
+        ("공유 링크로 메인 방문(src=share)", lambda s: hv_sum(site=s, src="share")),
+    ]
+    sh_rows = "".join(td(lbl, *[fn(s) for s in SITES], sum(fn(s) for s in SITES)) for lbl, fn in sh_steps)
+    _cv = ev_sum(ev=("card_view",))
+    sh_rate = (f"{100 * ev_sum(ev=SH_ACT) / _cv:.0f}%" if _cv else "–")
+    sh_day_rows = ""
+    for d in all_days:
+        v = [ev_sum(day=d, ev=("card_view",)), ev_sum(day=d, ev=SH_ACT), ev_sum(day=d, ev=("card_page",)), hv_sum(day=d, src="share")]
+        if any(v):
+            sh_day_rows += td(d, *v)
     ts = fr_sum(); tv = hv_sum(); to = ev_sum(ev=("order_paid",)) + sum(legacy_orders.values())
     page = f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
@@ -1799,16 +1819,18 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 .k{{display:flex;gap:12px;flex-wrap:wrap}} .k div{{background:#fff8ea;border:1px solid #d9cfbd;border-radius:10px;padding:10px 14px;min-width:120px}}
 .k b{{font-size:24px;display:block}} small{{color:#7a6f60}} .w{{overflow-x:auto}}</style></head><body>
 <h1>Palja 통계 · 최근 {days}일 (UTC)</h1>
-<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문(전체, 기존 포함)</div></div>
+<div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문(전체, 기존 포함)</div><div><b>{_cv}</b>유형 카드 표시</div><div><b>{sh_rate}</b>카드 공유율</div></div>
 <h2>사이트별 합계</h2><div class="w"><table>{th("사이트","페이지뷰","무료 프로필","구매 클릭","결제 완료")}{tot_rows}</table></div>
 <h2>일별 접속자(페이지뷰) · 사이트별</h2><div class="w"><table>{th("날짜","DE","EN","FR","ES","합계","무료","구매 클릭","결제 완료(신규)","주문(기존 합계)")}{day_rows or '<tr><td colspan=10>–</td></tr>'}</table></div>
 <h2>접속 루트(src) × 사이트 (페이지뷰)</h2><div class="w"><table>{th("src","DE","EN","FR","ES","합계")}{src_rows or '<tr><td colspan=6>–</td></tr>'}</table></div>
 <h2>구매 단계별 진행 현황 · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{step_rows}</table></div>
+<h2>공유 카드(원소 유형) · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{sh_rows}</table></div>
+<h2>일별 공유 카드</h2><div class="w"><table>{th("날짜","카드 표시","공유 행동","공유 링크 열람","메인 방문(src=share)")}{sh_day_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
 <h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 클릭","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
 <p><small>페이지뷰 = JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
 사이트 구분은 이번 배포 이후부터 정확함: 호스트(palja.fr/palja.es/palja.one)와 /en 경로로 분류하며, 배포 이전 기록은 전부 DE로 표시됨(FR/ES 도메인 방문이 섞여 있을 수 있음).
 EN은 palja.de/en과 palja.one을 합산. 무료 프로필은 신청 언어 기준. 결제 완료(신규)는 이번 배포 이후 실결제만(테스트 제외), 「주문(기존 합계)」은 사이트 구분 없는 기존 처리 건수(테스트 포함 가능).
-전환율은 방문일과 가입일이 달라 대략값.</small></p></body></html>"""
+전환율은 방문일과 가입일이 달라 대략값. 카드 공유율 = (저장+링크 복사+이메일+공유 버튼) ÷ 유형 카드 표시, 한 사람이 여러 번 누르면 중복 집계됨. 공유 링크 열람은 받은 사람이 /t/ 페이지를 연 횟수(봇 제외, 본인 방문 제외 설정 가능).</small></p></body></html>"""
     return Response(page, 200, {"Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"})
 
 
