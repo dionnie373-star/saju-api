@@ -158,6 +158,23 @@
         <p style="margin:0;font-size:14.5px;color:#6B625A;">Deine Säulen im Saju – kostenlos und sofort</p>
       </div>
       <p id="resPlaceNote" role="status" style="display:none;margin:0 0 12px;font-size:13.5px;color:#4A4239;background:#F3EEE4;border-radius:8px;padding:10px 12px;"></p>
+      <div id="resTyp" style="display:none;background:#FFFDF9;border:1px solid #E6DFD2;border-radius:14px;padding:22px 20px;flex-direction:column;align-items:center;gap:6px;text-align:center;">
+        <p style="margin:0;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:#8A8074;">Dein Elementetyp</p>
+        <img id="resTypImg" alt="" width="240" style="display:block;max-width:60%;height:auto;margin:6px 0 2px;">
+        <h3 id="resTypName" class="display" style="margin:0;font-size:30px;font-weight:600;line-height:1.15;color:#211D1A;"></h3>
+        <p id="resTypSub" style="margin:0;font-size:14px;color:#6B625A;"></p>
+        <p id="resTypLine" class="display" style="margin:8px 0 6px;font-size:19px;line-height:1.4;max-width:520px;color:#211D1A;"></p>
+        <div id="resTypMiss" style="font-size:12.5px;color:#8A8074;"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:14px;">
+          <button type="button" id="shShare" style="display:none;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Teilen</button>
+          <button type="button" id="shDl" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;cursor:pointer;">Karte speichern</button>
+          <button type="button" id="shCopy" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;cursor:pointer;">Link kopieren</button>
+          <a id="shMail" href="#" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;text-decoration:none;">Per E-Mail senden</a>
+        </div>
+        <p id="shToast" role="status" aria-live="polite" style="margin:4px 0 0;min-height:18px;font-size:13px;color:#3F7A63;"></p>
+        <p style="margin:0;font-size:12px;color:#8A8074;max-width:480px;line-height:1.5;">Der Link enthält nur die Verteilung deiner fünf Elemente – kein Geburtsdatum, keinen Namen, keinen Ort.</p>
+        <p id="resTypNote" style="margin:8px 0 0;font-size:11.5px;color:#A79E93;max-width:520px;line-height:1.5;"></p>
+      </div>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
       <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Verteilung der Fünf Elemente</h3>
@@ -725,6 +742,52 @@
     else { errorEl.textContent = ''; errorEl.style.display = 'none'; }
   }
 
+  var SH = {
+    share: function (n) { return 'Mein Elementetyp: ' + n + ' – und deiner?'; },
+    subj: function (n) { return 'Mein Elementetyp bei Palja: ' + n; },
+    body: function (n, l) { return 'Schau mal, welcher Elementetyp ich bin: ' + n + '.\n\n' + l + '\n\nWelcher bist du? Kostenlos auf palja.de'; },
+    copied: 'Link kopiert', fail: 'Das hat leider nicht geklappt.'
+  };
+  function renderTyp(d) {
+    var box = $('resTyp'); if (!box) { return; }
+    var t = d.typ; if (!t || !t.code) { box.style.display = 'none'; return; }
+    var link = window.location.origin + '/t/' + t.code, png = '/t/' + t.code + '.png';
+    $('resTypImg').src = '/typ-img/' + t.img + '.png';
+    $('resTypName').textContent = t.name; $('resTypSub').textContent = t.subtitle; $('resTypLine').textContent = t.line;
+    $('resTypNote').textContent = t.note;
+    var miss = $('resTypMiss'); miss.textContent = '';
+    (t.missing || []).forEach(function (m) { var p = document.createElement('div'); p.textContent = m; miss.appendChild(p); });
+    var toast = $('shToast'); function say(m) { toast.textContent = m; setTimeout(function () { if (toast.textContent === m) { toast.textContent = ''; } }, 3500); }
+    $('shMail').href = 'mailto:?subject=' + encodeURIComponent(SH.subj(t.name)) + '&body=' + encodeURIComponent(SH.body(t.name, link));
+    $('shMail').onclick = function () { ev('card_mail'); };
+    $('shCopy').onclick = function () {
+      ev('card_copy');
+      var done = function () { say(SH.copied); };
+      if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(link).then(done, function () { say(SH.fail); }); }
+      else { try { var ta = document.createElement('textarea'); ta.value = link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); done(); } catch (e) { say(SH.fail); } }
+    };
+    function getBlob() { return fetch(png).then(function (r) { if (!r.ok) { throw new Error('x'); } return r.blob(); }); }
+    $('shDl').onclick = function () {
+      ev('card_dl');
+      getBlob().then(function (b) { var a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'palja-elementetyp.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000); }).catch(function () { say(SH.fail); });
+    };
+    var sb = $('shShare');
+    if (navigator.share) {
+      sb.style.display = 'inline-block';
+      sb.onclick = function () {
+        ev('card_share');
+        getBlob().then(function (b) {
+          var f = new File([b], 'palja-elementetyp.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [f] })) { return navigator.share({ files: [f], text: SH.share(t.name) + ' ' + link }); }
+          return navigator.share({ text: SH.share(t.name), url: link });
+        }).catch(function (e) { if (e && e.name !== 'AbortError') { say(SH.fail); } });
+      };
+    }
+    box.style.display = 'flex';
+    var sc = document.getElementById('stickyCta'); if (sc) { sc.style.display = 'none'; }
+    ev('card_view');
+  }
+
   function render(d) {
     var P = $('resPillars'); P.textContent = '';
     ['year', 'month', 'day', 'hour'].forEach(function (k, i) {
@@ -748,6 +811,7 @@
       }
       P.appendChild(card);
     });
+    renderTyp(d);
     var pn = $('resPlaceNote'); if (pn) { pn.textContent = d.place_note || ''; pn.style.display = d.place_note ? 'block' : 'none'; }
     var B = $('resBars'); B.textContent = '';
     var max = Math.max.apply(null, d.counts.map(function (c) { return c.n; })) || 1;

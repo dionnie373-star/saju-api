@@ -1244,6 +1244,22 @@ def contact_send():
     return jsonify({"ok": True})
 
 
+import share_page as _share_page  # noqa: E402
+app.register_blueprint(_share_page.bp)
+
+TYPEN_IMG_DIR = os.path.join(STATIC_SITE_DIR, "img", "typen")
+
+
+@app.route("/typ-img/<int:n>.png", methods=["GET"])
+def typ_img(n):
+    """유형 일러스트(1~26). 결과 화면에서 사용."""
+    if not 1 <= n <= 26:
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    resp = send_from_directory(TYPEN_IMG_DIR, "%02d.png" % n)
+    resp.headers["Cache-Control"] = "public, max-age=2592000"
+    return resp
+
+
 IMAGES_DIR = os.path.join(STATIC_SITE_DIR, "images")
 
 
@@ -1538,6 +1554,16 @@ def profile_view_route():
             "es": "No encontramos la ciudad exacta – calculamos con el país. El pilar de la hora puede variar ligeramente.",
             "en": "We couldn't find the exact city, so we used the country. Your hour pillar may differ slightly.",
         }[view_lang]
+    try:
+        import typen as _typen
+        import share_page as _sp
+        _cnt = {c["key"]: int(c["n"]) for c in view.get("counts", [])}
+        _day = view["pillars"]["day"]["stem"]
+        _ct = _typen.card_texts(_cnt, _day, view_lang)
+        view["typ"] = {"name": _ct["name"], "line": _ct["line"], "subtitle": _ct["subtitle"], "missing": _ct["missing"],
+                       "note": _ct["note"], "img": _typen.illustration_no(_ct["de_name"]), "code": _sp.make_code(_cnt, _day)}
+    except Exception as _e:  # 유형 카드는 부가 기능: 실패해도 프로필 결과는 그대로
+        print(f"typ build failed: {_e}", flush=True)
     if city_defaulted:
         view["place_note"] = {
             "de": "Du hast keinen Geburtsort angegeben – die Stundensäule haben wir mit Berlin berechnet. Bei einem anderen Ort kann sie abweichen.",
@@ -1640,7 +1666,8 @@ def api_hit():
 
 
 _EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky",
-               "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok"}
+               "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok",
+               "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page"}
 
 
 @app.route("/api/ev", methods=["POST"])

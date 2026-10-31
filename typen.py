@@ -143,3 +143,9 @@ def card_texts(counts, day_key=None, lang="de"):
             "subtitle": subtitle,
             "missing": [_MISS[lang].format(x=names[k]) for k in r["missing"]],
             "note": _NOTE[lang]}
+
+
+def illustration_no(de_name):
+    """일러스트 파일 번호(1~26). 순서 = SINGLE(5) + BALANCED(1) + DUO(20)."""
+    names = [v[1] for v in SINGLE.values()] + [BALANCED[1]] + [v[1] for v in DUO.values()]
+    return names.index(de_name) + 1
