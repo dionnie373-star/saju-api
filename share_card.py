@@ -22,13 +22,13 @@ ORDER = ["wood", "fire", "earth", "metal", "water"]
 
 TXT = {
     "de": {"head": "Mein Saju-Profil", "day": "Tageselement", "type": "{n}-Typ", "dist": "Meine fünf Elemente",
-           "foot": "Dein kostenloses Profil in 10 Sekunden", "host": "palja.de", "note": "Zur Unterhaltung und Selbstreflexion"},
+           "hook": "Welcher Elementetyp bist du?", "host": "palja.de", "note": "Zur Unterhaltung und Selbstreflexion"},
     "fr": {"head": "Mon profil Saju", "day": "Élément du jour", "type": "Type {n}", "dist": "Mes cinq éléments",
-           "foot": "Ton profil gratuit en 10 secondes", "host": "palja.fr", "note": "Pour le plaisir et la réflexion"},
+           "hook": "Quel est ton type d'éléments ?", "host": "palja.fr", "note": "Pour le plaisir et la réflexion"},
     "es": {"head": "Mi perfil Saju", "day": "Elemento del día", "type": "Tipo {n}", "dist": "Mis cinco elementos",
-           "foot": "Tu perfil gratis en 10 segundos", "host": "palja.es", "note": "Para entretenimiento y reflexión"},
+           "hook": "¿Cuál es tu tipo de elementos?", "host": "palja.es", "note": "Para entretenimiento y reflexión"},
     "en": {"head": "My Saju profile", "day": "Day element", "type": "{n} type", "dist": "My five elements",
-           "foot": "Your free profile in 10 seconds", "host": "palja.one", "note": "For entertainment and self-reflection"},
+           "hook": "Which element type are you?", "host": "palja.one", "note": "For entertainment and self-reflection"},
 }
 
 
@@ -100,7 +100,7 @@ def render_card(view, lang="de"):
     d.text((W - 72, 98), t["head"], font=_ws(30), fill=MUTE, anchor="rm")
 
     # 메인 카드
-    d.rounded_rectangle([72, 190, W - 72, 1078], radius=36, fill=CARD, outline=LINE, width=3)
+    d.rounded_rectangle([72, 190, W - 72, 1190], radius=36, fill=CARD, outline=LINE, width=3)
 
     day_key = view["pillars"]["day"]["stem"]
     day_name = view["pillars"]["day"]["stem_name"]
@@ -132,11 +132,10 @@ def render_card(view, lang="de"):
         d.text((cx, 1049), f"{n}/{total}", font=_wb(22), fill=COLORS[key] if n else FAINT, anchor="mm")
         _ = mx
 
-    # 하단 CTA
-    d.text((W // 2, 1150), t["foot"], font=_fr(46), fill=INK, anchor="mm")
-    d.rounded_rectangle([W // 2 - 190, 1196, W // 2 + 190, 1272], radius=38, fill=RED)
-    d.text((W // 2, 1234), t["host"], font=_wb(40), fill=(255, 255, 255), anchor="mm")
-    d.text((W // 2, 1314), t["note"], font=_ws(22), fill=FAINT, anchor="mm")
+    # 하단: 광고처럼 보이지 않게 작은 서명 한 줄
+    d.text((W // 2, 1246), t["hook"], font=_ws(32), fill=MUTE, anchor="mm")
+    d.text((W // 2, 1292), t["host"], font=_wb(34), fill=RED, anchor="mm")
+    d.text((W // 2, 1328), t["note"], font=_ws(20), fill=FAINT, anchor="mm")
 
     buf = io.BytesIO()
     im.save(buf, "PNG", optimize=True)
