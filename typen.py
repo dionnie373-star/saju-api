@@ -78,3 +78,68 @@ def classify(counts, day_key=None):
         return {"kind": "single", "key": top, "ko": ko, "de": de, "line": line, "missing": missing}
     ko, de, line, _ = DUO[(top, second)]
     return {"kind": "duo", "key": top, "key2": second, "ko": ko, "de": de, "line": line, "missing": missing}
+
+
+# ───────── 다국어 텍스트 (3차 현지화: GPT 초안 + 충돌 3건 수정) ─────────
+import json as _json
+import os as _os
+
+_I18N = {}
+try:
+    with open(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), "typen_i18n.json"), encoding="utf-8") as _f:
+        _I18N = _json.load(_f)
+except Exception:  # 파일이 없어도 독일어로 동작
+    _I18N = {}
+
+EL_NAME = {
+    "de": {"wood": "Holz", "fire": "Feuer", "earth": "Erde", "metal": "Metall", "water": "Wasser"},
+    "fr": {"wood": "Bois", "fire": "Feu", "earth": "Terre", "metal": "Métal", "water": "Eau"},
+    "es": {"wood": "Madera", "fire": "Fuego", "earth": "Tierra", "metal": "Metal", "water": "Agua"},
+    "en": {"wood": "Wood", "fire": "Fire", "earth": "Earth", "metal": "Metal", "water": "Water"},
+}
+_SUB = {
+    "de": {"single": "{a} steht im Vordergrund", "duo": "{a} am stärksten vertreten · {b} als zweites Element",
+           "balanced": "Alle fünf Elemente sind sichtbar"},
+    "en": {"single": "{a} is most represented", "duo": "A blend of {a} and {b}",
+           "balanced": "All five elements are visible"},
+    "fr": {"single": "L'élément {a} est le plus représenté", "duo": "Un mélange de {a} et de {b}",
+           "balanced": "Les cinq éléments sont visibles"},
+    "es": {"single": "El elemento {a} es el más presente", "duo": "Una combinación de {a} y {b}",
+           "balanced": "Los cinco elementos son visibles"},
+}
+_MISS = {
+    "de": "{x} erscheint in dieser vereinfachten Übersicht nicht.",
+    "en": "{x} doesn't appear in this simplified overview.",
+    "fr": "L'élément {x} n'apparaît pas dans cet aperçu simplifié.",
+    "es": "El elemento {x} no aparece en esta versión simplificada.",
+}
+_NOTE = {
+    "de": NOTE[0],
+    "en": "A playful simplification of the five elements based on the visible characters – not a full Saju analysis or classical reading. For entertainment and self-reflection only.",
+    "fr": "Une simplification ludique des cinq éléments à partir des caractères visibles – ni analyse Saju complète ni lecture classique. Pour le divertissement et la réflexion personnelle.",
+    "es": "Una simplificación lúdica de los cinco elementos a partir de los caracteres visibles – ni un análisis Saju completo ni una lectura clásica. Solo para entretenimiento y reflexión personal.",
+}
+
+
+def card_texts(counts, day_key=None, lang="de"):
+    """카드·결과 화면용 문구 묶음. 개인정보 없음(개수만 입력)."""
+    r = classify(counts, day_key)
+    lang = lang if lang in EL_NAME else "de"
+    names = EL_NAME[lang]
+    de_name = r["de"]
+    name, line = de_name, r["line"]
+    if lang != "de":
+        loc = _I18N.get(lang, {}).get(de_name)
+        if loc:
+            name, line = loc[0], loc[1]
+    sub = _SUB[lang]
+    if r["kind"] == "balanced":
+        subtitle = sub["balanced"]
+    elif r["kind"] == "single":
+        subtitle = sub["single"].format(a=names[r["key"]])
+    else:
+        subtitle = sub["duo"].format(a=names[r["key"]], b=names[r["key2"]])
+    return {"kind": r["kind"], "ko": r["ko"], "de_name": de_name, "name": name, "line": line,
+            "subtitle": subtitle,
+            "missing": [_MISS[lang].format(x=names[k]) for k in r["missing"]],
+            "note": _NOTE[lang]}
