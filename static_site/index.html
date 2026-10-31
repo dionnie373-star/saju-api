@@ -161,6 +161,7 @@
       <div id="resTyp" style="display:none;background:#FFFDF9;border:1px solid #E6DFD2;border-radius:14px;padding:22px 20px;flex-direction:column;align-items:center;gap:6px;text-align:center;">
         <p style="margin:0;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;color:#8A8074;">Dein Elementetyp</p>
         <img id="resTypImg" alt="" width="240" style="display:block;max-width:60%;height:auto;margin:6px 0 2px;">
+        <div id="resTypCounts" style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:6px 0 10px;"></div>
         <h3 id="resTypName" class="display" style="margin:0;font-size:30px;font-weight:600;line-height:1.15;color:#211D1A;"></h3>
         <p id="resTypSub" style="margin:0;font-size:14px;color:#6B625A;"></p>
         <p id="resTypLine" class="display" style="margin:8px 0 6px;font-size:19px;line-height:1.4;max-width:520px;color:#211D1A;"></p>
@@ -755,6 +756,15 @@
     $('resTypImg').src = '/typ-img/' + t.img + '.png';
     $('resTypName').textContent = t.name; $('resTypSub').textContent = t.subtitle; $('resTypLine').textContent = t.line;
     $('resTypNote').textContent = t.note;
+    var cb = $('resTypCounts'); cb.textContent = '';
+    (d.counts || []).forEach(function (c) {
+      var col = mk('div', 'display:flex;flex-direction:column;align-items:center;gap:3px;min-width:54px;');
+      var circ = mk('div', 'width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:700;' + (c.n ? 'background:' + COLORS[c.key] + ';color:#fff;' : 'border:2px solid #E6DFD2;color:#B9AFA2;'), String(c.n));
+      col.appendChild(circ);
+      col.appendChild(mk('div', 'font-size:15px;font-weight:600;color:' + (c.n ? '#211D1A' : '#B9AFA2') + ";font-family:'Noto Sans CJK KR','Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;", KO_EL[c.key]));
+      col.appendChild(mk('div', 'font-size:12px;color:' + (c.n ? '#6B625A' : '#B9AFA2') + ';', c.name));
+      cb.appendChild(col);
+    });
     var miss = $('resTypMiss'); miss.textContent = '';
     (t.missing || []).forEach(function (m) { var p = document.createElement('div'); p.textContent = m; miss.appendChild(p); });
     var toast = $('shToast'); function say(m) { toast.textContent = m; setTimeout(function () { if (toast.textContent === m) { toast.textContent = ''; } }, 3500); }
@@ -821,7 +831,7 @@
       var track = mk('div', 'flex:1;background:#EFE8DB;border-radius:6px;height:12px;overflow:hidden;');
       track.appendChild(mk('div', 'height:100%;border-radius:6px;background:' + COLORS[c.key] + ';width:' + (c.n ? Math.max(8, Math.round(100 * c.n / max)) : 0) + '%;'));
       row.appendChild(track);
-      row.appendChild(mk('span', 'flex:0 0 52px;text-align:right;color:#6B625A;', c.n + ' ' + L.chart_u + ' ' + d.total));
+      row.appendChild(mk('span', 'flex:0 0 52px;text-align:right;color:#6B625A;', String(c.n)));
       B.appendChild(row);
     });
     var T = $('resTexts'); T.textContent = '';

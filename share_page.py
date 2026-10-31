@@ -99,9 +99,9 @@ def card_page(code):
     total = sum(counts.values())
     bars = "".join(
         '<li><span class="dot" style="background:%s"></span><span class="en">%s</span>'
-        '<span class="bar"><i style="width:%d%%;background:%s"></i></span><span class="n">%d/%d</span></li>'
+        '<span class="bar"><i style="width:%d%%;background:%s"></i></span><span class="n">%d</span></li>'
         % (share_card_hex(k), e(names[k]), int(100 * counts[k] / max(1, max(counts.values()))) if counts[k] else 0,
-           share_card_hex(k), counts[k], total)
+           share_card_hex(k), counts[k])
         for k in ORDER)
     miss = "".join("<li>%s</li>" % e(m) for m in ct["missing"])
     host = (request.host or "").split(":")[0]

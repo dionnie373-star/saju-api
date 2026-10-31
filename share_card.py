@@ -135,7 +135,7 @@ def render_card(view, lang="de"):
     d.text((W - 72, 98), t["head"], font=_ws(30), fill=MUTE, anchor="rm")
 
     # 메인 카드
-    cx0, cy0, cx1, cy1 = 72, 170, W - 72, 1150
+    cx0, cy0, cx1, cy1 = 72, 170, W - 72, 1166
     d.rounded_rectangle([cx0, cy0, cx1, cy1], radius=36, fill=CARD, outline=LINE, width=3)
 
     # 일러스트(곱하기 합성으로 종이 배경 제거)
@@ -178,7 +178,7 @@ def render_card(view, lang="de"):
             _icon(d, key, cx, 1010, r)
         d.text((cx, 1065), KO[key], font=_ko(28), fill=INK if n else FAINT, anchor="mm")
         d.text((cx, 1097), names.get(key, ""), font=_ws(20), fill=MUTE if n else FAINT, anchor="mm")
-        d.text((cx, 1125), f"{n}/{total}", font=_wb(21), fill=COLORS[key] if n else FAINT, anchor="mm")
+        d.text((cx, 1127), str(n), font=_wb(30), fill=COLORS[key] if n else FAINT, anchor="mm")
 
     # 하단: 광고처럼 보이지 않게 작은 서명 한 줄
     d.text((W // 2, 1206), t["hook"], font=_ws(32), fill=MUTE, anchor="mm")
