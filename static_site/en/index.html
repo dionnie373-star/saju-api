@@ -560,6 +560,7 @@
   // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
   var L = {"btn_idle": "See my profile now", "btn_loading": "Calculating …", "btn_retry": "Try again", "info_loading": "Your profile is being calculated – just a moment.", "err_date": "Please enter your date of birth.", "err_city": "For a birth time, please also add the place of birth.", "err_net": "Could not reach the server. Please try again later.", "err_gen": "Something went wrong. Please try again later.", "pil": ["Year", "Month", "Day", "Hour"], "pil_none": "not given", "chart_u": "of", "pdf_sending": "", "pdf_ok": "", "pdf_bad": "", "lang": "en"};
+  var KO_EL = { wood: '나무', fire: '불', earth: '흙', metal: '쇠', water: '물' };
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
@@ -594,15 +595,16 @@
       var card = mk('div', 'background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;');
       card.appendChild(mk('div', 'font-size:12px;color:#675E55;letter-spacing:0.04em;', L.pil[i]));
       if (p) {
-        card.appendChild(mk('div', 'font-size:30px;line-height:1.1;font-weight:600;color:#211D1A;font-family:\'Noto Serif CJK KR\',\'Noto Sans CJK KR\',\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',serif;', p.hanja));
         var r = mk('div', 'font-size:12px;color:#4A4239;display:flex;flex-direction:column;gap:3px;');
         [[p.stem, p.stem_name], [p.branch, p.branch_name]].forEach(function (x) {
           var line = mk('div', 'display:flex;align-items:center;gap:5px;justify-content:center;');
           line.appendChild(mk('span', 'width:9px;height:9px;border-radius:50%;background:' + COLORS[x[0]] + ';display:inline-block;'));
-          line.appendChild(mk('span', '', x[1]));
+          line.appendChild(mk('span', 'font-weight:600;font-size:14px;font-family:\'Noto Sans CJK KR\',\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif;', KO_EL[x[0]]));
+          line.appendChild(mk('span', 'color:#6B625A;', x[1]));
           r.appendChild(line);
         });
         card.appendChild(r);
+        card.appendChild(mk('div', 'font-size:12px;color:#A79E93;letter-spacing:0.06em;font-family:\'Noto Sans CJK KR\',\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif;', p.hanja));
       } else {
         card.appendChild(mk('div', 'font-size:26px;line-height:1.1;color:#C9BFAE;', '–'));
         card.appendChild(mk('div', 'font-size:11.5px;color:#675E55;', L.pil_none));

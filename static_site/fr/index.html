@@ -681,6 +681,7 @@
   // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
   var L = {"btn_idle": "Voir mon profil maintenant", "btn_loading": "Calcul en cours …", "btn_retry": "Réessayer", "info_loading": "Votre profil est en cours de calcul – cela ne prend qu'un instant.", "err_date": "Veuillez indiquer votre date de naissance.", "err_city": "Pour l'heure de naissance, indiquez aussi le lieu.", "err_net": "Connexion au serveur impossible. Veuillez réessayer plus tard.", "err_gen": "Une erreur s'est produite. Veuillez réessayer plus tard.", "pil": ["Année", "Mois", "Jour", "Heure"], "pil_none": "non indiquée", "chart_u": "sur", "pdf_sending": "Création en cours – cela prend 1 à 2 minutes …", "pdf_ok": "C'est fait ! Votre PDF est en route et arrive généralement dans votre boîte mail en quelques minutes. Pensez à vérifier vos spams.", "pdf_bad": "Veuillez indiquer une adresse e-mail valide.", "lang": "fr"};
+  var KO_EL = { wood: '나무', fire: '불', earth: '흙', metal: '쇠', water: '물' };
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var btn = document.getElementById('submitBtn');
   var errorEl = document.getElementById('errorMsg');
@@ -709,15 +710,16 @@
       var card = mk('div', 'background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:14px 8px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center;');
       card.appendChild(mk('div', 'font-size:12px;color:#8A8074;letter-spacing:0.04em;', L.pil[i]));
       if (p) {
-        card.appendChild(mk('div', 'font-size:30px;line-height:1.1;font-weight:600;color:#211D1A;', p.hanja));
         var r = mk('div', 'font-size:12px;color:#4A4239;display:flex;flex-direction:column;gap:3px;');
         [[p.stem, p.stem_name], [p.branch, p.branch_name]].forEach(function (x) {
           var line = mk('div', 'display:flex;align-items:center;gap:5px;justify-content:center;');
           line.appendChild(mk('span', 'width:9px;height:9px;border-radius:50%;background:' + COLORS[x[0]] + ';display:inline-block;'));
-          line.appendChild(mk('span', '', x[1]));
+          line.appendChild(mk('span', 'font-weight:600;font-size:14px;font-family:\'Noto Sans CJK KR\',\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif;', KO_EL[x[0]]));
+          line.appendChild(mk('span', 'color:#6B625A;', x[1]));
           r.appendChild(line);
         });
         card.appendChild(r);
+        card.appendChild(mk('div', 'font-size:12px;color:#A79E93;letter-spacing:0.06em;font-family:\'Noto Sans CJK KR\',\'Malgun Gothic\',\'Apple SD Gothic Neo\',\'Noto Sans KR\',sans-serif;', p.hanja));
       } else {
         card.appendChild(mk('div', 'font-size:26px;line-height:1.1;color:#C9BFAE;', '–'));
         card.appendChild(mk('div', 'font-size:11.5px;color:#A79E93;', L.pil_none));
@@ -893,7 +895,7 @@ function paljaTaste(y, m, d) {
   var di = (((jdn - 2451545) + 54) % 60 + 60) % 60; // 2000-01-01 = 戊午
   var ds = di % 10;
   return { animal: ANIMALS[yb], yearElem: ELEM[ys], yearHanja: HANJA_S[ys] + HANJA_B[yb],
-           dayElem: ELEM[ds], dayStem: HANJA_S[ds], edge: edge };
+           dayElem: ELEM[ds], dayKo: ['나무','나무','불','불','흙','흙','쇠','쇠','물','물'][ds], edge: edge };
 }
 
   var box = document.getElementById('tasteBox');
@@ -906,8 +908,8 @@ function paljaTaste(y, m, d) {
     if (!y || y < 1900 || y > 2100) { box.style.display = 'none'; return; }
     var t = paljaTaste(y, m, d);
     var html = '<strong>Ton premier aperçu (traditionnel) :</strong><br>' +
-      'Année : <strong>' + t.yearElem + ' · ' + t.animal + '</strong> (' + t.yearHanja + ') · ' +
-      'Élément du jour : <strong>' + t.dayElem + '</strong> (' + t.dayStem + ')<br>' +
+      'Année : <strong>' + t.yearElem + ' · ' + t.animal + '</strong> · ' +
+      'Élément du jour : <strong>' + t.dayElem + '</strong> <span style="font-weight:600;">' + t.dayKo + '</span><br>' +
       '<span style="font-size:12.5px;color:#8A8074;">' +
       (t.edge ? 'Autour du 4 février, l\'année Saju change : l\'animal peut différer ici ; ton profil calcule au jour près. ' : '') +
       'Ce n\'est qu\'un extrait. Ton profil complet avec tous les piliers s\'affiche gratuitement juste après le clic sur « Voir mon profil maintenant ». Pour le divertissement et la réflexion personnelle – pas une prévision.</span>';
