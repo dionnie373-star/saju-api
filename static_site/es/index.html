@@ -1017,10 +1017,14 @@ function paljaTaste(y, m, d) {
 (function(){
   var L='¿No abre el calendario? Escribir la fecha',PH='DD.MM.AAAA',ERR='Formato: DD.MM.AAAA';
   var inApp=/Barcelona|Instagram|FBAN|FBAV|Threads|; wv\)/i.test(navigator.userAgent);
-  function iso(v){var m=v.trim().match(/^(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{4})$/);if(!m)return '';
-    var d=+m[1],mo=+m[2],y=+m[3];if(y<1900||mo<1||mo>12||d<1||d>31)return '';
-    var t=new Date(y,mo-1,d);if(t.getMonth()!==mo-1)return '';
+  function iso(v){var n=v.replace(/\D+/g,' ').trim().split(' ');var d,mo,y;
+    if(n.length===3){d=+n[0];mo=+n[1];y=+n[2];}
+    else if(n.length===1&&n[0].length===8){d=+n[0].slice(0,2);mo=+n[0].slice(2,4);y=+n[0].slice(4);}
+    else return '';
+    if(y<1900||mo<1||mo>12||d<1||d>31)return '';
+    var t=new Date(y,mo-1,d);if(t.getMonth()!==mo-1||t>new Date())return '';
     return y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);}
+  function fmt(v){var x=v.replace(/\D/g,'').slice(0,8);if(x.length>4)return x.slice(0,2)+'.'+x.slice(2,4)+'.'+x.slice(4);if(x.length>2)return x.slice(0,2)+'.'+x.slice(2);return x;}
   function wire(el){
     var box=document.createElement('div');box.style.cssText='margin-top:6px;';
     var a=document.createElement('a');a.href='#';a.textContent=L;a.style.cssText='font-size:12.5px;color:#A94B36;text-decoration:underline;';
@@ -1031,8 +1035,9 @@ function paljaTaste(y, m, d) {
     function show(){t.style.display='block';a.style.display='none';t.focus();}
     a.addEventListener('click',function(ev){ev.preventDefault();show();});
     if(inApp){t.style.display='block';a.style.display='none';}
-    t.addEventListener('input',function(){var v=iso(t.value);e.style.display=(t.value.length>=8&&!v)?'block':'none';
-      if(v){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}});
+    t.addEventListener('input',function(){if(/^[\d.]+$/.test(t.value)&&t.value.replace(/\./g,'').length<=8&&!/\.\d{1,2}\.\d/.test(t.value.replace(/^(\d{2})\.(\d{2})\.(\d)/,'$1$2$3'))){var f=fmt(t.value);if(f!==t.value)t.value=f;}
+      var v=iso(t.value);e.style.display=(t.value.length>=8&&!v)?'block':'none';
+      el.value=v||'';if(v){el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}});
     el.addEventListener('change',function(){if(el.value){var p=el.value.split('-');t.value=p[2]+'.'+p[1]+'.'+p[0];e.style.display='none';}});
   }
   function init(){Array.prototype.forEach.call(document.querySelectorAll('input[type=date]'),function(el){if(!el.dataset.pdf){el.dataset.pdf=1;wire(el);}});}
