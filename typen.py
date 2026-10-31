@@ -5,39 +5,39 @@
 ORDER = ["wood", "fire", "earth", "metal", "water"]
 # 상생 순서(목→화→토→금→수→목)와 같다. 동률일 때 이 순서로 앞선 쪽을 주(主)로 본다.
 
-# (한글 별명, 독일어 이름, 독일어 한 줄, 한국어 뜻)
+# (한글 별명, 독일어 이름, 독일어 한 줄, 한국어 뜻)  — 2차 첨삭(GPT) 반영본
 SINGLE = {
-    "wood": ("원시림형", "Der Urwald", "Wächst in alle Richtungen – und hat schon das nächste Projekt im Kopf.", "사방으로 동시에 자라고, 벌써 다음 프로젝트를 구상 중."),
+    "wood": ("원시림형", "Der Urwald", "Wächst in alle Richtungen – und hat schon das nächste Projekt im Kopf.", "사방으로 자라고, 벌써 다음 프로젝트를 구상 중."),
     "fire": ("태양형", "Die Sonne", "Wärmt jeden Raum auf – braucht danach dringend Abstand zum eigenen Glanz.", "방을 따뜻하게 만들지만, 자기 빛에서 잠시 떨어질 시간이 필요."),
     "earth": ("산형", "Der Berg", "Verlässlich bis in die Wurzeln – bewegt sich nur, wenn er will.", "뿌리까지 믿음직하지만, 움직이는 건 본인이 원할 때만."),
     "metal": ("수정형", "Der Kristall", "Glasklar im Denken – und manchmal scharfkantig im Ton.", "생각은 투명하지만 말투는 가끔 날카롭다."),
-    "water": ("심해형", "Die Tiefsee", "Wirkt ruhig, denkt gerade vierzehn Dinge gleichzeitig.", "고요해 보이지만 속으로는 열네 가지를 동시에 생각 중."),
+    "water": ("심해형", "Die Tiefsee", "Wirkt tiefenentspannt – im Kopf laufen gerade vierzehn Tabs.", "아주 태연해 보이지만, 머릿속에는 탭 14개가 열려 있다."),
 }
 
-BALANCED = ("오케스트라형", "Das Orchester", "Alle fünf Elemente sind da – die Frage ist nur, wer dirigiert.", "다섯 오행이 다 있다. 문제는 누가 지휘하느냐뿐.")
+BALANCED = ("오케스트라형", "Das Orchester", "Alle fünf Elemente kommen vor – die Frage ist nur, wer dirigiert.", "다섯 오행이 모두 나타난다. 문제는 누가 지휘하느냐뿐.")
 
 # (주, 부) → (한글 별명, 독일어 이름, 독일어 한 줄, 한국어 뜻)
 DUO = {
     ("wood", "fire"): ("불씨형", "Der Funkenflug", "Aus einer Idee werden zehn – und plötzlich ist überall Bewegung.", "아이디어 하나가 열 개가 되고, 어느새 모든 곳이 분주해진다."),
-    ("wood", "earth"): ("포도밭형", "Der Weinberg", "Lässt sich Zeit und wächst mit Geduld – guter Wein entsteht schließlich nicht über Nacht.", "서두르지 않고 인내하며 자란다. 좋은 와인은 하루아침에 만들어지지 않으니까."),
-    ("wood", "metal"): ("산울타리형", "Die Hecke", "Alles hat seinen Platz – nur spontane Veränderungen brauchen etwas Überzeugungsarbeit.", "모든 것이 제자리에 있지만, 갑작스러운 변화에는 설득이 조금 필요하다."),
-    ("wood", "water"): ("숲속 시냇물형", "Der Waldbach", "Findet immer einen Weg – nur selten den direkten.", "늘 길을 찾지만 지름길인 적은 드물다."),
-    ("fire", "wood"): ("장작불형", "Das Kaminfeuer", "Gemütlich und ausdauernd – zieht Menschen an wie Mücken das Licht.", "아늑하고 오래 타서 사람들이 자연스럽게 모여든다."),
-    ("fire", "earth"): ("화산형", "Der Vulkan", "Lange unauffällig – bis plötzlich alle merken, wie viel Energie darin steckt.", "오랫동안 조용하다가, 어느 순간 모두가 그 안의 에너지를 알아차린다."),
-    ("fire", "metal"): ("용광로형", "Der Hochofen", "Enormer Antrieb – wenn er einmal brennt, wärmt es auch ihn selbst.", "엄청난 추진력. 한 번 타오르면 자기도 데워진다."),
-    ("fire", "water"): ("온천형", "Die Therme", "Heiß und beruhigend zugleich – niemand weiß, welche Seite gerade dran ist.", "뜨겁고 편안한 면이 공존해서, 지금 어느 쪽인지 아무도 모른다."),
-    ("earth", "wood"): ("정원형", "Der Garten", "Hegt und pflegt – und freut sich still über jedes neue Blatt.", "가꾸고 돌보며, 새잎 하나에도 조용히 기뻐한다."),
-    ("earth", "fire"): ("도자기 가마형", "Der Brennofen", "Aus Geduld und Hitze entsteht etwas Besonderes – auch wenn der Weg dorthin nicht immer planbar ist.", "인내와 열기에서 특별한 것이 탄생한다. 그 과정이 항상 계획대로 되지는 않지만."),
-    ("earth", "metal"): ("금광형", "Die Goldmine", "Wertvoll im Verborgenen – man muss nur tief genug graben.", "숨은 곳에 가치가 있어서, 충분히 깊이 파야 보인다."),
-    ("earth", "water"): ("제방형", "Der Deich", "Gibt Halt, wenn alles ins Fließen gerät – und merkt oft erst spät, wie viel er selbst trägt.", "모든 것이 흘러가려 할 때 버팀목이 되어 주지만, 자신이 얼마나 많은 것을 짊어졌는지는 늦게 깨닫는다."),
-    ("metal", "wood"): ("목각사형", "Der Holzschnitzer", "Sieht in jedem Rohling schon die fertige Form – und kann nicht aufhören zu feilen.", "원석마다 완성된 모양이 보이고, 다듬기를 멈추지 못한다."),
+    ("wood", "earth"): ("포도밭형", "Der Weinberg", "Wächst mit Geduld – guter Wein braucht eben Zeit.", "인내하며 자란다. 좋은 와인에는 시간이 필요하니까."),
+    ("wood", "metal"): ("산울타리형", "Die Hecke", "Alles hat seinen Platz – spontane Veränderungen müssen erst einmal wachsen.", "모든 것이 제자리에 있다. 갑작스러운 변화도 일단 자리를 잡아야 한다."),
+    ("wood", "water"): ("숲속 시냇물형", "Der Waldbach", "Findet meist einen Weg – nur selten den direkten.", "대개 길을 찾지만 지름길인 적은 드물다."),
+    ("fire", "wood"): ("장작불형", "Das Kaminfeuer", "Verbreitet Wärme und gute Laune – und merkt oft gar nicht, wie viele sich versammeln.", "온기와 좋은 분위기를 퍼뜨리지만, 얼마나 많은 사람이 모였는지 잘 모른다."),
+    ("fire", "earth"): ("화산형", "Der Vulkan", "Lange ruhig – und überrascht dann alle, manchmal sogar sich selbst.", "오래 조용하다가 모두를 놀라게 한다. 가끔은 자기 자신까지."),
+    ("fire", "metal"): ("용광로형", "Der Hochofen", "Bringt ordentlich Hitze ins Spiel – und braucht manchmal selbst eine Abkühlung.", "분위기를 뜨겁게 만들지만, 가끔 본인에게도 냉각 시간이 필요하다."),
+    ("fire", "water"): ("온천형", "Die heiße Quelle", "Bringt Ruhe und Wärme zusammen – nur die eigene Temperatur schwankt manchmal.", "평온함과 따뜻함을 함께 주지만, 자기 온도는 가끔 오르내린다."),
+    ("earth", "wood"): ("정원형", "Der Garten", "Hegt und pflegt – und freut sich über jedes neue Blatt manchmal ein bisschen zu sehr.", "가꾸고 돌보며, 새잎 하나에도 가끔 지나치게 기뻐한다."),
+    ("earth", "fire"): ("도자기 가마형", "Der Brennofen", "Aus Geduld und Hitze entsteht etwas Besonderes – auch wenn nicht alles nach Plan läuft.", "인내와 열기에서 특별한 것이 탄생한다. 모든 과정이 계획대로 흘러가지는 않지만."),
+    ("earth", "metal"): ("금광형", "Die Goldmine", "Wertvoll im Verborgenen – leider steht kein Wegweiser davor.", "숨은 곳에 가치가 있지만, 안내 표지판은 없다."),
+    ("earth", "water"): ("제방형", "Der Deich", "Gibt Halt, wenn alles ins Fließen gerät – und merkt oft spät, wie viel er selbst trägt.", "모든 것이 흘러가려 할 때 버팀목이 되어 주지만, 자신이 얼마나 많은 것을 짊어졌는지는 늦게 깨닫는다."),
+    ("metal", "wood"): ("목각사형", "Der Holzschnitzer", "Erkennt die Form schon im Holz – und schnitzt gern noch ein bisschen weiter.", "나무에서 이미 완성된 형태를 알아보고, 조금 더 다듬기를 즐긴다."),
     ("metal", "fire"): ("대장장이형", "Der Schmied", "Macht aus Hitze etwas Brauchbares – und redet dabei erstaunlich wenig.", "열기를 쓸모 있는 것으로 바꾸고, 그 사이 놀랄 만큼 말이 없다."),
-    ("metal", "earth"): ("원석형", "Der Edelstein", "Ruhig, klar und sehr schwer zu beeindrucken.", "고요하고 맑고, 감동시키기 아주 어렵다."),
-    ("metal", "water"): ("바위틈 샘물형", "Die Felsquelle", "Klar bis auf den Grund – und tritt erst hervor, wenn man genau hinhört.", "바닥까지 맑고, 귀 기울여야 모습을 드러낸다."),
-    ("water", "wood"): ("우림형", "Der Regenwald", "Hier wächst immer etwas Neues – manchmal sogar mehr, als man überblicken kann.", "언제나 새로운 것이 자라난다. 때로는 스스로도 다 파악하기 어려울 만큼."),
-    ("water", "fire"): ("천둥번개형", "Das Gewitter", "Spannung in der Luft – es entlädt sich immer genau dann, wenn es nötig ist.", "공기 중의 긴장이 꼭 필요한 순간에 터진다."),
+    ("metal", "earth"): ("원석형", "Der Edelstein", "Ruhig und klar – und manchmal etwas zu gut darin, unbeeindruckt zu bleiben.", "고요하고 맑지만, 감동하지 않는 데 지나치게 능숙할 때가 있다."),
+    ("metal", "water"): ("바위틈 샘물형", "Die Felsquelle", "Sprudelt leise und klar – und wird leicht überhört.", "조용하고 맑게 솟지만, 쉽게 지나쳐진다."),
+    ("water", "wood"): ("우림형", "Der Regenwald", "Hier wächst oft etwas Neues – manchmal sogar mehr, als man überblicken kann.", "자주 새로운 것이 자라난다. 때로는 스스로도 다 파악하기 어려울 만큼."),
+    ("water", "fire"): ("천둥번개형", "Das Gewitter", "Spannung liegt in der Luft – und wann es kracht, weiß niemand so genau.", "공기 중에 긴장감이 감돈다. 언제 번개가 칠지는 아무도 정확히 모른다."),
     ("water", "earth"): ("연못형", "Der Teich", "Hält still, spiegelt alles – und merkt sich mehr, als er zeigt.", "가만히 모든 걸 비추고, 보여 주는 것보다 많이 기억한다."),
-    ("water", "metal"): ("이슬형", "Der Morgentau", "Leise, klar und früh da – bevor die anderen überhaupt wach sind.", "조용하고 맑고, 남들이 일어나기 전에 이미 와 있다."),
+    ("water", "metal"): ("이슬형", "Der Morgentau", "Leise und klar – schon da, bevor die anderen wach sind, und weg, sobald es laut wird.", "조용하고 맑다. 남들이 깨기 전에 와 있지만, 시끄러워지면 사라진다."),
 }
 
 # 없는 오행 꼬리표 (독일어, 한국어 뜻)
