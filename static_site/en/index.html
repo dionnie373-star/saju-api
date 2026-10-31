@@ -148,6 +148,20 @@
         <p style="margin:0;font-size:12.5px;line-height:1.6;color:#675E55;text-align:center;">Prices are in US dollars. Taxes may be added at checkout depending on your country. Payment is processed by Digistore24.com. 60-day money-back guarantee (<a href="/en/refund" style="color:inherit;text-decoration:underline;">details</a>).</p>
         <p style="margin:0;font-size:13.5px;line-height:1.6;color:#4A4239;text-align:center;">Curious how you match with another person? <a href="#compatibility" style="color:inherit;text-decoration:underline;">See the Compatibility Check ($10.00)</a></p>
       </div>
+
+      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Your free profile as a detailed PDF</h3>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Written with AI support, about 4 pages to keep. We email it to you.</p>
+        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Email me the detailed PDF</button>
+        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="you@example.com" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
+            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Send the PDF</button>
+          </div>
+          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">We use your email address only to send this PDF. <a href="/en/privacy" style="color:inherit;text-decoration:underline;">Privacy Policy</a></p>
+        </div>
+        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
+      </div>
     </div>
   </div>
 
@@ -577,7 +591,7 @@
 (function () {
   // Sofort-Ergebnis: /profile liefert Säulen + Kurztext ohne E-Mail (kein KI-Aufruf). PDF per E-Mail bleibt optional (/signup).
   var API_BASE = '';
-  var L = {"btn_idle": "See my profile now", "btn_loading": "Calculating …", "btn_retry": "Try again", "info_loading": "Your profile is being calculated – just a moment.", "err_date": "Please enter your date of birth.", "err_city": "For a birth time, please also add the place of birth.", "err_net": "Could not reach the server. Please try again later.", "err_gen": "Something went wrong. Please try again later.", "pil": ["Year", "Month", "Day", "Hour"], "pil_none": "not given", "chart_u": "of", "pdf_sending": "", "pdf_ok": "", "pdf_bad": "", "lang": "en"};
+  var L = {"btn_idle": "See my profile now", "btn_loading": "Calculating …", "btn_retry": "Try again", "info_loading": "Your profile is being calculated – just a moment.", "err_date": "Please enter your date of birth.", "err_city": "For a birth time, please also add the place of birth.", "err_net": "Could not reach the server. Please try again later.", "err_gen": "Something went wrong. Please try again later.", "pil": ["Year", "Month", "Day", "Hour"], "pil_none": "not given", "chart_u": "of", "pdf_sending": "", "pdf_ok": "", "pdf_bad": "", "lang": "en", "pdf_sending": "Creating your PDF – this takes 1–2 minutes …", "pdf_ok": "Done! Your PDF is on its way and usually arrives within a few minutes. Please check your spam folder too.", "pdf_bad": "Please enter a valid email address."};
   var KO_EL = { wood: '나무', fire: '불', earth: '흙', metal: '쇠', water: '물' };
   var COLORS = { wood: '#3F7A63', fire: '#C1442E', earth: '#A97E2A', metal: '#758492', water: '#26364F' };
   var SH = {
@@ -754,6 +768,39 @@
   // Result upsell: same purchase dialogs as in the price section (birth data is pre-filled from the form).
   $('resBuyPaid').addEventListener('click', function () { ev('res_up_paid'); window.paljaOpenBuy('paid', this); });
   $('resBuyPremium').addEventListener('click', function () { ev('res_up_premium'); window.paljaOpenBuy('premium', this); });
+
+  // Optional PDF by email: existing /signup route with AI text.
+  var pdfMsg = $('resPdfMsg');
+  function pdfSay(t) { pdfMsg.textContent = t; pdfMsg.style.display = t ? 'block' : 'none'; }
+  $('resPdfOpen').addEventListener('click', function () {
+    ev('res_pdf_open');
+    $('resPdfForm').style.display = 'flex';
+    this.style.display = 'none';
+    setTimeout(function () { $('resPdfEmail').focus(); }, 50);
+  });
+  var pdfBusy = false;
+  $('resPdfSend').addEventListener('click', async function () {
+    if (pdfBusy) return;
+    var email = $('resPdfEmail').value.trim();
+    if (!email || email.indexOf('@') === -1) { pdfSay(L.pdf_bad); return; }
+    var f = formData();
+    pdfBusy = true; this.disabled = true; pdfSay(L.pdf_sending);
+    try {
+      var res = await fetch(API_BASE + '/signup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ birth_date: f.birth_date, birth_time: f.birth_time, birth_city: f.birth_city, email: email,
+                               src: (window.paljaSrc ? paljaSrc() : ''), interest: '', lang: L.lang, via_result: true }),
+      });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (!res.ok || data.ok === false) { pdfSay(data.error || L.err_gen); this.disabled = false; pdfBusy = false; return; }
+      ev('res_pdf_ok');
+      pdfSay(L.pdf_ok);
+      $('resPdfForm').style.display = 'none';
+    } catch (err) {
+      pdfSay(L.err_net); this.disabled = false; pdfBusy = false;
+    }
+  });
 })();
 </script>
 
