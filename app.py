@@ -1487,8 +1487,14 @@ def profile_view_route():
         return jsonify({"ok": False, "error": msg}), 429
     city_in = str(payload.get("birth_city") or "").strip()[:100]
     # 출생지는 출생 시각이 없으면 계산에 영향이 없다(시각 기본 12:00). 비어 있고 시각도 없으면 언어별 기본 도시로 대신한다.
-    if not city_in and not str(payload.get("birth_time") or "").strip():
-        city_in = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(calc_lang, "Berlin")
+    city_defaulted = False
+    if not city_in:
+        if not str(payload.get("birth_time") or "").strip():
+            city_in = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(calc_lang, "Berlin")
+        elif calc_lang in ("de", "fr", "es"):
+            # 시각은 있는데 출생지가 없으면 de/fr/es는 언어별 기본 도시로 계산하고 결과에 안내한다(en은 전 세계 대상이라 출생지를 계속 요구).
+            city_in = {"de": "Berlin", "fr": "Paris", "es": "Madrid"}[calc_lang]
+            city_defaulted = True
     calc_payload = {
         "birth_date": str(payload.get("birth_date") or ""),
         "birth_time": str(payload.get("birth_time") or "")[:8],
@@ -1531,6 +1537,12 @@ def profile_view_route():
             "fr": "Nous n'avons pas trouvé la ville exacte – le calcul s'appuie sur le pays. Le pilier de l'heure peut légèrement différer.",
             "es": "No encontramos la ciudad exacta – calculamos con el país. El pilar de la hora puede variar ligeramente.",
             "en": "We couldn't find the exact city, so we used the country. Your hour pillar may differ slightly.",
+        }[view_lang]
+    if city_defaulted:
+        view["place_note"] = {
+            "de": "Du hast keinen Geburtsort angegeben – die Stundensäule haben wir mit Berlin berechnet. Bei einem anderen Ort kann sie abweichen.",
+            "fr": "Vous n'avez pas indiqué de lieu de naissance – le pilier de l'heure est calculé avec Paris. Il peut différer pour un autre lieu.",
+            "es": "No indicaste el lugar de nacimiento – calculamos el pilar de la hora con Madrid. Puede variar según el lugar.",
         }[view_lang]
     _record_signup_meta(payload, view_lang)  # (출처, 관심사, 언어)만 집계. 개인정보 없음
     return jsonify(view)

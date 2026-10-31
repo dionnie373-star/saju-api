@@ -100,7 +100,7 @@
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lugar de nacimiento <span style="font-weight:400;color:#8A8074;">(opcional)</span></label>
           <input id="birthplace" type="text" placeholder="p. ej. Madrid" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Con la hora de nacimiento, el lugar hace el perfil más preciso.</span>
+          <span style="font-size: 12px; color: #8A8074;">Opcional. Sin lugar calculamos con Madrid – con la hora de nacimiento, el lugar hace el perfil más preciso.</span>
         </div>
 
         <input id="email" type="hidden">
@@ -156,6 +156,7 @@
         <h2 class="display" style="margin:0;font-size:28px;font-weight:500;">Tu perfil de los cinco elementos</h2>
         <p style="margin:0;font-size:14.5px;color:#6B625A;">Tus pilares en el Saju: gratis e inmediato</p>
       </div>
+      <p id="resPlaceNote" role="status" style="display:none;margin:0 0 12px;font-size:13.5px;color:#4A4239;background:#F3EEE4;border-radius:8px;padding:10px 12px;"></p>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
       <div style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Distribución de los cinco elementos</h3>
@@ -727,6 +728,7 @@
       }
       P.appendChild(card);
     });
+    var pn = $('resPlaceNote'); if (pn) { pn.textContent = d.place_note || ''; pn.style.display = d.place_note ? 'block' : 'none'; }
     var B = $('resBars'); B.textContent = '';
     var max = Math.max.apply(null, d.counts.map(function (c) { return c.n; })) || 1;
     d.counts.forEach(function (c) {
@@ -767,7 +769,6 @@
     if (status === 'loading') return;
     var f = formData();
     if (!f.birth_date) { ev('val_err'); setStatus('error', L.err_date); return; }
-    if (!f.birth_city && f.birth_time) { ev('val_err'); setStatus('error', L.err_city); return; }
     ev('submit');
     setStatus('loading');
     try {
