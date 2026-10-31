@@ -813,5 +813,31 @@
 <!-- Begin of Digistore24 Trusted Badge Code -->
 <script type="text/javascript" src="https://www.digistore24.com/trusted-badge/48991/qdIk8gnMDWBtZrV/salespage"></script>
 <!-- End of Digistore24 Trusted Badge Code -->
+<script id="palja-datefix">
+(function(){
+  var L='Picker not working? Type the date',PH='DD.MM.YYYY',ERR='Please use DD.MM.YYYY';
+  var inApp=/Barcelona|Instagram|FBAN|FBAV|Threads|; wv\)/i.test(navigator.userAgent);
+  function iso(v){var m=v.trim().match(/^(\d{1,2})[.\/\-](\d{1,2})[.\/\-](\d{4})$/);if(!m)return '';
+    var d=+m[1],mo=+m[2],y=+m[3];if(y<1900||mo<1||mo>12||d<1||d>31)return '';
+    var t=new Date(y,mo-1,d);if(t.getMonth()!==mo-1)return '';
+    return y+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);}
+  function wire(el){
+    var box=document.createElement('div');box.style.cssText='margin-top:6px;';
+    var a=document.createElement('a');a.href='#';a.textContent=L;a.style.cssText='font-size:12.5px;color:#A94B36;text-decoration:underline;';
+    var t=document.createElement('input');t.type='text';t.inputMode='numeric';t.placeholder=PH;t.autocomplete='off';
+    t.style.cssText='display:none;margin-top:6px;width:100%;box-sizing:border-box;'+(el.getAttribute('style')||'');t.style.display='none';
+    var e=document.createElement('div');e.textContent=ERR;e.style.cssText='display:none;font-size:12px;color:#C1442E;margin-top:4px;';
+    box.appendChild(a);box.appendChild(t);box.appendChild(e);el.insertAdjacentElement('afterend',box);
+    function show(){t.style.display='block';a.style.display='none';t.focus();}
+    a.addEventListener('click',function(ev){ev.preventDefault();show();});
+    if(inApp){t.style.display='block';a.style.display='none';}
+    t.addEventListener('input',function(){var v=iso(t.value);e.style.display=(t.value.length>=8&&!v)?'block':'none';
+      if(v){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}});
+    el.addEventListener('change',function(){if(el.value){var p=el.value.split('-');t.value=p[2]+'.'+p[1]+'.'+p[0];e.style.display='none';}});
+  }
+  function init(){Array.prototype.forEach.call(document.querySelectorAll('input[type=date]'),function(el){if(!el.dataset.pdf){el.dataset.pdf=1;wire(el);}});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body>
 </html>
