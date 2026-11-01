@@ -828,3 +828,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 영상 캡션/설명 링크에 출처 태그 부착: TikTok `?src=tt`, YouTube `?src=yt`, Instagram `?src=ig`(프로필 링크는 기존 ig-bio/th-bio/yt-profile 유지).
 - 14일 대시보드(11/1): DE PV119/무료18, EN 46/3, FR 11/1, ES 10/1, 결제 0. src=none 85%.
 - 11/7 판단 시 src별 유입·언어별 전환 재검토.
+
+## 2026-11-02 변경 기록: 공유 문구 (모니터링 기간 중 유일한 변경)
+- 변경 시각: 2026-11-02 00:10 KST. static_site/index.html의 SH.share / SH.body만 수정.
+- 전: "Mein Elementetyp: {n} – und deiner?" / 본문 "Schau mal… Kostenlos auf palja.de"
+- 후: "Ich bin „{n}“ – welcher Elementetyp bist du?" / 본문은 한 줄 + 링크
+- 11/7 판단 시 공유율(카드 표시→공유)과 src=share 유입을 이 시각 전/후로 나눠 볼 것. 되돌리기: git revert.
