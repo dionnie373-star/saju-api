@@ -821,3 +821,10 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - DE 색인 요청: /wissen/, yin-und-yang-saju, saju-und-bazi-unterschied, koreanisches-tierkreiszeichen-ddi. 나머지 DE 지식글·ES/FR 홈은 이미 색인됨.
 - 4개 홈에 언어 전환 드롭다운(DE/FR/ES/EN)과 hreflang(x-default=palja.one) 추가(main 푸시, 188f5ad).
 - Digistore24 승인 현황: DE·FR·ES 상품 승인(FR/ES 프리미엄도 목록상 승인 표시, 사이트 버튼 복구 여부 미확인), EN 3개는 DS-de 승인/DS-us·DS-ie 보류. 승인팀(genehmigung@digistore24.com) 스레드에 국가 무관 판매 가능 범위·절차 문의 발송(10/31 03:12), 답변 대기. FR/ES를 DS-us에 요청하려면 배지 확인 항목 때문에 배지 재삽입 필요(보류).
+
+## 2026-11-01 결정: 메인 사이트 = palja.de (DE)
+- TikTok/Instagram/YouTube/Threads는 독일어 콘텐츠 → palja.de로 연결. 영어 SNS 계정은 새로 만들지 않음.
+- Pinterest만 핀 언어대로 연결(de→.de, en→.one, es→.es; fr은 링크 차단으로 보류).
+- 영상 캡션/설명 링크에 출처 태그 부착: TikTok `?src=tt`, YouTube `?src=yt`, Instagram `?src=ig`(프로필 링크는 기존 ig-bio/th-bio/yt-profile 유지).
+- 14일 대시보드(11/1): DE PV119/무료18, EN 46/3, FR 11/1, ES 10/1, 결제 0. src=none 85%.
+- 11/7 판단 시 src별 유입·언어별 전환 재검토.
