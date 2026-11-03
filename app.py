@@ -1736,7 +1736,7 @@ def api_hit():
 _EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky",
                "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok",
                "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page",
-               "compat_preview", "compat_card_share"}
+               "compat_preview", "compat_card_share", "compat_view", "compat_buy_open"}
 
 
 @app.route("/api/ev", methods=["POST"])
@@ -1858,6 +1858,16 @@ def admin_dashboard():
                  ev_sum(day=d, site=s, ev=("res_up_view",)), ev_sum(day=d, site=s, ev=BUY), ev_sum(day=d, site=s, ev=("order_paid",))]
             if any(v):
                 dfun_rows += td(d, SITE_LABEL[s], *v)
+    # 5-b) 궁합 전용 흐름(사이트별 누적). 일반 사주 흐름과 같은 방문자에서 시작하므로 따로 페이지를 나누지 않고 한 블록으로 보여 준다.
+    cp_steps = [
+        ("궁합 칸이 보임", lambda s: ev_sum(site=s, ev=("compat_view",))),
+        ("무료 미리보기 클릭", lambda s: ev_sum(site=s, ev=("compat_preview",))),
+        ("미리보기 카드 공유/저장", lambda s: ev_sum(site=s, ev=("compat_card_share",))),
+        ("구매 시도(궁합 버튼)", lambda s: ev_sum(site=s, ev=("compat_buy_open",))),
+        ("결제 완료(궁합)", lambda s: ev_sum(site=s, ev=("order_paid_compat",))),
+        ("결제 완료(일반 사주)", lambda s: ev_sum(site=s, ev=("order_paid",)) - ev_sum(site=s, ev=("order_paid_compat",))),
+    ]
+    cp_rows = "".join(td(lbl, *[fn(s) for s in SITES], sum(fn(s) for s in SITES)) for lbl, fn in cp_steps)
     # 6) 공유 카드(원소 유형) 현황
     SH_ACT = ("card_dl", "card_copy", "card_mail", "card_share")
     sh_steps = [
@@ -1893,6 +1903,7 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 <h2>일별 접속자(페이지뷰) · 사이트별</h2><div class="w"><table>{th("날짜","DE","EN","FR","ES","합계","무료","구매 클릭","결제 완료(신규)","주문(기존 합계)")}{day_rows or '<tr><td colspan=10>–</td></tr>'}</table></div>
 <h2>접속 루트(src) × 사이트 (페이지뷰)</h2><div class="w"><table>{th("src","DE","EN","FR","ES","합계")}{src_rows or '<tr><td colspan=6>–</td></tr>'}</table></div>
 <h2>구매 단계별 진행 현황 · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{step_rows}</table></div>
+<h2>궁합 흐름 · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{cp_rows}</table></div>
 <h2>공유 카드(원소 유형) · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{sh_rows}</table></div>
 <h2>일별 공유 카드</h2><div class="w"><table>{th("날짜","카드 표시","공유 행동","공유 링크 열람","메인 방문(src=share)")}{sh_day_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
 <h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 클릭","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
@@ -2669,6 +2680,8 @@ def _digistore24_webhook_impl():
         try:  # 사이트별 결제 완료 집계(개인정보 없음)
             _l = str(custom_data.get("lang") or "de").lower()
             orders_store.record_event("none", "order_paid", _l if _l in ("en", "fr", "es") else "de")
+            if tier == "compatibility":
+                orders_store.record_event("none", "order_paid_compat", _l if _l in ("en", "fr", "es") else "de")
         except Exception as e:  # noqa: BLE001
             print(f"order_paid event failed: {e}", flush=True)
     return jsonify(response_dict), status

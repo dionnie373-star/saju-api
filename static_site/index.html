@@ -1138,5 +1138,20 @@ function paljaTaste(y, m, d) {
   });
 })();
 </script>
+<script>
+(function () {
+  var sec = document.getElementById('kompatibilitaet'), btn = document.getElementById('buyCompatBtn');
+  function ev(n) { if (window.paljaEv) { paljaEv(n); } }
+  if (sec && 'IntersectionObserver' in window) {
+    var t = null, seen = false, io = new IntersectionObserver(function (en) {
+      if (seen) { return; }
+      if (en[0].isIntersecting) { if (!t) { t = setTimeout(function () { seen = true; ev('compat_view'); io.disconnect(); }, 1500); } }
+      else if (t) { clearTimeout(t); t = null; }
+    }, { threshold: 0.3 });
+    io.observe(sec);
+  }
+  if (btn) { btn.addEventListener('click', function () { ev('compat_buy_open'); }); }
+})();
+</script>
 </body>
 </html>
