@@ -19,6 +19,9 @@ import hashlib
 
 MAX_SCENES = 3
 
+# 연애에서만 나오는 장면 가족(연인 전용 리포트에서 우선 사용)
+COUPLE_FAMILIES = {"zuneigung", "streit", "freiraum", "takt"}
+
 # 장면을 고르는 관계 순서(앞쪽 우선). 같은 순서가 곧 한정된 슬롯 안의 우선순위다.
 SCENE_ORDER = (
     "yukhap", "wonjin", "chung", "hyung", "hyung_partial", "pa", "hae",
@@ -235,7 +238,11 @@ def select(result):
         bank = BANK.get(code)
         if pair is None or not bank:
             continue
-        start = _start_index(code, pair, len(bank))
+        # 연인 전용 리포트이므로 연애 장면(COUPLE_FAMILIES)이 있는 관계는 그 후보를 먼저 쓴다.
+        couple_first = [i for i in bank if i[1] in COUPLE_FAMILIES]
+        if couple_first:
+            bank = tuple(couple_first) + tuple(i for i in bank if i[1] not in COUPLE_FAMILIES)
+        start = _start_index(code, pair, len(bank)) if not couple_first else 0
         for k in range(len(bank)):
             theme, family, scene, question = bank[(start + k) % len(bank)]
             if family in used_families:
