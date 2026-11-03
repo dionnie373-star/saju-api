@@ -147,7 +147,7 @@ _POS_KO = {"year": "년지", "month": "월지", "day": "일지", "hour": "시지
 _STEM_POS_KO = {"year": "년간", "month": "월간", "day": "일간", "hour": "시간"}
 
 # 프롬프트에 넣는 보조 관계 개수 상한(리포트 길이·비용 제한). 핵심(일지-일지)은 항상 포함한다.
-MAX_SECONDARY = 4
+MAX_SECONDARY = 6
 
 
 def _fmt_pair(item, name_a, name_b, stem=False):

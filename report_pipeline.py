@@ -766,6 +766,8 @@ _PDF_STYLES = {
     "body": ParagraphStyle(
         "PaljaBody", fontName="WorkSans", fontSize=10.5, leading=16,
         spaceAfter=3.5 * mm, textColor="#3B3630",
+        # 마지막 한 줄만 다음 페이지로 넘어가 거의 빈 페이지가 생기는 것을 막는다(과부/고아 줄 방지).
+        allowWidows=0, allowOrphans=0,
     ),
     "bullet": ParagraphStyle(
         "PaljaBullet", fontName="WorkSans", fontSize=10.5, leading=16,
