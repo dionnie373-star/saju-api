@@ -188,3 +188,68 @@ def render_card(view, lang="de"):
     buf = io.BytesIO()
     im.save(buf, "PNG", optimize=True)
     return buf.getvalue()
+
+
+CTXT = {
+    "de": {"head": "Unser Saju-Check", "you": "Ich", "him": "Du", "conn": "Verbindungen", "fric": "Reibungspunkte",
+           "scenes": "{n} konkrete Alltagsmomente im Bericht", "hook": "Wie sieht eure Kombination aus?",
+           "host": "palja.de", "note": "Zur Unterhaltung und Selbstreflexion"},
+    "fr": {"head": "Notre test Saju", "you": "Moi", "him": "Toi", "conn": "points de rencontre", "fric": "points de friction",
+           "scenes": "{n} moments concrets dans le rapport", "hook": "Et votre combinaison ?",
+           "host": "palja.fr", "note": "Pour le plaisir et la réflexion"},
+    "es": {"head": "Nuestro test Saju", "you": "Yo", "him": "Tú", "conn": "conexiones", "fric": "puntos de fricción",
+           "scenes": "{n} momentos concretos en el informe", "hook": "¿Y vuestra combinación?",
+           "host": "palja.es", "note": "Para entretenimiento y reflexión"},
+    "en": {"head": "Our Saju check", "you": "Me", "him": "You", "conn": "connections", "fric": "friction points",
+           "scenes": "{n} concrete everyday moments in the report", "hook": "What does your pair look like?",
+           "host": "palja.one", "note": "For entertainment and self-reflection"},
+}
+
+
+def render_compat_card(pv, lang="de"):
+    """compat_preview.build() 결과 -> PNG bytes (1080x1350). 이름·날짜·장소 없음."""
+    t = CTXT.get(lang, CTXT["de"])
+    W, H = 1080, 1350
+    im = _bg(W, H)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([72, 70, 128, 126], radius=6, fill=RED)
+    d.text((100, 98), "팔자", font=_ko(22), fill=(255, 255, 255), anchor="mm")
+    d.text((150, 98), "PALJA", font=_fr(40), fill=INK, anchor="lm")
+    d.text((W - 72, 98), t["head"], font=_ws(30), fill=MUTE, anchor="rm")
+    d.rounded_rectangle([72, 170, W - 72, 1166], radius=36, fill=CARD, outline=LINE, width=3)
+
+    name = pv["pattern_name"]
+    fnt = _fit(d, name, _fr, 76, 880)
+    d.text((W // 2, 270), name, font=fnt, fill=INK, anchor="mm")
+
+    # 두 사람 오행 (좌: 나, 우: 너)
+    for col, (who, side) in enumerate(((t["you"], pv["a"]), (t["him"], pv["b"]))):
+        cx0 = 150 + col * 400
+        d.text((cx0 + 180, 380), who, font=_fr(40), fill=INK, anchor="mm")
+        d.text((cx0 + 180, 428), side["day_name"], font=_ws(24), fill=COLORS[side["day_key"]], anchor="mm")
+        counts = {c["key"]: c["n"] for c in side["counts"]}
+        for i, key in enumerate(ORDER):
+            cy = 500 + i * 70
+            n = counts.get(key, 0)
+            if n == 0:
+                d.ellipse([cx0 + 40 - 24, cy - 24, cx0 + 40 + 24, cy + 24], outline=LINE, width=3)
+            else:
+                _icon(d, key, cx0 + 40, cy, 24)
+            d.text((cx0 + 90, cy), KO[key], font=_ko(26), fill=INK if n else FAINT, anchor="lm")
+            d.text((cx0 + 330, cy), str(n), font=_wb(30), fill=COLORS[key] if n else FAINT, anchor="rm")
+    d.line([(540, 360), (540, 820)], fill=LINE, width=2)
+
+    d.line([(150, 880), (W - 150, 880)], fill=LINE, width=2)
+    d.text((300, 960), str(pv["n_connections"]), font=_fr(90), fill=COLORS["wood"], anchor="mm")
+    d.text((300, 1030), t["conn"], font=_ws(26), fill=MUTE, anchor="mm")
+    d.text((780, 960), str(pv["n_frictions"]), font=_fr(90), fill=RED, anchor="mm")
+    d.text((780, 1030), t["fric"], font=_ws(26), fill=MUTE, anchor="mm")
+    if pv.get("n_scenes"):
+        d.text((W // 2, 1110), t["scenes"].format(n=pv["n_scenes"]), font=_ws(24), fill=FAINT, anchor="mm")
+
+    d.text((W // 2, 1206), t["hook"], font=_ws(32), fill=MUTE, anchor="mm")
+    d.text((W // 2, 1250), t["host"], font=_wb(34), fill=RED, anchor="mm")
+    d.text((W // 2, 1300), t["note"], font=_ws(20), fill=FAINT, anchor="mm")
+    buf = io.BytesIO()
+    im.save(buf, "PNG", optimize=True)
+    return buf.getvalue()

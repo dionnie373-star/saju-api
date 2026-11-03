@@ -259,6 +259,13 @@
           <input id="compatEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
         </div>
 
+        <button type="button" id="cpvBtn" style="padding: 12px 20px; background: #FFFDF9; color: #C1442E; border: 1.5px solid #C1442E; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">See the free preview</button>
+        <div id="cpvBox" class="cpv-box" style="display:none;border:1px solid #E6DFD2;border-radius:12px;background:#FFFDF9;padding:16px;text-align:center;flex-direction:column;gap:10px;">
+          <img id="cpvImg" alt="" style="width:100%;max-width:340px;margin:0 auto;border-radius:10px;border:1px solid #E6DFD2;display:none;">
+          <div id="cpvText" style="font-size:13.5px;line-height:1.6;color:#4A4239;"></div>
+          <button type="button" id="cpvShare" style="padding:10px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:none;">Save / share image</button>
+          <div style="font-size:12px;color:#8A8074;">Free, no email needed. The image shows no names or dates.</div>
+        </div>
         <p id="compatError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
 
         <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
@@ -917,6 +924,49 @@
   }
   function init(){Array.prototype.forEach.call(document.querySelectorAll('input[type=time]'),function(el){if(!el.dataset.ptf){el.dataset.ptf=1;wire(el);}});}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
+<script>
+(function () {
+  var C = {"lang": "en", "btn": "See the free preview", "load": "Calculating …", "err": "Please enter both birth dates.", "conn": "connections", "fric": "friction points", "lock": "The concrete everyday moments behind this are in the full report.", "dl": "Save / share image", "sharetxt": "Our Saju check at Palja", "fail": "That didn't work.", "you": "Me", "him": "You", "note": "Free, no email needed. The image shows no names or dates."};
+  var btn = document.getElementById('cpvBtn'); if (!btn) { return; }
+  var box = document.getElementById('cpvBox'), img = document.getElementById('cpvImg'), txt = document.getElementById('cpvText'), sh = document.getElementById('cpvShare');
+  var errEl = document.getElementById('compatError');
+  function v(id) { var e = document.getElementById(id); return e ? e.value.trim() : ''; }
+  function body() {
+    return { lang: C.lang, birth_date_a: v('compatDate_a'), birth_time_a: v('compatTime_a'), birth_city_a: v('compatCity_a'),
+             birth_date_b: v('compatDate_b'), birth_time_b: v('compatTime_b'), birth_city_b: v('compatCity_b') };
+  }
+  var blob = null;
+  btn.addEventListener('click', async function () {
+    errEl.style.display = 'none';
+    var b = body();
+    if (!b.birth_date_a || !b.birth_date_b) { errEl.textContent = C.err; errEl.style.display = 'block'; return; }
+    var label = btn.textContent; btn.disabled = true; btn.textContent = C.load;
+    try {
+      var opts = { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) };
+      var rp = await fetch('/compat-preview', opts); var pv = await rp.json();
+      if (!rp.ok || !pv.ok) { throw new Error(pv.error || C.fail); }
+      var rc = await fetch('/compat-card', opts);
+      if (rc.ok) { blob = await rc.blob(); img.src = URL.createObjectURL(blob); img.style.display = 'block'; sh.style.display = 'inline-block'; }
+      txt.textContent = '';
+      var h = document.createElement('strong'); h.style.cssText = 'display:block;font-size:17px;color:#211D1A;margin-bottom:4px;'; h.textContent = pv.pattern_name; txt.appendChild(h);
+      txt.appendChild(document.createTextNode(pv.n_connections + ' ' + C.conn + ' · ' + pv.n_frictions + ' ' + C.fric + '. ' + C.lock));
+      box.style.display = 'flex';
+      if (window.paljaEv) { paljaEv('compat_preview'); }
+    } catch (e) { errEl.textContent = e.message || C.fail; errEl.style.display = 'block'; }
+    btn.disabled = false; btn.textContent = label;
+  });
+  sh.addEventListener('click', async function () {
+    if (!blob) { return; }
+    if (window.paljaEv) { paljaEv('compat_card_share'); }
+    var file = new File([blob], 'palja-saju-check.png', { type: 'image/png' });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: C.sharetxt }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') { return; } }
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'palja-saju-check.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
 })();
 </script>
 </body>

@@ -1574,6 +1574,74 @@ def profile_view_route():
     return jsonify(view)
 
 
+def _compat_preview_data(payload):
+    """/compat-preview, /compat-card 공통: 두 사람 계산 -> compat_preview.build. 실패 시 (None, (json, status))."""
+    lang = str(payload.get("lang") or "").strip().lower()
+    lang = lang if lang in ("de", "fr", "es", "en") else "de"
+    default_city = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}[lang]
+    bad = {"de": "Bitte prüfe die Geburtsdaten beider Personen.", "fr": "Veuillez vérifier les dates de naissance.",
+           "es": "Comprueba las fechas de nacimiento.", "en": "Please check both birth dates."}[lang]
+    calcs = []
+    for suf in ("a", "b"):
+        date = str(payload.get("birth_date_" + suf) or "")
+        if not (date[:4].isdigit() and 1900 <= int(date[:4]) <= 2100):
+            return None, ({"ok": False, "error": bad}, 400)
+        time_ = str(payload.get("birth_time_" + suf) or "")[:8]
+        city = str(payload.get("birth_city_" + suf) or "").strip()[:100] or default_city
+        try:
+            calcs.append(run_calculation({"birth_date": date, "birth_time": time_, "birth_city": city,
+                                          "lang": lang, "target_years": [2026, 2027]}))
+        except CalcError as e:
+            return None, ({"ok": False, "error": bad}, e.status if e.status < 500 else 500)
+    import compat_preview
+    return compat_preview.build(calcs[0], calcs[1], lang), None
+
+
+def _compat_json():
+    try:
+        payload = request.get_json(force=True, silent=False) or {}
+    except Exception:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+@app.route("/compat-preview", methods=["POST", "OPTIONS"])
+def compat_preview_route():
+    """궁합 무료 미리보기(AI·메일 없음). 두 사람의 오행 분포 + 관계 별명 + 개수. 개인정보는 응답/저장 안 함."""
+    if request.method == "OPTIONS":
+        return "", 204
+    payload = _compat_json()
+    if payload is None:
+        return jsonify({"ok": False, "error": "bad json"}), 400
+    if _rate_limited("compat_preview_ip", _client_ip(), max_count=30, window_seconds=3600):
+        return jsonify({"ok": False, "error": _msg("too_many", "de")}), 429
+    pv, err = _compat_preview_data(payload)
+    if err:
+        return jsonify(err[0]), err[1]
+    pv["ok"] = True
+    return jsonify(pv)
+
+
+@app.route("/compat-card", methods=["POST", "OPTIONS"])
+def compat_card_route():
+    """궁합 공유용 PNG(이름·날짜·장소 없음)."""
+    if request.method == "OPTIONS":
+        return "", 204
+    payload = _compat_json()
+    if payload is None:
+        return jsonify({"ok": False, "error": "bad json"}), 400
+    if _rate_limited("compat_card_ip", _client_ip(), max_count=30, window_seconds=3600):
+        return jsonify({"ok": False, "error": _msg("too_many", "de")}), 429
+    pv, err = _compat_preview_data(payload)
+    if err:
+        return jsonify(err[0]), err[1]
+    import share_card
+    png = share_card.render_compat_card(pv, pv["lang"])
+    resp = app.response_class(png, mimetype="image/png")
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 _SIGNUP_INTERESTS = {"self", "korea", "relationship", "yearreview", "curious"}
 _SRC_RE = re.compile(r"^[a-z0-9_-]{1,30}$")
 
@@ -1667,7 +1735,8 @@ def api_hit():
 
 _EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky",
                "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok",
-               "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page"}
+               "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page",
+               "compat_preview", "compat_card_share"}
 
 
 @app.route("/api/ev", methods=["POST"])
