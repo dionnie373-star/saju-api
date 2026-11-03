@@ -127,8 +127,8 @@ def test_prompt_updated():
     t = json.loads(p.read_text(encoding="utf-8"))["messages"][0]["content"]
     assert "{{relations_facts}}" in t
     assert "[장면·개인화 규칙" in t and "Euer Muster:" in t
-    assert "750~1000단어" in t and "750~1050" not in t
-    assert "(~25%, 이 리포트에서 가장 긴 핵심 섹션)" in t
+    assert "900~1150단어" in t and "750~1000" not in t
+    assert "(~28%, 이 리포트에서 가장 긴 핵심 섹션)" in t
 
 
 def test_scenes_only_for_displayed_relations():

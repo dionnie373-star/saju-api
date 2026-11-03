@@ -1735,6 +1735,15 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     gender_a = _GENDER_LABELS.get((payload.get("gender_a") or "").strip().lower(), _GENDER_LABELS["none"])
     gender_b = _GENDER_LABELS.get((payload.get("gender_b") or "").strip().lower(), _GENDER_LABELS["none"])
 
+    # 관계 유형(주문 폼에서 선택): 프롬프트가 연애/친구/가족/직장 맥락에 맞춰 쓰게 한다. 모르면 중립.
+    _RELATION_LABELS = {
+        "partner": "연인/배우자 (Partnerschaft)",
+        "friend": "친구 (Freundschaft)",
+        "family": "가족 (Familie)",
+        "work": "직장·팀 (Arbeit)",
+    }
+    relation_type = _RELATION_LABELS.get((payload.get("relation") or "").strip().lower(), "keine Angabe")
+
     # 두 사람 사이의 지지·천간 관계(합·충·형·파·해·원진·귀문)를 코드로 계산해 프롬프트에 사실로 넣는다.
     # 계산 실패 시 빈 문자열 → 프롬프트는 "관계 없음"으로 처리되고 리포트는 기존처럼 생성된다.
     import pair_relations
@@ -1747,6 +1756,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
             "name_b": name_b,
             "gender_a": gender_a,
             "gender_b": gender_b,
+            "relation_type": relation_type,
             "compact_a": calc_result_a["compact"],
             "compact_b": calc_result_b["compact"],
             "relations_facts": relations_facts,

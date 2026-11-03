@@ -186,7 +186,7 @@ class PromptTests(unittest.TestCase):
 
     def test_placeholder_section_and_rules_present(self):
         self.assertIn("{{relations_facts}}", self.text)
-        self.assertIn("3-2. 두 사람의 지지(Tageszweig) 관계", self.text)
+        self.assertIn("3-2. 부딪히기 쉬운 순간들", self.text)
         self.assertIn("[지지 관계 서술 규칙 - 매우 중요]", self.text)
 
     def test_german_expressions_present_and_hanja_rule_kept(self):
@@ -197,7 +197,7 @@ class PromptTests(unittest.TestCase):
 
     def test_section_percentages_sum_unchanged(self):
         pcts = [int(x) for x in re.findall(r"\(~(\d+)%", self.text)]
-        self.assertEqual(sum(pcts), 105)  # 기존 구조(5+8+30+30+25+7=105)와 같은 총량
+        self.assertEqual(sum(pcts), 98)  # v3 구조(8+5+18+14+28+12+8+5=98)
 
     def test_fills_without_leftover_placeholders(self):
         try:
@@ -206,7 +206,8 @@ class PromptTests(unittest.TestCase):
             self.skipTest("report_pipeline 의존 패키지가 없는 환경")
         tpl = rp._load_prompt_template("compatibility_report_prompt.json", "de")
         vars_ = {"name_a": "Anna", "name_b": "Ben", "gender_a": "x", "gender_b": "y",
-                 "compact_a": "CA", "compact_b": "CB", "relations_facts": "FACTS_BLOCK"}
+                 "compact_a": "CA", "compact_b": "CB", "relations_facts": "FACTS_BLOCK",
+                 "relation_type": "REL"}
         msg = rp._build_messages(tpl, vars_, "de")[0]["content"]
         self.assertNotIn("{{", msg)
         self.assertIn("FACTS_BLOCK", msg)
