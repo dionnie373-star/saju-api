@@ -19,6 +19,10 @@ class FrenchMechanicalRulesTest(unittest.TestCase):
         self.assertTrue(self._issues("Votre destinée."))
         self.assertEqual(self._issues("Votre destination favorite."), [])
 
+    def test_tu_allowed_inside_quoted_dialogue(self):
+        self.assertFalse(any("tu/toi" in i for i in self._issues("Vous pouvez dire : « Laisse-moi dix minutes, je reviens ». Puis \"tu peux\" aussi.")))
+        self.assertTrue(any("tu/toi" in i for i in self._issues("Tu peux dire « Laisse-moi dix minutes ».")))
+
     def test_informal_tu_flagged(self):
         self.assertTrue(any("tu/toi" in i for i in self._issues("Tu peux prendre ton temps, toi.")))
 

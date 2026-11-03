@@ -138,11 +138,13 @@ def fr_mechanical_issues(report_text):
             issues.append(f"금지 단어 '{label}' 포함됨")
     if FR_WRONG_ELEMENT_RE.search(report_text):
         issues.append("'Or'라는 단어로 금(金)을 표현함 - 반드시 'Métal'로 써야 함")
-    informal = FR_INFORMAL_RE.findall(report_text)
+    # 따옴표(« », " ", “ ”) 안의 연인 간 대사에서는 tu 허용 — 서술 부분만 검사
+    narration = re.sub(r"«[^»]*»|“[^”]*”|\"[^\"\n]*\"", " ", report_text)
+    informal = FR_INFORMAL_RE.findall(narration)
     if informal:
         issues.append(
             f"비격식 호칭(tu/toi/ta/tes) {len(informal)}회 사용됨 - 프랑스어 리포트는 "
-            f"반드시 'vous/votre/vos' 존댓말만 써야 함"
+            f"서술 부분은 반드시 'vous/votre/vos'만 써야 함(tu는 따옴표 안 대사에서만 허용)"
         )
     eng = {m.lower() for m in FR_ENGLISH_LEAK_RE.findall(report_text)}
     # "balance"/"focus"/"insight"는 프랑스어에도 쓰이는 차용어이므로 단독으로는 제외
