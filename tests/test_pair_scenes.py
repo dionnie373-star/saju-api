@@ -129,3 +129,15 @@ def test_prompt_updated():
     assert "[장면·개인화 규칙" in t and "Euer Muster:" in t
     assert "700~950단어" in t and "750~1050" not in t
     assert "(~25%, 이 리포트에서 가장 긴 핵심 섹션)" in t
+
+
+def test_scenes_only_for_displayed_relations():
+    """사실 블록(보조 최대 4개)에 안 실린 관계의 장면이 나가면 안 된다 (실제 4기둥 쌍에서 발견된 버그)."""
+    A4 = {k: {"hanja": v} for k, v in dict(year="甲子", month="癸酉", day="甲子", hour="甲戌").items()}
+    B4 = {k: {"hanja": v} for k, v in dict(year="乙丑", month="丁亥", day="甲寅", hour="己巳").items()}
+    text = pair_relations.relations_for_report({"pillars": A4}, {"pillars": B4}, "A", "B")
+    facts, scenes = text.split("[편집 장면 후보와 패턴 별명")
+    for code, label in pair_scenes.KO_LABEL.items():
+        if f"· {label}" in scenes:
+            ko = label.split("(")[0]
+            assert ko in facts or code == "same_branch", (code, facts)

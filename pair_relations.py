@@ -161,24 +161,32 @@ def _fmt_pair(item, name_a, name_b, stem=False):
     )
 
 
+def _rank(item):
+    # 관계가 있는 쌍을 먼저, 같은 지지만 있는 쌍은 뒤로. 그다음 월지·년지·시지 순.
+    order = {"day": 0, "month": 1, "year": 2, "hour": 3}
+    return (
+        0 if item["relations"] else 1,
+        order[item["person_a_position"]] + order[item["person_b_position"]],
+    )
+
+
+def select_displayed(result):
+    """프롬프트에 실제로 실리는 쌍만 고른다: (핵심, 보조(최대 MAX_SECONDARY), 천간(최대 2)).
+
+    장면 후보도 이 목록에 있는 관계에서만 고른다(사실 블록에 없는 관계의 장면이 나가지 않도록).
+    """
+    bp, sp = result["branch_pairs"], result["stem_pairs"]
+    primary = [i for i in bp if i["priority"] == "primary"]
+    secondary = sorted([i for i in bp if i["priority"] == "secondary" and i["relations"]], key=_rank)
+    return primary, secondary[:MAX_SECONDARY], sp[:2]
+
+
 def build_facts_text(result, name_a, name_b):
     """compare() 결과를 프롬프트용 한국어 사실 블록으로 만든다(한자는 내부용, 출력에는 쓰지 않도록 프롬프트가 지시)."""
-    bp = result["branch_pairs"]
-    sp = result["stem_pairs"]
-
-    def rank(item):
-        # 관계가 있는 쌍을 먼저, 같은 지지만 있는 쌍은 뒤로. 그다음 월지·년지·시지 순.
-        order = {"day": 0, "month": 1, "year": 2, "hour": 3}
-        return (
-            0 if item["relations"] else 1,
-            order[item["person_a_position"]] + order[item["person_b_position"]],
-        )
-
-    primary = [i for i in bp if i["priority"] == "primary"]
-    secondary = sorted([i for i in bp if i["priority"] == "secondary" and i["relations"]], key=rank)
+    primary, secondary, stems = select_displayed(result)
     primary_lines = [_fmt_pair(i, name_a, name_b) for i in primary]
-    secondary_lines = [_fmt_pair(i, name_a, name_b) for i in secondary[:MAX_SECONDARY]]
-    stem_lines = [_fmt_pair(i, name_a, name_b, stem=True) for i in sp[:2]]
+    secondary_lines = [_fmt_pair(i, name_a, name_b) for i in secondary]
+    stem_lines = [_fmt_pair(i, name_a, name_b, stem=True) for i in stems]
 
     lines = []
     if primary_lines:
@@ -211,7 +219,9 @@ def relations_for_report(calc_result_a, calc_result_b, name_a, name_b):
         return FALLBACK_FACTS
     try:
         import pair_scenes
-        facts += "\n\n" + pair_scenes.build_scene_text(pair_scenes.select(result))
+        primary, secondary, stems = select_displayed(result)
+        shown = {"branch_pairs": primary + secondary, "stem_pairs": stems}
+        facts += "\n\n" + pair_scenes.build_scene_text(pair_scenes.select(shown))
     except Exception as e:  # 장면 선택 실패는 사실 블록만으로 리포트를 생성하게 둔다
         print(f"[pair_relations] 경고: 장면 후보 선택 실패 - {e}")
     return facts
