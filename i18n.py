@@ -216,8 +216,8 @@ FR_STRINGS = {
         "Vous disposez de 60 jours : notre garantie volontaire « satisfait ou remboursé » s\'applique à cet achat. "
         "Écrivez-nous simplement si le rapport ne vous convient pas."
     ),
-    "promo": "Envie de savoir à quel point vous vous accordez avec quelqu'un d'autre ?",
-    "promo_link": "→ Test de compatibilité Saju (9,90 €)",
+    "promo": "Envie de poser votre profil à côté de celui de votre partenaire ?",
+    "promo_link": "→ Test de couple Saju (9,90 €)",
     "footer_questions": "Une question ? Écrivez-nous à",
     "footer_links": [
         ("fr/mentions-legales", "Mentions légales"),
@@ -398,8 +398,8 @@ ES_STRINGS = {
         "Tienes 60 días: nuestra garantía voluntaria de devolución del dinero se aplica a esta compra. "
         "Escríbenos si el informe no es para ti."
     ),
-    "promo": "¿Quieres saber cuánto conectas con otra persona?",
-    "promo_link": "→ Test de compatibilidad Saju (9,90 €)",
+    "promo": "¿Quieres poner tu perfil junto al de tu pareja?",
+    "promo_link": "→ Test de pareja Saju (9,90 €)",
     "footer_questions": "¿Alguna duda? Escríbenos a",
     "footer_links": [
         ("es/aviso-legal", "Aviso legal"),

@@ -252,7 +252,8 @@ class SpanishPaidPromptTests(unittest.TestCase):
             for name, vars_ in (
                 ("free_report_prompt.json", {"compact": "C"}),
                 ("compatibility_report_prompt.json", {"name_a": "A", "name_b": "B", "gender_a": "x",
-                                                      "gender_b": "y", "compact_a": "CA", "compact_b": "CB"}),
+                                                      "gender_b": "y", "compact_a": "CA", "compact_b": "CB",
+                                                      "relations_facts": "RF", "relation_type": "RT"}),
             ):
                 t = rp._load_prompt_template(name, lang)
                 self.assertEqual(t["native_lang"], lang)

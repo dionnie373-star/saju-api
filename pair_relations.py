@@ -193,7 +193,7 @@ def build_facts_text(result, name_a, name_b):
         lines.append("[핵심 관계 - 두 사람의 일지(태어난 날을 나타내는 지지) 사이]")
         lines += [f"- {l}" for l in primary_lines]
     else:
-        lines.append("[핵심 관계 - 두 사람의 일지 사이] 특별히 성립하는 관계 없음 (이 사실은 'So haben wir gerechnet' 박스에서만 한 번 쓰고, 본문 섹션에서는 언급하지 마세요)")
+        lines.append("[핵심 관계 - 두 사람의 일지 사이] 특별히 성립하는 관계 없음 (이 사실은 리포트 맨 끝의 계산 근거 박스에서만 한 번 쓰고, 본문 섹션에서는 언급하지 마세요)")
     if secondary_lines:
         lines.append("[보조 관계 - 다른 기둥의 지지 사이 (중요도 낮음, 최대 %d개만 제공)]" % MAX_SECONDARY)
         lines += [f"- {l}" for l in secondary_lines]

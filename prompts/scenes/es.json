@@ -1,0 +1,152 @@
+{
+  "pattern_names": {
+    "both": "Cercanía con fricciones suaves",
+    "connection": "Puntos de encuentro",
+    "tension": "Miradas distintas",
+    "trine_only": "Una dirección en común",
+    "same_only": "Un punto de partida compartido",
+    "none": "Una conexión propia"
+  },
+  "scenes": {
+    "idee_waechst": {
+      "scene": "Una idea que uno de los dos deja a medias podría ser retomada enseguida por el otro, por ejemplo al planear una excursión. Entonces una charla de tres frases puede convertirse en un plan cerrado. Lo delicado es que, por el camino, nadie pregunte si los dos lo quieren de verdad.",
+      "question": "¿Qué cosa echó a andar con facilidad entre los dos hace poco, y se preguntaron también si ambos la querían?"
+    },
+    "aufgaben_fliessen": {
+      "scene": "En una tarea compartida, el trabajo podría repartirse casi sin hablarlo: uno empieza y el otro completa. Entonces puede ocurrir que una misma persona se quede siempre con el mismo papel y solo lo note cuando ya le pesa demasiado.",
+      "question": "¿Qué tarea acaba siempre en la misma persona, y le parece bien a ambos?"
+    },
+    "mass_gemeinsam": {
+      "scene": "Lo que cuenta como «suficientemente bien» podrían valorarlo de forma parecida, por ejemplo al ordenar la casa o al cumplir una cita. Eso puede ahorrar roces. Pero si para uno de los dos la vara cambia un día, el otro puede interpretarlo enseguida como desinterés.",
+      "question": "¿En qué coinciden los dos sobre lo «suficientemente bien», y en qué no?"
+    },
+    "bemerkung_nachhall": {
+      "scene": "Una frase corta como «Eso podrías haberlo dicho antes» podría seguir resonando por la noche en uno de los dos, mientras el otro la olvidó a los cinco minutos. Entonces un comentario al paso puede convertirse en un silencio cuyo motivo nadie dice en voz alta.",
+      "question": "¿Qué frase siguió resonando en uno de los dos sin que el otro se diera cuenta?"
+    },
+    "geste_anders": {
+      "scene": "Si uno de los dos se ocupa de la cena por iniciativa propia o le quita una tarea al otro, este podría vivirlo como una intromisión y no como ayuda. Entonces el agradecimiento puede no llegar, y quien ayudó se siente poco visto.",
+      "question": "¿Qué ayuda quiere cada uno recibir de forma explícita, y cuál prefiere no recibir?"
+    },
+    "rueckmeldung": {
+      "scene": "Un mensaje respondido solo con «vale» podría significar «asunto cerrado» para uno y sonar frío para el otro. Entonces un pequeño malentendido puede acompañarlos durante días.",
+      "question": "¿Qué significa para cada uno un «vale» seco?"
+    },
+    "zuneigung_ausdruck": {
+      "scene": "Uno de los dos muestra el cariño más con palabras y el otro más con hechos, por ejemplo preparando el café o llenando el depósito del coche. Entonces uno podría sentirse poco querido aunque el otro ya hizo algo por él hace rato.",
+      "question": "¿Cómo nota cada uno que lo quieren?"
+    },
+    "prioritaeten": {
+      "scene": "Al planear un sábado libre, uno podría preguntar primero qué necesita descanso y el otro qué no puede faltar. Entonces una discusión sobre el sábado puede ser, en realidad, una discusión sobre prioridades.",
+      "question": "¿Qué no puede faltar para cada uno en un día libre compartido?"
+    },
+    "veraenderung": {
+      "scene": "Si una cita se adelanta de pronto una hora, uno podría verlo como una oportunidad y el otro como una molestia. Entonces la discusión por la hora puede parecer más grande que la hora misma.",
+      "question": "¿Cuánta antelación necesita cada uno cuando cambia un plan?"
+    },
+    "haltung_zeigen": {
+      "scene": "Al elegir un restaurante, uno podría proponer algo de inmediato mientras el otro prefiere ver primero todas las opciones. Entonces el rápido puede sentirse frenado y el meticuloso, atropellado.",
+      "question": "¿Quién decide más rápido, y cómo lo vive el otro?"
+    },
+    "nach_dem_streit": {
+      "scene": "Después de una discusión, uno podría querer hablar enseguida mientras el otro necesita primero distancia. Entonces la espera puede sentirse como rechazo y la insistencia como presión.",
+      "question": "¿Qué necesita cada uno después de una discusión, y cómo lo dicen antes de que ocurra?"
+    },
+    "ton_schaerfe": {
+      "scene": "Una frase pensada como observación práctica podría sonar más dura de lo previsto en un momento de cansancio. Entonces la respuesta también puede salir más dura, y de la observación nace un cruce de palabras sobre el tono.",
+      "question": "¿En qué momentos se les endurece antes el tono, y quién lo nota primero?"
+    },
+    "heikles_thema": {
+      "scene": "Un tema que los dos conocen y suelen esquivar podría salir a la luz en el peor momento. Entonces puede parecer que todo lo no dicho aparece de golpe.",
+      "question": "¿Qué tema van aplazando juntos, y cuándo sería un buen momento para tratarlo?"
+    },
+    "details": {
+      "scene": "Al planear un viaje juntos, uno podría querer fijar los detalles mientras el otro prefiere dejar muchas cosas abiertas. Entonces el primero puede sentirse el único responsable y el segundo, controlado.",
+      "question": "¿Qué detalles necesita cada uno de antemano, y cuáles no?"
+    },
+    "geklaert": {
+      "scene": "Algo que creen haber hablado ya podría volver a surgir semanas después porque para uno seguía abierto. Entonces un «Eso ya lo hablamos» puede chocar con un «Para mí nunca quedó claro».",
+      "question": "¿En qué notan que un asunto está de verdad cerrado para los dos?"
+    },
+    "grenzen_benennen": {
+      "scene": "Cuando a uno de los dos algo le resulta demasiado, como las preguntas constantes o los cambios de plan, podría decirlo solo cuando ya es claramente demasiado. Entonces la reacción puede parecerle al otro inesperadamente fuerte.",
+      "question": "¿Cómo se dicen a tiempo que algo empieza a ser demasiado?"
+    },
+    "beilaeufige_absprache": {
+      "scene": "Un «Podríamos irnos de viaje en verano», dicho de pasada, podría ser una idea para uno y casi una promesa para el otro. Entonces puede aparecer la decepción aunque nunca se acordara nada firme.",
+      "question": "¿En qué notan si una frase es una idea o un compromiso?"
+    },
+    "vertraute_ablaeufe": {
+      "scene": "Una rutina bien rodada, por ejemplo quién hace qué y cuándo, podría atascarse si uno la cambia sin avisar. Entonces una pequeñez puede convertirse en una discusión sobre en qué se podía confiar.",
+      "question": "¿Qué rutina debería cambiarse solo de común acuerdo?"
+    },
+    "kleine_entscheidungen": {
+      "scene": "Pequeñas decisiones, como la película, la comida o la hora de salida, podrían perderse con frecuencia en un «Me da igual». Entonces, con el tiempo, uno puede sentirse pasado por alto sin que haya habido nunca una pelea.",
+      "question": "¿Quién dice más a menudo «me da igual» cuando en realidad no le da igual?"
+    },
+    "nachrichten_takt": {
+      "scene": "Uno de los dos podría querer escribir más a menudo durante el día y el otro responder solo por la noche. Entonces la respuesta tardía puede parecer desinterés y los mensajes frecuentes, control.",
+      "question": "¿Con qué frecuencia y a qué horas le sienta bien a cada uno saber del otro?"
+    },
+    "stille_annahmen": {
+      "scene": "Uno de los dos podría dar por hecho que una cita se vive juntos sin haberlo mencionado nunca. Entonces el otro puede planear otra cosa y los dos se sorprenden.",
+      "question": "¿Qué dan por supuesto del otro sin haberlo dicho nunca?"
+    },
+    "bekannt_voraussetzen": {
+      "scene": "Una información que se dijo de pasada, por ejemplo un cambio de hora, podría llegar solo a medias porque cada uno supone que el otro ya lo sabe. Entonces uno puede presentarse a la hora mientras el otro ni lo sospecha.",
+      "question": "¿Qué información comparten solo de pasada, y cómo se aseguran de que llegue?"
+    },
+    "form_mitteilung": {
+      "scene": "Un mensaje importante enviado como texto breve podría sonar distinto que dicho en persona. Entonces el contenido puede perderse mientras el tono se queda grabado.",
+      "question": "¿Qué prefieren hablar en persona y no por escrito?"
+    },
+    "alleine_zeit": {
+      "scene": "Si uno de los dos quiere pasar una noche a solas, el otro podría interpretarlo como distancia. Entonces el deseo de calma puede convertirse en una conversación sobre si todo sigue bien.",
+      "question": "¿Cómo se dicen que necesitan tiempo para sí mismos sin que suene a retirada?"
+    },
+    "ausgangspunkt": {
+      "scene": "En una escapada de fin de semana, uno podría tener ya en la cabeza el lugar al que ir mientras el otro le coge el gusto por el camino. Entonces el primero puede sentirse frenado y el segundo, empujado.",
+      "question": "¿Quién marca el rumbo entre los dos, y cuándo se vuelve presión?"
+    },
+    "idee_unfertig": {
+      "scene": "Una idea dicha a medias, como «Deberíamos vivir en otro sitio», podría ser entendida por el otro como un plan. Entonces una reflexión puede convertirse en una discusión por una supuesta promesa.",
+      "question": "¿En qué notan si una frase es un pensamiento o un plan?"
+    },
+    "interessen_teil": {
+      "scene": "En una afición compartida, uno podría querer sumergirse a fondo y el otro apuntarse solo de vez en cuando. Entonces el entusiasta puede sentirse solo y el otro, presionado.",
+      "question": "¿Qué intereses quieren compartir, y cuáles prefiere guardar cada uno para sí?"
+    },
+    "gedanken_verbinden": {
+      "scene": "Cuando uno piensa en voz alta, el otro podría terminar ya sus ideas. Eso puede sentirse como comprensión, pero también puede llevar a que el primero no pueda terminar de hablar.",
+      "question": "¿Cuándo quieren que el otro solo escuche y no complete nada?"
+    },
+    "blick_erweitern": {
+      "scene": "Ante una propuesta nueva, por ejemplo para las vacaciones, uno de los dos podría reaccionar con curiosidad y el otro con escepticismo. Entonces el escepticismo puede sonar a rechazo aunque solo sea una forma de examinar la idea.",
+      "question": "¿Cómo reacciona primero cada uno ante una propuesta nueva del otro?"
+    },
+    "ausdruck_ergaenzt": {
+      "scene": "Uno podría poner los sentimientos en palabras con rapidez y el otro más bien en gestos. Entonces quien habla mucho puede sentirse incomprendido porque los gestos solos no le bastan.",
+      "question": "¿Qué palabras o gestos necesita cada uno para sentirse visto?"
+    },
+    "gruppe_wege": {
+      "scene": "Ante una meta común, como un viaje o un proyecto, podrían querer ir en la misma dirección pero elegir caminos distintos. Entonces el camino puede convertirse en motivo de discusión aunque la meta esté clara.",
+      "question": "¿En qué meta coinciden, y en qué se distinguen los caminos que elige cada uno?"
+    },
+    "reichweite": {
+      "scene": "Con los planes de los próximos meses, uno podría pensar muy por delante y el otro quedarse en el presente. Entonces quien mira lejos puede sentirse el único responsable.",
+      "question": "¿Con cuánta antelación le gusta planear a cada uno?"
+    },
+    "beobachtung": {
+      "scene": "Algunas costumbres del otro, como la forma de levantarse o de ordenar, podrían resultarles familiares, casi como las propias. Entonces ese espejo puede molestar, porque lo que uno conoce de sí mismo suele irritar más en el otro.",
+      "question": "¿Qué costumbre del otro reconocen también en sí mismos?"
+    },
+    "schaetzen_anders": {
+      "scene": "Lo que cada uno valora de la relación, por ejemplo la fiabilidad, podría sonar parecido y significar cosas distintas. Entonces «fiabilidad» puede ser puntualidad para uno y estar presente cuando importa para el otro.",
+      "question": "¿Qué significa en concreto la fiabilidad para cada uno?"
+    },
+    "erinnerung": {
+      "scene": "Un momento compartido podría verse distinto en el recuerdo de cada uno. Entonces un «No fue así» puede pesar más que el momento mismo.",
+      "question": "¿Qué momento compartido recuerda cada uno de forma distinta?"
+    }
+  }
+}
