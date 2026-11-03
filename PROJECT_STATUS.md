@@ -834,3 +834,13 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 전: "Mein Elementetyp: {n} – und deiner?" / 본문 "Schau mal… Kostenlos auf palja.de"
 - 후: "Ich bin „{n}“ – welcher Elementetyp bist du?" / 본문은 한 줄 + 링크
 - 11/7 판단 시 공유율(카드 표시→공유)과 src=share 유입을 이 시각 전/후로 나눠 볼 것. 되돌리기: git revert.
+
+## 2026-11-03 변경 기록: 두 사람 궁합 관계 계산 추가 (모니터링 기간 중 두 번째 변경, 사용자 지시)
+- 시각: 2026-11-03 KST 밤. 사용자: "아무도 신청한 적 없으니 모니터링과 무관, 스위치 없이 지금 적용". 궁합 구매는 이 시점까지 0건.
+- 새 파일 `pair_relations.py`: 두 사람 기둥을 교차 비교해 육합·충·파·해·원진·귀문·형(부분)·반합(왕지 포함 8쌍)·같은 삼합 그룹·천간합을 기록. 일지-일지=핵심, 나머지=보조(프롬프트에는 최대 4개). 한 쌍의 모든 관계 기록, 점수 합산 없음.
+- 제외: 방합, 천간충, 합화 판정, 용신 보완, 교차 자형, 삼형 완성 판정, '합이 형충을 푼다' 규칙.
+- `report_pipeline.run_compatibility_signup`이 `relations_facts` 변수를 프롬프트에 전달(계산 실패 시 FALLBACK_FACTS로 해당 섹션만 생략). 독일어 `prompts/compatibility_report_prompt.json`에 사실 블록, 섹션 3-2(Tageszweig 관계, ~10%), 서술 규칙(독일어 표현 매핑, 단정·한자·합화 금지) 추가. FR/ES/EN 프롬프트는 아직 미적용(변수는 무시됨).
+- 귀문관살 표 수정(1d39adc): 원진과 표를 공유하던 버그 → 귀문 子酉·寅未, 원진 子未·寅酉.
+- 근거 수준: 원진 6쌍만 논문(김만태, 정신문화연구 36(3)) 확인. 귀문·부분 형·반합 범위는 현대 실무 기준. 설계 문서: Claude 문서 "Palja 두 사람 궁합 엔진 설계안 (2026-11-03)".
+- 테스트: tests/test_pair_relations.py, tests/test_wonjin_gwimun_pairs.py (로컬 28개 통과). 이 환경엔 flask/reportlab/requests가 없어 기존 전체 테스트는 못 돌림(기존 baseline도 동일하게 import 오류) → 배포 환경 확인 필요.
+- 되돌리기: `git revert <이 커밋>` (프롬프트와 파이프라인 연결이 함께 되돌아감). 실제 LLM 출력(독일어 리포트)은 이 환경에서 생성해 보지 못함(API 키 없음) — 첫 실제 궁합 주문/테스트 후 PDF 정독 필요.
