@@ -610,8 +610,8 @@ EN_STRINGS = {
         "You have 60 days: our voluntary money-back guarantee applies to this purchase. "
         "Just write to us if the report is not right for you."
     ),
-    "promo": "Would you like to see how well you connect with another person?",
-    "promo_link": "→ Saju compatibility check ($10.00)",
+    "promo": "Would you like to put your chart next to your partner's chart?",
+    "promo_link": "→ Saju compatibility check for couples ($10.00)",
     "footer_questions": "Questions? Write to us at",
     "footer_links": [
         ("en/legal-notice", "Legal notice"),

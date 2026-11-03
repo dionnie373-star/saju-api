@@ -130,7 +130,8 @@ class EnglishPromptTests(unittest.TestCase):
                                        "daewoon_compact": "DAEWOON_BLOCK"},
         "compatibility_report_prompt.json": {"compact_a": "COMPACT_A", "compact_b": "COMPACT_B",
                                              "name_a": "Anna", "name_b": "Ben",
-                                             "gender_a": "female", "gender_b": "not specified"},
+                                             "gender_a": "female", "gender_b": "not specified",
+                                             "relation_type": "couple", "relations_facts": "RELATIONS_BLOCK"},
     }
 
     def load(self, name, lang="en"):
@@ -186,7 +187,7 @@ class EnglishPromptTests(unittest.TestCase):
             "premium_report_prompt.json": ["3,400 to 4,400 words", "$24.90", "8", "last chance", "for the first time",
                                            "reveals", "guarantees", "Your life at a glance",
                                            "The decisions of your life depend only on you"],
-            "compatibility_report_prompt.json": ["750 to 1,050 words", "do not address a reader as \"you\"",
+            "compatibility_report_prompt.json": ["900 to 1,150 words", "do not address a reader as \"you\"", "How we calculated this", "Their pattern:",
                                                  "Never speak about \"the man\" or \"the woman\"", "$10.00"],
         }
         for name, phrases in required.items():
@@ -385,7 +386,7 @@ class EnglishStringTests(unittest.TestCase):
                     self.assertNotIn("money-back", out)
                 else:
                     self.assertIn("60 days", out)
-                self.assertEqual("how well you connect" in out, kind != "compatibility")
+                self.assertEqual("next to your partner's chart" in out, kind != "compatibility")
 
     def test_email_links(self):
         with mock.patch.dict(os.environ, {"EN_SITE_BASE_URL": ""}):
@@ -507,7 +508,7 @@ class EnglishPipelineEndToEndTests(unittest.TestCase):
         self.assertEqual(rec["subject"], "Your Palja annual report is ready 📖")
         self.assertEqual(rec["attachment_name"], "Palja-Annual-Report.pdf")
         self.assertIn("60 days", rec["html_body"])
-        self.assertIn("Saju compatibility check ($10.00)", rec["html_body"])
+        self.assertIn("Saju compatibility check for couples ($10.00)", rec["html_body"])
         text = self.assert_pdf(rec, "Your Saju annual report", "Contents", "January", "December", "About this reading")
         if text:
             self.assertNotIn("Inhalt", text)
@@ -538,7 +539,7 @@ class EnglishPipelineEndToEndTests(unittest.TestCase):
         rec = self.sent[0]
         self.assertEqual(rec["subject"], "Your Saju compatibility check is ready 💫")
         self.assertEqual(rec["attachment_name"], "Palja-Compatibility.pdf")
-        self.assertNotIn("how well you connect", rec["html_body"])
+        self.assertNotIn("next to your partner's chart", rec["html_body"])
         self.assert_pdf(rec, "Your Saju compatibility", "Anna", "Ben", "The five elements")
 
     def test_pullquote_quotes_only_change_for_english(self):

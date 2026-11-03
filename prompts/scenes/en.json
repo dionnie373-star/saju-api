@@ -1,0 +1,152 @@
+{
+  "pattern_names": {
+    "both": "Closeness with quiet friction",
+    "connection": "Shared starting points",
+    "tension": "Different points of view",
+    "trine_only": "A shared general direction",
+    "same_only": "A shared point of reference",
+    "none": "Their own connection"
+  },
+  "scenes": {
+    "idee_waechst": {
+      "scene": "One of them may say an idea only halfway, and the other may finish it at once, for example when planning a trip. A talk of three sentences can then become a finished plan. It can become a problem when nobody asks whether both really want it.",
+      "question": "When did something last start to roll easily between them, and did they also ask whether both wanted it?"
+    },
+    "aufgaben_fliessen": {
+      "scene": "In a shared task, the work could divide itself almost without discussion: one starts and the other adds. Then one of them may end up with the same role every time and notice it only when it becomes too much.",
+      "question": "Which task always ends up with the same person, and does that work for both?"
+    },
+    "mass_gemeinsam": {
+      "scene": "They could judge in a similar way what is good enough, for example when tidying up or keeping an appointment. This can save friction. If the standard differs once for one of them, the other may quickly read it as lack of interest.",
+      "question": "Where do they agree on what is good enough, and where do they not?"
+    },
+    "bemerkung_nachhall": {
+      "scene": "A short sentence such as \"You could have told me earlier\" could still echo for one of them in the evening, while the other forgot it after five minutes. A small remark can then turn into a silence whose reason nobody says.",
+      "question": "Which sentence last stayed with one of them without the other noticing?"
+    },
+    "geste_anders": {
+      "scene": "If one of them spontaneously takes over dinner or a task, the other could read it as interference, not as help. Then thanks may not come, and the helper may feel unseen.",
+      "question": "What kind of help does each of them want to ask for clearly, and what kind not?"
+    },
+    "rueckmeldung": {
+      "scene": "A message that is answered only with \"ok\" could mean done for one of them and feel cold to the other. A small misunderstanding can then stay for days.",
+      "question": "What does a short \"ok\" mean to each of them?"
+    },
+    "zuneigung_ausdruck": {
+      "scene": "One of them may show affection more with words, the other more with actions, for example by making the coffee or filling the gas tank. Then one could feel unloved even though the other has long done something for them.",
+      "question": "How does each of them notice that they are loved?"
+    },
+    "prioritaeten": {
+      "scene": "When planning a free Saturday, one of them could first ask what needs rest, and the other what must not be skipped. A talk about Saturday can then be, in truth, a talk about priorities.",
+      "question": "What must happen on a shared free day for each of them?"
+    },
+    "veraenderung": {
+      "scene": "If a meeting suddenly has to start one hour earlier, one of them could see a chance and the other a disturbance. The dispute about the time can then feel bigger than the time itself.",
+      "question": "How much notice does each of them need when a plan changes?"
+    },
+    "haltung_zeigen": {
+      "scene": "When choosing a restaurant, one of them could name a place at once, while the other first wants to see all the options. The quick one may feel slowed down, and the careful one may feel rushed.",
+      "question": "Who decides faster, and how does the other one handle it?"
+    },
+    "nach_dem_streit": {
+      "scene": "After an argument, one of them could want to talk at once, while the other first needs distance. Waiting can feel like rejection to one of them, and pushing can feel like pressure to the other.",
+      "question": "What does each of them need after an argument, and how can they say it before it happens?"
+    },
+    "ton_schaerfe": {
+      "scene": "A sentence meant as a plain remark could sound sharper than intended in a tired moment. The answer may then also come out sharper, and the remark becomes an exchange about the tone.",
+      "question": "In which moments does their tone turn sharp faster, and who notices it first?"
+    },
+    "heikles_thema": {
+      "scene": "A topic that both know and tend to avoid could come up at the wrong moment. It may then feel as if everything unsaid is suddenly in the room.",
+      "question": "Which topic do they push ahead of them together, and when would be a good time for it?"
+    },
+    "details": {
+      "scene": "When planning a trip together, one of them could want to fix the details, while the other wants to keep much open. One may then feel alone in charge, and the other may feel controlled.",
+      "question": "Which details does each of them need in advance, and which not?"
+    },
+    "geklaert": {
+      "scene": "Something they believe they already discussed could come back after weeks, because it was still open for one of them. A \"We already did this\" can then meet a \"For me it was never settled\".",
+      "question": "How do they know that a matter is really settled for both?"
+    },
+    "grenzen_benennen": {
+      "scene": "When something becomes too much for one of them, such as repeated questions or changed plans, that person could say so only when it is already clearly too much. The reaction may then seem unexpectedly strong to the other.",
+      "question": "How can they say early enough that something is becoming too much?"
+    },
+    "beilaeufige_absprache": {
+      "scene": "A \"We could go away in the summer\" said in passing could be only a thought for one of them and already a promise for the other. Disappointment can follow, although nothing was ever agreed.",
+      "question": "How do they tell whether a sentence is an idea or an agreement?"
+    },
+    "vertraute_ablaeufe": {
+      "scene": "A familiar routine, such as who does what and when, could stall when one of them changes it without notice. A small thing can then turn into a dispute about what each could rely on.",
+      "question": "Which routine should be changed only after they have talked about it?"
+    },
+    "kleine_entscheidungen": {
+      "scene": "Small choices such as a movie, a meal or a time to leave could often disappear into \"I do not mind\". Over time one of them may feel passed over, although there was never an argument.",
+      "question": "Which of them says \"I do not mind\" more often, even when they do mind?"
+    },
+    "nachrichten_takt": {
+      "scene": "One of them might like to write more often during the day, while the other answers only in the evening. A late answer can then look like lack of interest, and frequent messages can look like control.",
+      "question": "How often and when does it feel good to each of them to hear from the other?"
+    },
+    "stille_annahmen": {
+      "scene": "One of them could assume that an event will naturally be attended together, without ever having said it. The other may then plan something else, and both are surprised.",
+      "question": "What does each of them take for granted about the other without ever having said it?"
+    },
+    "bekannt_voraussetzen": {
+      "scene": "A piece of information mentioned only in passing, such as a changed time, could arrive only halfway, because each assumes that the other knows. One of them may then stand there on time, while the other has no idea.",
+      "question": "Which information do they pass on only in passing, and how do they make sure it arrives?"
+    },
+    "form_mitteilung": {
+      "scene": "An important message sent as a short text could land differently than in a talk. The content may get lost while the tone stays.",
+      "question": "What do they prefer to discuss in person rather than in writing?"
+    },
+    "alleine_zeit": {
+      "scene": "If one of them wants to spend an evening alone, the other could take it as distance. A wish for quiet can then become a talk about whether everything is still all right.",
+      "question": "How do they tell each other that they need time for themselves without it sounding like withdrawal?"
+    },
+    "ausgangspunkt": {
+      "scene": "On a weekend trip, one of them could already have the destination in mind, while the other gets the wish only on the way. One may then feel slowed down, and the other may feel pushed.",
+      "question": "Who sets the direction, and when does it turn into pressure?"
+    },
+    "idee_unfertig": {
+      "scene": "A half-said idea, such as \"We should live somewhere else some day\", could be taken by the other as a plan. A thought can then turn into a dispute about a supposed promise.",
+      "question": "How do they tell whether a sentence is a thought or a plan?"
+    },
+    "interessen_teil": {
+      "scene": "With a shared hobby, one of them could want to dive deep, while the other joins only now and then. The keen one may feel left alone, and the other may feel pressed.",
+      "question": "Which interests do they want to share, and which does each prefer to keep for themselves?"
+    },
+    "gedanken_verbinden": {
+      "scene": "When one of them thinks aloud, the other could finish the thought already. This can feel like understanding, but it can also mean that the first one is not allowed to finish speaking.",
+      "question": "When do they want the other to just listen and add nothing?"
+    },
+    "blick_erweitern": {
+      "scene": "A new proposal, for example for a vacation, could meet curiosity in one of them and doubt in the other. The doubt can then sound like refusal, although it only means checking.",
+      "question": "How does each of them first react to a new proposal from the other?"
+    },
+    "ausdruck_ergaenzt": {
+      "scene": "One of them could put feelings into words quickly, and the other more through gestures. The talkative one may then feel not understood, because gestures alone are not enough.",
+      "question": "Which words or gestures does each of them need to feel seen?"
+    },
+    "gruppe_wege": {
+      "scene": "With a shared goal, such as a trip or a plan, they could want to go in the same direction but choose different ways. The way can then become the point of dispute, although the goal is fixed.",
+      "question": "On which goal do they agree, and where do they go there in different ways?"
+    },
+    "reichweite": {
+      "scene": "With plans for the next months, one of them could think far ahead, while the other stays in the moment. The one who thinks ahead may then feel alone in charge.",
+      "question": "How far ahead does each of them like to plan?"
+    },
+    "beobachtung": {
+      "scene": "Some habits of the other, for example when getting up or tidying, could look familiar, almost like their own. This mirror can then be annoying, because what one knows in oneself often bothers most in the other.",
+      "question": "Which habit of the other do they also know from themselves?"
+    },
+    "schaetzen_anders": {
+      "scene": "What each of them values in the relationship could sound alike, for example reliability, but mean different things. Reliability may then mean being on time for one and being there when it counts for the other.",
+      "question": "What does reliability mean to each of them in concrete terms?"
+    },
+    "erinnerung": {
+      "scene": "A shared moment could look different in the memory of each of them. A \"That is not how it was\" can then weigh more than the moment itself.",
+      "question": "Which shared moment does each of them remember differently?"
+    }
+  }
+}
