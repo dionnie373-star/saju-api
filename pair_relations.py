@@ -205,7 +205,13 @@ def relations_for_report(calc_result_a, calc_result_b, name_a, name_b):
     """파이프라인 진입점: 두 계산 결과에서 프롬프트용 사실 블록을 만든다. 실패하면 FALLBACK_FACTS(리포트는 해당 섹션만 생략하고 생성)."""
     try:
         result = compare(calc_result_a.get("pillars"), calc_result_b.get("pillars"))
-        return build_facts_text(result, name_a, name_b)
+        facts = build_facts_text(result, name_a, name_b)
     except Exception as e:  # 관계 계산 오류가 주문 처리 전체를 막으면 안 된다
         print(f"[pair_relations] 경고: 관계 계산 실패 - {e}")
         return FALLBACK_FACTS
+    try:
+        import pair_scenes
+        facts += "\n\n" + pair_scenes.build_scene_text(pair_scenes.select(result))
+    except Exception as e:  # 장면 선택 실패는 사실 블록만으로 리포트를 생성하게 둔다
+        print(f"[pair_relations] 경고: 장면 후보 선택 실패 - {e}")
+    return facts
