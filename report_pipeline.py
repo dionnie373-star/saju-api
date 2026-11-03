@@ -44,6 +44,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus.flowables import Flowable
 from reportlab.platypus import (
     HRFlowable,
     KeepTogether,
@@ -1060,9 +1061,24 @@ def _draw_branded_footer(canvas, doc, *, title):
     canvas.restoreState()
 
 
-def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
-              cover=False, overview_flowables=None):
-    """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
+class _TailProbe(Flowable):
+    """높이 0짜리 표식. 마지막 페이지에 남은 높이를 기록해 '거의 빈 마지막 페이지'를 감지한다."""
+
+    def __init__(self):
+        Flowable.__init__(self)
+        self.avail = None
+
+    def wrap(self, avail_width, avail_height):
+        self.avail = avail_height
+        return (0, 0)
+
+    def draw(self):
+        pass
+
+
+def _build_pdf_once(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
+                    cover=False, overview_flowables=None, top_mm=24, bottom_mm=20):
+    """리포트 텍스트를 A4 PDF로 한 번 렌더링한다. (페이지 수, 마지막 페이지 사용 비율)을 돌려준다.
 
     intro_flowables: 표지(제목/부제) 바로 다음, 본문 텍스트 전에 끼워 넣을
     추가 flowable 목록(예: 프리미엄 리포트의 인생 타임라인 그래픽). 코드로
@@ -1071,7 +1087,7 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
     doc = SimpleDocTemplate(
         out_path, pagesize=A4,
         leftMargin=22 * mm, rightMargin=22 * mm,
-        topMargin=24 * mm, bottomMargin=20 * mm,
+        topMargin=top_mm * mm, bottomMargin=bottom_mm * mm,
         title=title,
     )
     footer = functools.partial(_draw_branded_footer, title=title.upper())
@@ -1095,8 +1111,59 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
         report_text, heading=(i18n.STRINGS[lang]["toc_heading"] if lang != "de" else "Inhalt"), lang=lang
     ))
     story.extend(_report_text_to_flowables(report_text, lang=lang))
+    probe = _TailProbe()
+    story.append(probe)
 
     doc.build(story, onFirstPage=first_page, onLaterPages=footer)
+    used = None
+    if probe.avail is not None and doc.height:
+        used = max(0.0, min(1.0, 1.0 - probe.avail / float(doc.height)))
+    return doc.page, used
+
+
+
+
+def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
+              cover=False, overview_flowables=None):
+    """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
+
+    마지막 페이지에 몇 줄만 남는 경우(거의 빈 페이지)에는 위아래 여백을 조금 줄여 한 번 더 만들어
+    페이지 수가 줄어들 때만 교체한다. 재시도에서 문제가 생기면 첫 결과를 그대로 둔다.
+    """
+    import copy
+
+    kwargs = dict(title=title, subtitle=subtitle, report_text=report_text, lang=lang, cover=cover)
+    # 첫 빌드가 flowable을 소비·변형하므로, 재시도용 사본은 첫 빌드 전에 만들어 둔다(복사 실패 시 재시도 없음).
+    try:
+        spare_intro = copy.deepcopy(intro_flowables)
+        spare_overview = copy.deepcopy(overview_flowables)
+    except Exception:
+        spare_intro = spare_overview = None
+    pages, used = _build_pdf_once(
+        out_path, intro_flowables=intro_flowables, overview_flowables=overview_flowables, **kwargs
+    )
+    can_refit = spare_intro is not None or spare_overview is not None or (
+        intro_flowables is None and overview_flowables is None
+    )
+    if can_refit and pages is not None and pages >= 3 and used is not None and used < 0.25:
+        tmp_path = f"{out_path}.refit.pdf"
+        try:
+            new_pages, _ = _build_pdf_once(
+                tmp_path,
+                intro_flowables=spare_intro,
+                overview_flowables=spare_overview,
+                top_mm=19, bottom_mm=15, **kwargs,
+            )
+            if new_pages is not None and new_pages < pages:
+                os.replace(tmp_path, out_path)
+        except Exception as e:  # 재시도 실패는 무시하고 첫 PDF를 그대로 사용
+            print(f"[build_pdf] 경고: 마지막 페이지 압축 재시도 실패 - {e}")
+        finally:
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except OSError:
+                pass
     return out_path
 
 
