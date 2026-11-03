@@ -900,15 +900,18 @@ def _build_toc_flowables(report_text, *, heading="Inhalt", lang="de"):
     return [KeepTogether(block), PageBreak()]
 
 
-def _report_text_to_flowables(report_text, lang="de"):
-    """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환."""
+def _report_text_to_flowables(report_text, lang="de", compact=False):
+    """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환.
+
+    compact=True면 빈 줄 사이 간격을 줄인다(마지막 페이지가 거의 빌 때 한 번 더 만드는 용도).
+    """
     flowables = []
     for raw_line in report_text.split("\n"):
         line = raw_line.strip()
         if lang == "fr" and line:
             line = _fr_typography(line)
         if not line:
-            flowables.append(Spacer(1, 2 * mm))
+            flowables.append(Spacer(1, (0.4 if compact else 2) * mm))
             continue
         line = _strip_unsupported_glyphs(line)
         if _SECTION_DIVIDER_RE.match(line):
@@ -1077,7 +1080,7 @@ class _TailProbe(Flowable):
 
 
 def _build_pdf_once(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
-                    cover=False, overview_flowables=None, top_mm=24, bottom_mm=20):
+                    cover=False, overview_flowables=None, top_mm=24, bottom_mm=20, compact=False):
     """리포트 텍스트를 A4 PDF로 한 번 렌더링한다. (페이지 수, 마지막 페이지 사용 비율)을 돌려준다.
 
     intro_flowables: 표지(제목/부제) 바로 다음, 본문 텍스트 전에 끼워 넣을
@@ -1110,7 +1113,7 @@ def _build_pdf_once(out_path, *, title, subtitle, report_text, intro_flowables=N
     story.extend(_build_toc_flowables(
         report_text, heading=(i18n.STRINGS[lang]["toc_heading"] if lang != "de" else "Inhalt"), lang=lang
     ))
-    story.extend(_report_text_to_flowables(report_text, lang=lang))
+    story.extend(_report_text_to_flowables(report_text, lang=lang, compact=compact))
     probe = _TailProbe()
     story.append(probe)
 
@@ -1127,7 +1130,7 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
               cover=False, overview_flowables=None):
     """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
 
-    마지막 페이지에 몇 줄만 남는 경우(거의 빈 페이지)에는 위아래 여백을 조금 줄여 한 번 더 만들어
+    마지막 페이지에 몇 줄만 남는 경우(거의 빈 페이지)에는 문단 사이 간격을 줄여 한 번 더 만들어
     페이지 수가 줄어들 때만 교체한다. 재시도에서 문제가 생기면 첫 결과를 그대로 둔다.
     """
     import copy
@@ -1152,7 +1155,7 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
                 tmp_path,
                 intro_flowables=spare_intro,
                 overview_flowables=spare_overview,
-                top_mm=19, bottom_mm=15, **kwargs,
+                compact=True, **kwargs,
             )
             if new_pages is not None and new_pages < pages:
                 os.replace(tmp_path, out_path)
