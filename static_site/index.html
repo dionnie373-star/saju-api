@@ -288,6 +288,113 @@
     </div>
   </div>
 
+  <!-- Kompatibilitäts-Check -->
+  <div id="kompatibilitaet" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
+      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A79E93;">Extra</span>
+      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Du und dein Partner: Wo ihr euch ergänzt und wo es haken kann</h2>
+      <p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">
+        Der Kompatibilitäts-Check für Paare legt eure beiden Saju-Profile nebeneinander: Wie zeigt
+        ihr einander Zuneigung? Was braucht jeder von euch im Stillen? In welchen Alltagsmomenten
+        kann es zwischen euch haken, zum Beispiel nach einem Streit oder bei einem spontanen Plan?
+        Dazu gibt es eine Übersicht auf einen Blick und drei Fragen, die ihr gleich heute Abend
+        besprechen könnt. Eine traditionelle Deutung zur Reflexion, kein Urteil über „passt“ oder „passt nicht“.
+      </p>
+      <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">
+        Gib eure beiden Geburtsdaten ein und erhalte die Analyse per E-Mail —
+        du kannst das für so viele Paare wiederholen, wie du möchtest.
+      </p>
+
+      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Du</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Vorname <span style="font-weight: 400; color: #8A8074;">(optional, für persönlichere Texte)</span></label>
+              <input id="compatName_a" type="text" placeholder="Dein Name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
+              <input id="compatDate_a" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_a" type="text" placeholder="z. B. Berlin" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <details style="border-top: 1px solid #EDE6DA; padding-top: 8px;"><summary style="cursor: pointer; font-size: 13px; color: #4A4239;">Geburtszeit &amp; Geschlecht <span style="color: #8A8074;">(optional)</span></summary><div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
+              <select id="compatTime_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Weiß ich nicht</option><option value="23:30">23:00–00:00 Uhr (spätnachts)</option><option value="00:30">00:00–01:00 Uhr (nach Mitternacht)</option><option value="02:00">01:00–03:00 Uhr</option><option value="04:00">03:00–05:00 Uhr</option><option value="06:00">05:00–07:00 Uhr</option><option value="08:00">07:00–09:00 Uhr</option><option value="10:00">09:00–11:00 Uhr</option><option value="12:00">11:00–13:00 Uhr</option><option value="14:00">13:00–15:00 Uhr</option><option value="16:00">15:00–17:00 Uhr</option><option value="18:00">17:00–19:00 Uhr</option><option value="20:00">19:00–21:00 Uhr</option><option value="22:00">21:00–23:00 Uhr</option></select>
+            </div>
+            <div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(optional, für die Anrede im Text)</span></label>
+              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Keine Angabe</option>
+                <option value="female">Weiblich</option>
+                <option value="male">Männlich</option>
+                <option value="divers">Divers</option>
+              </select>
+            </div>
+                        </div>
+            </div></details>
+          </div>
+
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Die andere Person</h3>
+            <p style="margin: 0; font-size: 11.5px; line-height: 1.5; color: #8A8074;">Name und Geschlecht sind freiwillig — du kannst sie leer lassen. Gib bitte nur Daten ein, die die andere Person mit dir teilen darf.</p>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Vorname <span style="font-weight: 400; color: #8A8074;">(optional, für persönlichere Texte)</span></label>
+              <input id="compatName_b" type="text" placeholder="Ihr/Sein Name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
+              <input id="compatDate_b" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
+              <input id="compatCity_b" type="text" placeholder="z. B. Hamburg" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div>
+            <details style="border-top: 1px solid #EDE6DA; padding-top: 8px;"><summary style="cursor: pointer; font-size: 13px; color: #4A4239;">Geburtszeit &amp; Geschlecht <span style="color: #8A8074;">(optional)</span></summary><div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
+              <select id="compatTime_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Weiß ich nicht</option><option value="23:30">23:00–00:00 Uhr (spätnachts)</option><option value="00:30">00:00–01:00 Uhr (nach Mitternacht)</option><option value="02:00">01:00–03:00 Uhr</option><option value="04:00">03:00–05:00 Uhr</option><option value="06:00">05:00–07:00 Uhr</option><option value="08:00">07:00–09:00 Uhr</option><option value="10:00">09:00–11:00 Uhr</option><option value="12:00">11:00–13:00 Uhr</option><option value="14:00">13:00–15:00 Uhr</option><option value="16:00">15:00–17:00 Uhr</option><option value="18:00">17:00–19:00 Uhr</option><option value="20:00">19:00–21:00 Uhr</option><option value="22:00">21:00–23:00 Uhr</option></select>
+            </div>
+            <div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(optional, für die Anrede im Text)</span></label>
+              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Keine Angabe</option>
+                <option value="female">Weiblich</option>
+                <option value="male">Männlich</option>
+                <option value="divers">Divers</option>
+              </select>
+            </div>
+                        </div>
+            </div></details>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">E-Mail-Adresse (für den Versand)</label>
+          <input id="compatEmail" type="email" placeholder="du@beispiel.de" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Check starten — 9,90 €
+        </button>
+        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center;">Preis inkl. der jeweils gültigen gesetzlichen Umsatzsteuer. 🔒 Sichere Zahlung per Kreditkarte, PayPal &amp; mehr</p>
+        <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">60 Tage Geld-zurück-Garantie — ohne Angabe von Gründen (<a href="/widerruf" style="color: inherit; text-decoration: underline;">Details</a>). Digitales Produkt: Zustellung als PDF per E-Mail.</p>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Kostenlos vs Jahresreport -->
   <div id="pricing" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #F3EEE4;">
     <div style="width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 40px;">
@@ -418,107 +525,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Kompatibilitäts-Check -->
-  <div id="kompatibilitaet" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center;">
-    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
-      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A79E93;">Extra</span>
-      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Du und dein Partner: Wo ihr euch ergänzt und wo es haken kann</h2>
-      <p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">
-        Der Kompatibilitäts-Check für Paare legt eure beiden Saju-Profile nebeneinander: Wie zeigt
-        ihr einander Zuneigung? Was braucht jeder von euch im Stillen? In welchen Alltagsmomenten
-        kann es zwischen euch haken, zum Beispiel nach einem Streit oder bei einem spontanen Plan?
-        Dazu gibt es eine Übersicht auf einen Blick und drei Fragen, die ihr gleich heute Abend
-        besprechen könnt. Eine traditionelle Deutung zur Reflexion, kein Urteil über „passt“ oder „passt nicht“.
-      </p>
-      <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">
-        Gib eure beiden Geburtsdaten ein und erhalte die Analyse per E-Mail —
-        du kannst das für so viele Paare wiederholen, wie du möchtest.
-      </p>
-
-      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
-
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Du</h3>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Name (optional)</label>
-              <input id="compatName_a" type="text" placeholder="Dein Name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
-              <input id="compatDate_a" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
-              <select id="compatTime_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Weiß ich nicht</option><option value="23:30">23:00–00:00 Uhr (spätnachts)</option><option value="00:30">00:00–01:00 Uhr (nach Mitternacht)</option><option value="02:00">01:00–03:00 Uhr</option><option value="04:00">03:00–05:00 Uhr</option><option value="06:00">05:00–07:00 Uhr</option><option value="08:00">07:00–09:00 Uhr</option><option value="10:00">09:00–11:00 Uhr</option><option value="12:00">11:00–13:00 Uhr</option><option value="14:00">13:00–15:00 Uhr</option><option value="16:00">15:00–17:00 Uhr</option><option value="18:00">17:00–19:00 Uhr</option><option value="20:00">19:00–21:00 Uhr</option><option value="22:00">21:00–23:00 Uhr</option></select>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
-              <input id="compatCity_a" type="text" placeholder="z. B. Berlin" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <details style="border-top: 1px solid #EDE6DA; padding-top: 8px;"><summary style="cursor: pointer; font-size: 13px; color: #4A4239;">Geschlecht angeben <span style="color: #8A8074;">(optional, für die Anrede im Text)</span></summary><div style="margin-top: 8px;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(optional, für die Anrede im Text)</span></label>
-              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-                <option value="">Keine Angabe</option>
-                <option value="female">Weiblich</option>
-                <option value="male">Männlich</option>
-                <option value="divers">Divers</option>
-              </select>
-            </div>
-            </div></details>
-          </div>
-
-          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Die andere Person</h3>
-            <p style="margin: 0; font-size: 11.5px; line-height: 1.5; color: #8A8074;">Name und Geschlecht sind freiwillig — du kannst sie leer lassen. Gib bitte nur Daten ein, die die andere Person mit dir teilen darf.</p>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Name (optional)</label>
-              <input id="compatName_b" type="text" placeholder="Ihr/Sein Name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsdatum</label>
-              <input id="compatDate_b" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label>
-              <select id="compatTime_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Weiß ich nicht</option><option value="23:30">23:00–00:00 Uhr (spätnachts)</option><option value="00:30">00:00–01:00 Uhr (nach Mitternacht)</option><option value="02:00">01:00–03:00 Uhr</option><option value="04:00">03:00–05:00 Uhr</option><option value="06:00">05:00–07:00 Uhr</option><option value="08:00">07:00–09:00 Uhr</option><option value="10:00">09:00–11:00 Uhr</option><option value="12:00">11:00–13:00 Uhr</option><option value="14:00">13:00–15:00 Uhr</option><option value="16:00">15:00–17:00 Uhr</option><option value="18:00">17:00–19:00 Uhr</option><option value="20:00">19:00–21:00 Uhr</option><option value="22:00">21:00–23:00 Uhr</option></select>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geburtsort <span style="color: #C1442E;">*</span></label>
-              <input id="compatCity_b" type="text" placeholder="z. B. Hamburg" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <details style="border-top: 1px solid #EDE6DA; padding-top: 8px;"><summary style="cursor: pointer; font-size: 13px; color: #4A4239;">Geschlecht angeben <span style="color: #8A8074;">(optional, für die Anrede im Text)</span></summary><div style="margin-top: 8px;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Geschlecht <span style="font-weight: 400; color: #8A8074;">(optional, für die Anrede im Text)</span></label>
-              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-                <option value="">Keine Angabe</option>
-                <option value="female">Weiblich</option>
-                <option value="male">Männlich</option>
-                <option value="divers">Divers</option>
-              </select>
-            </div>
-            </div></details>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">E-Mail-Adresse (für den Versand)</label>
-          <input id="compatEmail" type="email" placeholder="du@beispiel.de" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-        </div>
-
-        <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
-
-        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
-          Check starten — 9,90 €
-        </button>
-        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center;">Preis inkl. der jeweils gültigen gesetzlichen Umsatzsteuer. 🔒 Sichere Zahlung per Kreditkarte, PayPal &amp; mehr</p>
-        <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">60 Tage Geld-zurück-Garantie — ohne Angabe von Gründen (<a href="/widerruf" style="color: inherit; text-decoration: underline;">Details</a>). Digitales Produkt: Zustellung als PDF per E-Mail.</p>
-      </div>
-    </div>
-  </div>
-
 
   <!-- Kaufdialog: Eingabefelder erscheinen direkt beim Klick auf einen Kaufbutton, danach Weiterleitung zu Digistore24 -->
   <div id="buyModal" role="dialog" aria-modal="true" aria-labelledby="buyModalTitle" style="display:none; position: fixed; inset: 0; z-index: 1000; background: rgba(33,29,26,0.55); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
