@@ -488,17 +488,6 @@
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="compatRelation" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Wie steht ihr zueinander? <span style="font-weight: 400; color: #8A8074;">(damit der Text zu eurer Situation passt)</span></label>
-          <select id="compatRelation" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            <option value="partner" selected>Paar / Partnerschaft</option>
-            <option value="friend">Freundschaft</option>
-            <option value="family">Familie</option>
-            <option value="work">Arbeit / Team</option>
-            <option value="">Keine Angabe</option>
-          </select>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px;">
           <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">E-Mail-Adresse (für den Versand)</label>
           <input id="compatEmail" type="email" placeholder="du@beispiel.de" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
         </div>
@@ -700,7 +689,6 @@
     var cityB = document.getElementById('compatCity_b').value.trim();
     var genderB = document.getElementById('compatGender_b').value.trim();
     var email = document.getElementById('compatEmail').value.trim();
-    var relation = document.getElementById('compatRelation').value.trim();
 
     if (!dateA || !cityA) { showCompatError('Bitte gib zuerst dein Geburtsdatum und deinen Geburtsort an.'); return; }
     if (!dateB || !cityB) { showCompatError('Bitte gib zuerst Geburtsdatum und Geburtsort der anderen Person an.'); return; }
@@ -712,7 +700,6 @@
       email: email,
       name_a: nameA, birth_date_a: dateA, birth_time_a: timeA, birth_city_a: cityA, gender_a: genderA,
       name_b: nameB, birth_date_b: dateB, birth_time_b: timeB, birth_city_b: cityB, gender_b: genderB,
-      relation: relation,
     };
 
     var btnEl = ev ? ev.currentTarget : null;
