@@ -1,0 +1,152 @@
+{
+  "pattern_names": {
+    "both": "Proximité et petites frictions",
+    "connection": "Des points de rencontre",
+    "tension": "Des regards différents",
+    "trine_only": "Une direction commune",
+    "same_only": "Un point de repère partagé",
+    "none": "Votre propre lien"
+  },
+  "scenes": {
+    "idee_waechst": {
+      "scene": "Une idée que l'un de vous lance à moitié pourrait être aussitôt prolongée par l'autre, par exemple en préparant une sortie. Une conversation de trois phrases peut alors devenir un plan tout fait. Cela peut devenir délicat si plus personne ne demande si vous en avez vraiment envie tous les deux.",
+      "question": "Qu'est-ce qui s'est mis en route facilement entre vous ces derniers temps, et avez-vous aussi demandé si vous le vouliez tous les deux ?"
+    },
+    "aufgaben_fliessen": {
+      "scene": "Pour une tâche commune, le travail pourrait se répartir presque sans en parler : l'un commence, l'autre complète. Il peut alors arriver que l'un prenne toujours le même rôle et ne s'en aperçoive que lorsque cela devient trop.",
+      "question": "Quelle tâche revient toujours à la même personne chez vous, et cela convient-il aux deux ?"
+    },
+    "mass_gemeinsam": {
+      "scene": "Vous pourriez juger de façon semblable ce qui est « assez bien », par exemple pour ranger ou pour un rendez-vous. Cela peut éviter des frictions. Si l'un de vous place un jour la barre autrement, l'autre peut vite y lire du désintérêt.",
+      "question": "Où partagez-vous le même « assez bien », et où ce n'est pas le cas ?"
+    },
+    "bemerkung_nachhall": {
+      "scene": "Une courte phrase comme « On aurait pu en parler plus tôt » pourrait résonner chez l'un de vous encore le soir, alors que l'autre l'a oubliée au bout de cinq minutes. Une simple remarque peut alors devenir un silence dont personne ne dit la raison.",
+      "question": "Quelle phrase a résonné récemment chez l'un de vous sans que l'autre le remarque ?"
+    },
+    "geste_anders": {
+      "scene": "Quand l'un de vous prend spontanément en charge le dîner ou une tâche, l'autre pourrait y voir une ingérence plutôt qu'une aide. Un merci peut alors manquer, et celui qui a aidé se sent peu vu.",
+      "question": "Quelle aide voulez-vous explicitement l'un de l'autre, et laquelle préférez-vous éviter ?"
+    },
+    "rueckmeldung": {
+      "scene": "Un message auquel on répond seulement par « ok » pourrait signifier « c'est réglé » pour l'un et sembler froid à l'autre. Un petit malentendu peut alors durer plusieurs jours.",
+      "question": "Que signifie un « ok » bref pour chacun de vous ?"
+    },
+    "zuneigung_ausdruck": {
+      "scene": "L'un de vous montre plutôt son affection par des mots, l'autre plutôt par des actes, par exemple en préparant le café ou en faisant le plein de la voiture. L'un pourrait alors se sentir peu aimé·e, alors que l'autre a déjà fait beaucoup pour que cela se voie.",
+      "question": "À quoi chacun de vous sent-il qu'on l'aime ?"
+    },
+    "prioritaeten": {
+      "scene": "Pour organiser un samedi libre, l'un pourrait d'abord demander ce qui a besoin de repos, l'autre ce qui ne doit surtout pas sauter. Une discussion sur le samedi peut alors être en réalité une discussion sur les priorités.",
+      "question": "Que faut-il absolument, un jour libre ensemble, pour chacun de vous ?"
+    },
+    "veraenderung": {
+      "scene": "Quand une sortie prévue doit être avancée d'une heure à la dernière minute, l'un pourrait y voir une occasion et l'autre un dérangement. La dispute sur l'horaire peut alors paraître plus grande que l'horaire lui-même.",
+      "question": "De combien de temps de préavis chacun de vous a-t-il besoin quand un plan change ?"
+    },
+    "haltung_zeigen": {
+      "scene": "Pour choisir un restaurant, l'un pourrait faire tout de suite une proposition, tandis que l'autre veut d'abord voir toutes les options. Le rapide peut alors se sentir freiné, et le minutieux bousculé.",
+      "question": "Qui décide le plus vite chez vous, et comment l'autre le vit-il ?"
+    },
+    "nach_dem_streit": {
+      "scene": "Après une dispute, l'un pourrait vouloir en parler tout de suite, tandis que l'autre a d'abord besoin de distance. L'attente peut alors ressembler à un rejet pour l'un, et l'insistance à une pression pour l'autre.",
+      "question": "De quoi chacun de vous a-t-il besoin après une dispute, et comment le dites-vous avant d'en arriver là ?"
+    },
+    "ton_schaerfe": {
+      "scene": "Une phrase pensée comme une remarque factuelle pourrait sonner plus sèchement que prévu un soir de fatigue. La réponse peut alors devenir sèche à son tour, et la remarque se transforme en échange sur le ton.",
+      "question": "Dans quels moments votre ton devient-il plus vite sec, et qui s'en aperçoit en premier ?"
+    },
+    "heikles_thema": {
+      "scene": "Un sujet que vous connaissez tous les deux et que vous contournez plutôt pourrait quand même arriver sur la table au mauvais moment. On peut alors avoir l'impression que tout ce qui n'a pas été dit surgit d'un coup.",
+      "question": "Quel sujet repoussez-vous ensemble, et quel serait un bon moment pour en parler ?"
+    },
+    "details": {
+      "scene": "En préparant un voyage ensemble, l'un pourrait vouloir fixer les détails, tandis que l'autre préfère laisser beaucoup de choses ouvertes. L'un peut alors se sentir seul responsable, et l'autre contrôlé.",
+      "question": "De quels détails chacun de vous a-t-il besoin à l'avance, et de quels détails n'a-t-il pas besoin ?"
+    },
+    "geklaert": {
+      "scene": "Un sujet que vous croyez déjà discuté pourrait revenir des semaines plus tard, parce qu'il restait ouvert pour l'un de vous. Un « On en a déjà parlé » peut alors rencontrer un « Pour moi, ce n'était jamais réglé ».",
+      "question": "À quoi voyez-vous qu'une question est vraiment réglée pour vous deux ?"
+    },
+    "grenzen_benennen": {
+      "scene": "Quand quelque chose devient trop pour l'un de vous, comme les questions répétées ou les changements de plan, il ou elle pourrait ne le dire que lorsque c'est déjà beaucoup trop. La réaction peut alors sembler étonnamment vive à l'autre.",
+      "question": "Comment dites-vous assez tôt que quelque chose devient trop ?"
+    },
+    "beilaeufige_absprache": {
+      "scene": "Un « On pourrait partir cet été » lancé en passant pourrait être une pensée pour l'un et déjà une promesse pour l'autre. Une déception peut alors naître, alors que rien n'a jamais été convenu.",
+      "question": "À quoi reconnaissez-vous qu'une phrase est une idée ou un rendez-vous pris ?"
+    },
+    "vertraute_ablaeufe": {
+      "scene": "Une organisation bien rodée, par exemple qui fait quoi et quand, pourrait se gripper dès que l'un la change sans prévenir. Un détail peut alors devenir une dispute sur ce sur quoi l'on pouvait compter.",
+      "question": "Quelle organisation rodée ne doit être changée chez vous qu'après en avoir parlé ?"
+    },
+    "kleine_entscheidungen": {
+      "scene": "De petites décisions comme le film, le repas ou l'heure du départ pourraient souvent se perdre chez vous dans un « Ça m'est égal ». À la longue, l'un peut se sentir mis de côté sans qu'il y ait jamais eu de dispute.",
+      "question": "Lequel de vous dit le plus souvent « égal », alors que ce n'est pas égal ?"
+    },
+    "nachrichten_takt": {
+      "scene": "L'un de vous pourrait aimer écrire plus souvent dans la journée, l'autre ne répondre que le soir. Une réponse tardive peut alors ressembler à du désintérêt, et des messages fréquents à du contrôle.",
+      "question": "À quelle fréquence et à quels moments chacun de vous aime-t-il avoir des nouvelles de l'autre ?"
+    },
+    "stille_annahmen": {
+      "scene": "L'un de vous pourrait partir du principe qu'un rendez-vous sera naturellement vécu à deux, sans jamais l'avoir mentionné. L'autre peut alors prévoir autre chose, et les deux sont surpris.",
+      "question": "Qu'est-ce que vous tenez pour acquis chez l'autre sans l'avoir jamais dit ?"
+    },
+    "bekannt_voraussetzen": {
+      "scene": "Une information donnée en passant, par exemple une heure modifiée, pourrait n'arriver qu'à moitié, parce que chacun suppose que l'autre est au courant. L'un peut alors se retrouver à l'heure au bon endroit pendant que l'autre ne se doute de rien.",
+      "question": "Quelles informations ne transmettez-vous qu'en passant, et comment vous assurez-vous qu'elles arrivent ?"
+    },
+    "form_mitteilung": {
+      "scene": "Un message important envoyé par un court SMS pourrait ne pas produire le même effet que de vive voix. Le contenu peut alors se perdre, alors que le ton reste.",
+      "question": "Qu'est-ce que vous préférez discuter de vive voix plutôt que par écrit ?"
+    },
+    "alleine_zeit": {
+      "scene": "Si l'un de vous veut passer une soirée seul·e, l'autre pourrait y lire une mise à distance. Un besoin de calme peut alors devenir une conversation pour savoir si tout va bien.",
+      "question": "Comment vous dites-vous que vous avez besoin de temps pour vous, sans que cela ressemble à un repli ?"
+    },
+    "ausgangspunkt": {
+      "scene": "Lors d'une escapade de week-end, l'un pourrait déjà avoir la destination en tête, alors que l'autre n'y prend goût qu'en chemin. L'un peut alors se sentir freiné et l'autre poussé.",
+      "question": "Qui donne la direction chez vous, et quand cela devient-il une pression ?"
+    },
+    "idee_unfertig": {
+      "scene": "Une idée à moitié dite, comme « On devrait habiter ailleurs un jour », pourrait déjà être comprise comme un plan par l'autre. Une réflexion peut alors devenir une dispute sur une promesse supposée.",
+      "question": "À quoi reconnaissez-vous qu'une phrase est une pensée ou un plan ?"
+    },
+    "interessen_teil": {
+      "scene": "Pour un loisir commun, l'un pourrait vouloir s'y plonger à fond, l'autre y participer seulement de temps en temps. Le passionné peut alors se sentir laissé seul, et l'autre mis sous pression.",
+      "question": "Quels centres d'intérêt voulez-vous partager, et lesquels chacun garde-t-il plutôt pour soi ?"
+    },
+    "gedanken_verbinden": {
+      "scene": "Quand l'un pense à voix haute, l'autre pourrait déjà finir ses pensées. Cela peut donner l'impression d'être compris, mais aussi empêcher le premier d'aller au bout de ce qu'il veut dire.",
+      "question": "Quand voulez-vous que l'autre se contente d'écouter, sans rien ajouter ?"
+    },
+    "blick_erweitern": {
+      "scene": "Face à une nouvelle proposition, par exemple pour les vacances, l'un de vous pourrait réagir par la curiosité et l'autre par le scepticisme. Le scepticisme peut alors sonner comme un refus, alors qu'il signifie seulement examiner.",
+      "question": "Comment chacun de vous réagit-il d'abord à une nouvelle proposition de l'autre ?"
+    },
+    "ausdruck_ergaenzt": {
+      "scene": "L'un pourrait mettre ses sentiments en mots rapidement, l'autre plutôt en gestes. Celui qui parle beaucoup peut alors se sentir incompris, parce que les gestes seuls ne lui suffisent pas.",
+      "question": "De quels mots ou de quels gestes chacun de vous a-t-il besoin pour se sentir vu ?"
+    },
+    "gruppe_wege": {
+      "scene": "Pour un objectif commun, comme un voyage ou un projet, vous pourriez vouloir aller dans la même direction mais choisir des chemins différents. Le chemin peut alors devenir un point de dispute, alors que le but est fixé.",
+      "question": "Sur quel objectif vous retrouvez-vous, et où prenez-vous des chemins différents pour y aller ?"
+    },
+    "reichweite": {
+      "scene": "Pour des projets des prochains mois, l'un pourrait penser loin devant et l'autre rester dans l'instant. Celui qui pense loin peut alors se sentir seul responsable.",
+      "question": "À quelle distance dans le temps chacun de vous aime-t-il planifier ?"
+    },
+    "beobachtung": {
+      "scene": "Certaines habitudes de l'autre, au lever ou en rangeant, pourraient vous sembler familières, presque comme les vôtres. Ce miroir peut alors agacer, car ce que l'on connaît de soi dérange souvent chez l'autre.",
+      "question": "Quelle habitude de l'autre reconnaissez-vous aussi chez vous ?"
+    },
+    "schaetzen_anders": {
+      "scene": "Ce que chacun apprécie dans la relation pourrait sonner de la même façon, par exemple la fiabilité, tout en désignant des choses différentes. La « fiabilité » peut alors signifier la ponctualité pour l'un et être là quand cela compte pour l'autre.",
+      "question": "Que signifie concrètement la fiabilité pour chacun de vous ?"
+    },
+    "erinnerung": {
+      "scene": "Un moment partagé pourrait apparaître différemment dans le souvenir de chacun. Un « Ça ne s'est pas passé comme ça » peut alors peser plus lourd que le moment lui-même.",
+      "question": "Quel moment partagé chacun de vous se rappelle-t-il autrement ?"
+    }
+  }
+}
