@@ -213,10 +213,22 @@ _BAEKHO_PILLARS = frozenset({"甲辰", "乙未", "丙戌", "丁丑", "戊辰", "
 _GOEGANG_PILLARS = frozenset({"庚辰", "庚戌", "壬辰", "壬戌", "戊戌", "戊辰"})
 _GO_RAN_PILLARS = frozenset({"甲寅", "乙巳", "丙午", "丁巳", "戊申", "辛亥", "壬子"})
 
-_GWIMUN_PAIRS: tuple[frozenset[JiJi], ...] = (
+# 원진(怨嗔): 子未 丑午 寅酉 卯申 辰亥 巳戌
+_WONJIN_PAIRS: tuple[frozenset[JiJi], ...] = (
     frozenset({JiJi.JA, JiJi.MI}),
     frozenset({JiJi.CHUK, JiJi.O}),
     frozenset({JiJi.IN, JiJi.YU}),
+    frozenset({JiJi.MYO, JiJi.SIN}),
+    frozenset({JiJi.JIN, JiJi.HAE}),
+    frozenset({JiJi.SA, JiJi.SUL}),
+)
+
+# 귀문관살(鬼門關殺): 子酉 丑午 寅未 卯申 辰亥 巳戌
+# 원진과 子·寅의 짝만 다르다 (子-酉, 寅-未).
+_GWIMUN_PAIRS: tuple[frozenset[JiJi], ...] = (
+    frozenset({JiJi.JA, JiJi.YU}),
+    frozenset({JiJi.CHUK, JiJi.O}),
+    frozenset({JiJi.IN, JiJi.MI}),
     frozenset({JiJi.MYO, JiJi.SIN}),
     frozenset({JiJi.JIN, JiJi.HAE}),
     frozenset({JiJi.SA, JiJi.SUL}),
@@ -353,7 +365,7 @@ def _detect_yang_in(saju: Saju) -> list[SinsalLocation]:
 
 
 def _detect_wonjin(saju: Saju) -> list[SinsalLocation]:
-    return _branch_pairs_triggered(saju, _GWIMUN_PAIRS)
+    return _branch_pairs_triggered(saju, _WONJIN_PAIRS)
 
 
 def _detect_gwimun_gwan(saju: Saju) -> list[SinsalLocation]:
