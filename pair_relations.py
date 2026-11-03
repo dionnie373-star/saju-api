@@ -209,7 +209,7 @@ def build_facts_text(result, name_a, name_b):
 FALLBACK_FACTS = "(이번 리포트에서는 지지 관계 정보가 제공되지 않았습니다. 섹션 3-2는 쓰지 말고 건너뛰세요.)"
 
 
-def relations_for_report(calc_result_a, calc_result_b, name_a, name_b):
+def relations_for_report(calc_result_a, calc_result_b, name_a, name_b, lang="de"):
     """파이프라인 진입점: 두 계산 결과에서 프롬프트용 사실 블록을 만든다. 실패하면 FALLBACK_FACTS(리포트는 해당 섹션만 생략하고 생성)."""
     try:
         result = compare(calc_result_a.get("pillars"), calc_result_b.get("pillars"))
@@ -221,7 +221,7 @@ def relations_for_report(calc_result_a, calc_result_b, name_a, name_b):
         import pair_scenes
         primary, secondary, stems = select_displayed(result)
         shown = {"branch_pairs": primary + secondary, "stem_pairs": stems}
-        facts += "\n\n" + pair_scenes.build_scene_text(pair_scenes.select(shown))
+        facts += "\n\n" + pair_scenes.build_scene_text(pair_scenes.select(shown, lang))
     except Exception as e:  # 장면 선택 실패는 사실 블록만으로 리포트를 생성하게 둔다
         print(f"[pair_relations] 경고: 장면 후보 선택 실패 - {e}")
     return facts

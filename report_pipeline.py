@@ -1741,7 +1741,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     # 두 사람 사이의 지지·천간 관계(합·충·형·파·해·원진·귀문)를 코드로 계산해 프롬프트에 사실로 넣는다.
     # 계산 실패 시 빈 문자열 → 프롬프트는 "관계 없음"으로 처리되고 리포트는 기존처럼 생성된다.
     import pair_relations
-    relations_facts = pair_relations.relations_for_report(calc_result_a, calc_result_b, name_a, name_b)
+    relations_facts = pair_relations.relations_for_report(calc_result_a, calc_result_b, name_a, name_b, lang)
 
     report_text = call_claude_checked(
         "compatibility_report_prompt.json",

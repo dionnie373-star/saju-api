@@ -16,6 +16,8 @@
 from __future__ import annotations
 
 import hashlib
+import json
+import os
 
 MAX_SCENES = 3
 
@@ -54,6 +56,37 @@ KO_LABEL = {
     "same_trine_group": "같은 삼합 그룹(gemeinsame Grundrichtung)",
     "same_branch": "같은 지지(gleicher Zweig)",
 }
+
+
+# ---------------------------------------------------------------------------
+# 다국어 오버레이 (2026-11-04): 독일어가 원본(BANK). 다른 언어는 prompts/scenes/<lang>.json 이
+# {"pattern_names": {both, connection, ...}, "scenes": {theme: {"scene": ..., "question": ...}}}
+# 형태로 같은 theme에 번역문을 얹는다. 번역이 없는 theme은 그 언어에서 장면 후보로 쓰지 않는다.
+# ---------------------------------------------------------------------------
+_SCENES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts", "scenes")
+_OVERLAY_CACHE = {}
+
+
+def load_overlay(lang):
+    if lang in (None, "", "de"):
+        return None
+    if lang not in _OVERLAY_CACHE:
+        path = os.path.join(_SCENES_DIR, f"{lang}.json")
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                _OVERLAY_CACHE[lang] = json.load(f)
+        except (OSError, ValueError):
+            _OVERLAY_CACHE[lang] = None
+    return _OVERLAY_CACHE[lang]
+
+
+def _label(code, lang):
+    """장면 후보 줄의 관계 이름. 독일어는 독일어 표현을 병기하고, 다른 언어는 한국어 이름만 쓴다."""
+    full = KO_LABEL[code]
+    if lang in (None, "", "de"):
+        return full
+    return full.split("(")[0]
+
 
 # (theme, family, 장면, 질문). theme은 은행 전체에서 유일, family는 같은 리포트 안에서 중복 금지.
 BANK = {
@@ -209,26 +242,34 @@ def _start_index(code, pair, n):
     return int(hashlib.md5(key.encode("utf-8")).hexdigest(), 16) % n
 
 
-def pattern_name(result):
+def _names(lang):
+    ov = load_overlay(lang)
+    if ov and ov.get("pattern_names"):
+        return {**PATTERN_NAMES, **ov["pattern_names"]}
+    return PATTERN_NAMES
+
+
+def pattern_name(result, lang="de"):
     """계산된 관계 조합 전체를 보고 별명 하나를 고른다. 같은 삼합 그룹/같은 지지만 있으면 따로 취급."""
     codes = set(_codes_present(result))
     has_conn = bool(codes & CONNECTION_CODES)
     has_tens = bool(codes & TENSION_CODES)
     if has_conn and has_tens:
-        return PATTERN_NAMES["both"]
+        return _names(lang)["both"]
     if has_conn:
-        return PATTERN_NAMES["connection"]
+        return _names(lang)["connection"]
     if has_tens:
-        return PATTERN_NAMES["tension"]
+        return _names(lang)["tension"]
     if "same_trine_group" in codes:
-        return PATTERN_NAMES["trine_only"]
+        return _names(lang)["trine_only"]
     if "same_branch" in codes:
-        return PATTERN_NAMES["same_only"]
-    return PATTERN_NAMES["none"]
+        return _names(lang)["same_only"]
+    return _names(lang)["none"]
 
 
-def select(result):
+def select(result, lang="de"):
     """{"pattern_name": str, "scenes": [{code, theme, family, scene, question}]}"""
+    ov = load_overlay(lang)
     present = _codes_present(result)
     scenes, used_families = [], set()
     for code in SCENE_ORDER:
@@ -247,14 +288,20 @@ def select(result):
             theme, family, scene, question = bank[(start + k) % len(bank)]
             if family in used_families:
                 continue
+            if ov is not None:
+                tr = (ov.get("scenes") or {}).get(theme)
+                if not tr:
+                    continue
+                scene, question = tr["scene"], tr["question"]
             used_families.add(family)
             scenes.append({"code": code, "theme": theme, "family": family,
                            "scene": scene, "question": question})
             break
-    return {"pattern_name": pattern_name(result), "scenes": scenes}
+    return {"pattern_name": pattern_name(result, lang), "scenes": scenes, "lang": lang}
 
 
 def build_scene_text(selection):
+    lang = selection.get("lang", "de")
     """프롬프트용 블록. 장면은 후보이며, 리포트에서는 자연스러운 독일어 문장으로 풀어 쓴다."""
     lines = [
         "[편집 장면 후보와 패턴 별명 - 코드가 두 사람의 계산 결과로 고른 것]",
@@ -263,7 +310,7 @@ def build_scene_text(selection):
     if selection["scenes"]:
         lines.append("- 아래 관계에만 장면 후보가 주어졌습니다. 이 관계들을 설명하는 단락에서 해당 후보의 주제를 쓰세요(문장은 다듬어도 되지만 주제를 바꾸거나 다른 장면을 새로 만들지 마세요):")
         for s in selection["scenes"]:
-            lines.append(f"  · {KO_LABEL[s['code']]} / 장면 후보: {s['scene']} / 질문 후보: {s['question']}")
+            lines.append(f"  · {_label(s['code'], lang)} / 장면 후보: {s['scene']} / 질문 후보: {s['question']}")
     else:
         lines.append("- 이번에는 장면 후보가 없습니다. 장면을 지어내지 말고 계산된 관계만 중립적으로 설명하세요.")
     return "\n".join(lines)
