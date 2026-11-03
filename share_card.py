@@ -235,7 +235,9 @@ def render_compat_card(pv, lang="de"):
                 d.ellipse([cx0 + 40 - 24, cy - 24, cx0 + 40 + 24, cy + 24], outline=LINE, width=3)
             else:
                 _icon(d, key, cx0 + 40, cy, 24)
-            d.text((cx0 + 90, cy), KO[key], font=_ko(26), fill=INK if n else FAINT, anchor="lm")
+            nm = next((c["name"] for c in side["counts"] if c["key"] == key), "")
+            d.text((cx0 + 84, cy), nm, font=_ws(27), fill=INK if n else FAINT, anchor="lm")
+            d.text((cx0 + 250, cy), KO[key], font=_ko(20), fill=FAINT, anchor="lm")
             d.text((cx0 + 330, cy), str(n), font=_wb(30), fill=COLORS[key] if n else FAINT, anchor="rm")
     d.line([(540, 360), (540, 820)], fill=LINE, width=2)
 
