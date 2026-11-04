@@ -2004,6 +2004,12 @@ def _fulfill_report_order(tier, custom_data, email):
     payload = dict(custom_data)
     payload["email"] = email
     payload["tier"] = tier
+    # 출생지 없이 주문된 경우(출생 시각도 없을 때만 구매 창이 허용): 출생지는 사주 계산에 영향이 없으므로
+    # 언어별 기본 도시로 대신한다(/profile과 동일 규칙, 2026-11-04). 시각이 있으면 기존대로 도시가 필요하다.
+    if not str(payload.get("birth_city") or "").strip() and payload.get("longitude") is None \
+            and not str(payload.get("birth_time") or "").strip():
+        payload["birth_city"] = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(
+            str(payload.get("lang") or "de").lower(), "Berlin")
     if tier == "paid":
         # Jahresreport 대상 연도 결정 규칙(2026-10-03 확정):
         # 7월~12월에 신청 -> 다음 해 운세 (예: 2026-07~2026-12 신청 -> 2027년)

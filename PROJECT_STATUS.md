@@ -875,3 +875,4 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - ?src= 가 없으면 document.referrer 호스트를 범주(ref-pinterest/google/suche/instagram/tiktok/youtube/threads/facebook/andere)로 기록(URL 저장 안 함).
 - 미적용: 구매 창 출생지 필수 해제(계산·PDF 영향 확인 필요). 자동 테스트는 이 환경에서 못 돌림(pytest/flask 없음); 문법·모바일 렌더만 확인.
 - 배경: 11/4 통계 — 유료 안내 표시 17, 구매 클릭 0. 1~2주 뒤 res_top_buy / res_up_paid 비교.
+- 2026-11-04 밤 추가: 구매 창 출생지 선택화(DE/FR/ES). 출생 시각이 있을 때만 출생지 필수(없으면 서버 _fulfill_report_order가 언어별 기본 도시 Berlin/Paris/Madrid로 채움). EN은 유지(글로벌 대상이라 출생지 계속 필수). 자동 테스트 불가 환경 → 첫 실제/테스트 주문(출생지 비움)으로 리포트 생성·PDF 확인 필요. 되돌리기: git revert.
