@@ -869,3 +869,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 궁합 쇼츠 kompat_de.mp4(out/kompat) 11/4 저녁 유튜브·틱톡(검토 중)·인스타 릴스 업로드.
 - Digistore24: 승인팀에 재촉 메일 발송(11/4 19:12), 답변 대기.
 - TODO: 사이트에 2027 신년운세 랜딩 페이지 확인/제작, 12/1 홈 배너 교체, 아웃리치 후보 목록(사용자에게 문서 링크 요청), Threads 댓글/팔로우 일일 작업.
+
+## 2026-11-04 밤: 결과 화면 구매 유도 + 출처 구분 (DE/EN/FR/ES)
+- 무료 결과의 엘리먼트 유형 카드 바로 아래에 연간 리포트 배너+버튼 추가(이벤트 res_top_buy, app.py _EV_ALLOWED/BUY 집계에 포함).
+- ?src= 가 없으면 document.referrer 호스트를 범주(ref-pinterest/google/suche/instagram/tiktok/youtube/threads/facebook/andere)로 기록(URL 저장 안 함).
+- 미적용: 구매 창 출생지 필수 해제(계산·PDF 영향 확인 필요). 자동 테스트는 이 환경에서 못 돌림(pytest/flask 없음); 문법·모바일 렌더만 확인.
+- 배경: 11/4 통계 — 유료 안내 표시 17, 구매 클릭 0. 1~2주 뒤 res_top_buy / res_up_paid 비교.
