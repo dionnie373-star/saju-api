@@ -125,6 +125,10 @@
         <p style="margin:0;font-size:12px;color:#8A8074;max-width:480px;line-height:1.5;">The link only shows your five-element balance – no birth date, name or birthplace.</p>
         <p id="resTypNote" style="margin:8px 0 0;font-size:11.5px;color:#A79E93;max-width:520px;line-height:1.5;"></p>
       </div>
+      <div id="resTopBuy" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:#211D1A;color:#FFFDF9;border-radius:12px;padding:16px 20px;">
+        <div style="flex:1 1 240px;"><p class="display" style="margin:0 0 4px;font-size:18px;font-weight:600;">Your 2027 annual report</p><p style="margin:0;font-size:13.5px;line-height:1.5;color:#E6DFD2;">All 12 months laid out for you, as a keepsake PDF.</p></div>
+        <button type="button" id="resTopBuyBtn" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">View — $10.00</button>
+      </div>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
       <div id="resBarsCard" style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Distribution of the Five Elements</h3>
@@ -778,6 +782,7 @@
 
   // Result upsell: same purchase dialogs as in the price section (birth data is pre-filled from the form).
   $('resBuyPaid').addEventListener('click', function () { ev('res_up_paid'); window.paljaOpenBuy('paid', this); });
+  $('resTopBuyBtn').addEventListener('click', function () { ev('res_top_buy'); window.paljaOpenBuy('paid', this); });
   $('resBuyPremium').addEventListener('click', function () { ev('res_up_premium'); window.paljaOpenBuy('premium', this); });
 
   // Optional PDF by email: existing /signup route with AI text.
@@ -817,11 +822,44 @@
 
 <script>
   // Herkunft (?src=...) merken, damit sie beim Absenden mitgeschickt wird.
+  // Ohne ?src= wird die Herkunft grob aus dem Referrer abgeleitet (nur Kategorie, nie die URL).
+  function paljaRef() {
+    try {
+      var r = document.referrer || '';
+      if (!r) { return ''; }
+      var h = new URL(r).hostname.toLowerCase();
+      if (h === location.hostname || h.endsWith('.' + location.hostname)) { return ''; }
+      if (/pinterest\./.test(h) || h === 'pin.it') { return 'ref-pinterest'; }
+      if (/google\./.test(h)) { return 'ref-google'; }
+      if (/bing\.com|duckduckgo\.com|ecosia\.org|qwant\.com|yahoo\./.test(h)) { return 'ref-suche'; }
+      if (/instagram\.com/.test(h)) { return 'ref-instagram'; }
+      if (/tiktok\.com/.test(h)) { return 'ref-tiktok'; }
+      if (/youtube\.com|youtu\.be/.test(h)) { return 'ref-youtube'; }
+      if (/threads\.(net|com)/.test(h)) { return 'ref-threads'; }
+      if (/facebook\.com|fb\.com|l\.facebook/.test(h)) { return 'ref-facebook'; }
+      return 'ref-andere';
+    } catch (e) { return ''; }
+  }
   function paljaSrc() {
     try {
       var p = new URLSearchParams(window.location.search).get('src');
       if (p) { sessionStorage.setItem('palja_src', p); return p; }
-      return sessionStorage.getItem('palja_src') || '';
+      var st = sessionStorage.getItem('palja_src');
+      if (st) { return st; }
+      var rf = paljaRef();
+      if (rf) { sessionStorage.setItem('palja_src', rf); return rf; }
+      return '';
+    } catch (e) { return ''; }
+  }
+  function paljaSrc() {
+    try {
+      var p = new URLSearchParams(window.location.search).get('src');
+      if (p) { sessionStorage.setItem('palja_src', p); return p; }
+      var st = sessionStorage.getItem('palja_src');
+      if (st) { return st; }
+      var rf = paljaRef();
+      if (rf) { sessionStorage.setItem('palja_src', rf); return rf; }
+      return '';
     } catch (e) { return ''; }
   }
   paljaSrc();
@@ -845,7 +883,7 @@
   // Anonyme Funnel-Ereignisse (nur Datum, Quelle, Ereignisname; kein Cookie, keine IP-Speicherung).
   window.paljaEv = function (ev) { _paljaPost('/api/ev', { ev: ev, src: (paljaSrc() || '').toLowerCase() }); };
   try {
-    var q = (new URLSearchParams(window.location.search).get('src') || '').toLowerCase();
+    var q = (new URLSearchParams(window.location.search).get('src') || '').toLowerCase() || (paljaSrc() || '').toLowerCase();
     _paljaPost('/api/hit', { src: q, path: window.location.pathname });
   } catch (e) {}
   (function () {
