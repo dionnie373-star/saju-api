@@ -861,3 +861,11 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - FR: 서술은 vous, 따옴표 안 연인 대사만 tu 허용(i18n.fr_mechanical_issues).
 - 신규: 궁합 무료 미리보기(/compat-preview, AI·메일 없음) + 공유 PNG(/compat-card, 이름·날짜·장소 없음), 4개 언어 페이지 버튼. 이벤트 compat_preview, compat_card_share.
 - TODO: Render 환경변수 ADMIN_TEST_TOKEN 삭제(테스트 끝나면).
+
+## 2026-11-04 마케팅/운영 기록 (저녁, 소셜 작업 폴더: /home/claude/social)
+- 방향 확정(사용자): 11월=띠 궁합, 12월~연초=2027 신년운세. 2027=정미년=붉은 양(Rotes Feuer-Schaf).
+- 핀터레스트: 독일어 띠 궁합 핀 16개(pins/kompat, queue.json) — kg1~kg4 게시 완료, 이후 하루 4개(kp1~kp6, kc1~kc6). 신년운세 핀 12개 준비(pins/n27, queue.json; 붉은 배경, 생년 1966~2005, 띠별 2027 한줄운세) → 12/1부터 하루 4개. 생성 스크립트 pins_kompat_de.py, pins_2027_de.py.
+- 핀터레스트 palja.one/.fr/.es 스팸 차단: 11/4 21:10 도움말 "사이트 차단 이의 신청" 제출(답변은 dionnie373@gmail.com). 답 오기 전 EN/FR 핀 보류. 프로필 웹사이트 palja.de로 변경 완료.
+- 궁합 쇼츠 kompat_de.mp4(out/kompat) 11/4 저녁 유튜브·틱톡(검토 중)·인스타 릴스 업로드.
+- Digistore24: 승인팀에 재촉 메일 발송(11/4 19:12), 답변 대기.
+- TODO: 사이트에 2027 신년운세 랜딩 페이지 확인/제작, 12/1 홈 배너 교체, 아웃리치 후보 목록(사용자에게 문서 링크 요청), Threads 댓글/팔로우 일일 작업.
