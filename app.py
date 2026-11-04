@@ -1736,7 +1736,7 @@ def api_hit():
 _EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky",
                "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok",
                "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page",
-               "compat_preview", "compat_card_share", "compat_view", "compat_buy_open"}
+               "compat_preview", "compat_card_share", "compat_view", "compat_buy_open", "res_top_buy"}
 
 
 @app.route("/api/ev", methods=["POST"])
@@ -1810,7 +1810,7 @@ def admin_dashboard():
     def fr_sum(day=None, site=None):
         return sum(n for (d, s, _sr), n in free.items() if (day is None or d == day) and (site is None or s == site))
 
-    BUY = ("buy_open", "res_up_paid", "res_up_premium")
+    BUY = ("buy_open", "res_up_paid", "res_up_premium", "res_top_buy")
     all_days = sorted({k[0] for k in hv} | {k[0] for k in evn} | {k[0] for k in free} | set(legacy_orders), reverse=True)
 
     def th(*cols):
