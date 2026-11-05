@@ -963,6 +963,12 @@ for _c, _s in (("yt", "yt-profile"), ("ig", "ig-bio"), ("tt", "tt-bio"), ("th", 
     _make_short(_c, _s)
 
 
+# 궁합 영상용 입구(2026-11-05): 영상 마지막에 palja.de/liebe 를 보여주고, 바로 궁합 섹션으로 보낸다(출처 liebe).
+@app.route("/liebe", methods=["GET"])
+def short_liebe():
+    return redirect("/?src=liebe#kompatibilitaet", code=302)
+
+
 # 법적 필수 페이지 (초안 — 실 오픈 전 실제 정보로 채우고 법률 검토 필요.
 # static_site/*.html 상단의 "Entwurf" 경고 참고).
 _LEGAL_PAGES = {
