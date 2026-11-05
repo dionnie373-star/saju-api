@@ -1008,6 +1008,83 @@ def wissen_page(slug="index"):
     return send_from_directory(WISSEN_DIR, filename)
 
 
+# EN/FR/ES 가이드(독일어 /wissen/ 의 번역판). 생성: tools/build_guides.py → static_site/{en/guides,fr/guides,es/guias}.
+_GUIDE_DIRS = {"en": ("en", "guides"), "fr": ("fr", "guides"), "es": ("es", "guias")}
+
+
+def _serve_guide(lang, slug):
+    import re as _re
+    if not _WISSEN_SLUG_RE.match(slug):
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    sub, folder = _GUIDE_DIRS[lang]
+    path = os.path.join(STATIC_SITE_DIR, sub, folder, f"{slug}.html")
+    if not os.path.isfile(path):
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    with open(path, encoding="utf-8") as f:
+        html = f.read()
+    public = False
+    if lang == "en" and _is_one_host():
+        public = True
+    elif lang == "fr" and _is_fr_host():
+        html = html.replace('href="/fr/', 'href="/')
+        public = _fr_public()
+    elif lang == "es" and _is_es_host():
+        html = html.replace('href="/es/', 'href="/')
+        public = _es_public()
+    if public:
+        html = _re.sub(r'<meta name="robots" content="noindex[^>]*>(<!--.*?-->)?', "", html)
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "public, max-age=300"
+    return resp
+
+
+@app.route("/en/guides", methods=["GET"])
+@app.route("/en/guides/", methods=["GET"])
+def guides_en_index():
+    return _serve_guide("en", "index")
+
+
+@app.route("/en/guides/<slug>", methods=["GET"])
+def guides_en_page(slug):
+    return _serve_guide("en", slug)
+
+
+@app.route("/fr/guides", methods=["GET"])
+@app.route("/fr/guides/", methods=["GET"])
+@app.route("/guides", methods=["GET"])
+@app.route("/guides/", methods=["GET"])
+def guides_fr_index():
+    if request.path.startswith("/guides") and not _is_fr_host():
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return _serve_guide("fr", "index")
+
+
+@app.route("/fr/guides/<slug>", methods=["GET"])
+@app.route("/guides/<slug>", methods=["GET"])
+def guides_fr_page(slug):
+    if request.path.startswith("/guides/") and not _is_fr_host():
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return _serve_guide("fr", slug)
+
+
+@app.route("/es/guias", methods=["GET"])
+@app.route("/es/guias/", methods=["GET"])
+@app.route("/guias", methods=["GET"])
+@app.route("/guias/", methods=["GET"])
+def guides_es_index():
+    if request.path.startswith("/guias") and not _is_es_host():
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return _serve_guide("es", "index")
+
+
+@app.route("/es/guias/<slug>", methods=["GET"])
+@app.route("/guias/<slug>", methods=["GET"])
+def guides_es_page(slug):
+    if request.path.startswith("/guias/") and not _is_es_host():
+        return jsonify({"ok": False, "error": "Not found"}), 404
+    return _serve_guide("es", slug)
+
+
 @app.route("/<page>", methods=["GET"])
 def legal_page(page):
     if _is_es_host():

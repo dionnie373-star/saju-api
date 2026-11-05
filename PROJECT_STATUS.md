@@ -885,3 +885,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - resUpsell: 무료 vs 유료(Jahresreport) 비교 2칸, PDF 샘플 이미지 2장(기존 pdf-preview-*.jpg), '12 Monatskapitel+Reflexionsfrage / Jahr auf einen Blick / Jahreskompass / 2.500+ Wörter' 구체 문구, 면책 문구. 프롬프트(paid_report_prompt.json)에 있는 구성만 사용. EN/FR/ES 미변경. 테스트 354 통과, 모바일 렌더 확인.
 - 지표 확인: 대시보드 res_up_view 대비 res_top_buy / res_up_paid 클릭 (11/19 점검).
 - 11/5 21:58 EN/FR/ES 결과 화면 유료 안내도 동일 개선(비교 2칸, 12개월 구성, FR/ES는 PDF 샘플 이미지, EN은 샘플 이미지 없음-독일어뿐이라). 모든 언어 프롬프트에 같은 구성 확인, min_words 2500 공통.
+
+## 2026-11-05 가이드(Ratgeber) EN/FR/ES 번역판
+- 생성기: tools/build_guides.py + tools/guides_{en,fr,es}.py → static_site/en/guides, fr/guides, es/guias (각 12페이지, DE /wissen/ 11편+목록의 번역). 내용 수정은 guides_*.py 에서 하고 `python3 tools/build_guides.py` 로 재생성.
+- 라우트: palja.de/{en/guides,fr/guides,es/guias}, 언어 도메인에서는 palja.one/en/guides, palja.fr/guides, palja.es/guias. 비공개 상태(noindex)는 기존 규칙(palja.one/FR_PUBLIC/ES_PUBLIC)에 따라 자동 해제.
+- hreflang 상호 연결(DE 포함), 헤더에 Guides 링크 추가(EN/FR/ES). DE ddi 글의 &lt;em&gt; 표시 오류 수정.
+- 번역 표기: EN Sheep(Goat/Ram 병기), FR Chèvre, ES Cabra. 유료 안내: EN $10 / FR·ES 9,90 €.
