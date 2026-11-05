@@ -969,6 +969,16 @@ def short_liebe():
     return redirect("/?src=liebe#kompatibilitaet", code=302)
 
 
+# 영상별 궁합 입구(출처 구분): palja.de/pferd, /hase, /ratte → 궁합 섹션, src=liebe-<띠>
+for _code in ("pferd", "hase", "ratte"):
+    def _mk(_c):
+        def _v():
+            return redirect("/?src=liebe-" + _c + "#kompatibilitaet", code=302)
+        _v.__name__ = "short_liebe_" + _c
+        return _v
+    app.route("/" + _code, methods=["GET"])(_mk(_code))
+
+
 # 법적 필수 페이지 (초안 — 실 오픈 전 실제 정보로 채우고 법률 검토 필요.
 # static_site/*.html 상단의 "Entwurf" 경고 참고).
 _LEGAL_PAGES = {
