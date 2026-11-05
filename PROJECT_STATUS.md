@@ -880,3 +880,7 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 ## 11/5 21:30 결제 후 보고서 생성 시험
 - 모의(LLM/메일 mock) 주문으로 paid 보고서+PDF 생성: 출생지·시각 없음(de/en), 시각만 있고 도시 없음, 정상 입력 모두 통과. 전체 unittest 354개 통과.
 - app.py: 도시 없고 경도 없으면 시각 유무와 관계없이 언어별 기본 도시로 대체(안전망).
+
+## 11/5 21:50 결과 화면 유료 안내 개선(DE index.html)
+- resUpsell: 무료 vs 유료(Jahresreport) 비교 2칸, PDF 샘플 이미지 2장(기존 pdf-preview-*.jpg), '12 Monatskapitel+Reflexionsfrage / Jahr auf einen Blick / Jahreskompass / 2.500+ Wörter' 구체 문구, 면책 문구. 프롬프트(paid_report_prompt.json)에 있는 구성만 사용. EN/FR/ES 미변경. 테스트 354 통과, 모바일 렌더 확인.
+- 지표 확인: 대시보드 res_up_view 대비 res_top_buy / res_up_paid 클릭 (11/19 점검).
