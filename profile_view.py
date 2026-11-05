@@ -69,7 +69,7 @@ T = {
         "y_title": "Dein Blick auf 2027",
         "y_two": "Das Saju-Jahr 2027 steht unter {the1} (oben) und {the2} (unten). {N1}: {kw1}. {N2}: {kw2}. ",
         "y_one": "Das Saju-Jahr 2027 steht unter {the1} (oben wie unten). {N1}: {kw1}. ",
-        "y_zero": "{the} fehlt in deinem Profil – 2027 bringt dieses Thema von außen ins Spiel. ",
+        "y_zero": "{the} fehlt in deinem Profil – 2027 kann dieses Thema von außen ins Spiel bringen. ",
         "y_high": "{the} ist bei dir ohnehin stark – 2027 kann das noch verstärken. ",
         "y_mid": "{the} ist bei dir vorhanden – 2027 kann dieses Element zusätzlich anregen. ",
         "y_close": "Das ist ein Überblick zur Reflexion, keine Vorhersage. Wie das Jahr Monat für Monat aussehen kann, zeigt der Jahresreport.",
