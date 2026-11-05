@@ -884,3 +884,4 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 ## 11/5 21:50 결과 화면 유료 안내 개선(DE index.html)
 - resUpsell: 무료 vs 유료(Jahresreport) 비교 2칸, PDF 샘플 이미지 2장(기존 pdf-preview-*.jpg), '12 Monatskapitel+Reflexionsfrage / Jahr auf einen Blick / Jahreskompass / 2.500+ Wörter' 구체 문구, 면책 문구. 프롬프트(paid_report_prompt.json)에 있는 구성만 사용. EN/FR/ES 미변경. 테스트 354 통과, 모바일 렌더 확인.
 - 지표 확인: 대시보드 res_up_view 대비 res_top_buy / res_up_paid 클릭 (11/19 점검).
+- 11/5 21:58 EN/FR/ES 결과 화면 유료 안내도 동일 개선(비교 2칸, 12개월 구성, FR/ES는 PDF 샘플 이미지, EN은 샘플 이미지 없음-독일어뿐이라). 모든 언어 프롬프트에 같은 구성 확인, min_words 2500 공통.
