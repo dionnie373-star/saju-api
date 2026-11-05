@@ -2006,8 +2006,8 @@ def _fulfill_report_order(tier, custom_data, email):
     payload["tier"] = tier
     # 출생지 없이 주문된 경우(출생 시각도 없을 때만 구매 창이 허용): 출생지는 사주 계산에 영향이 없으므로
     # 언어별 기본 도시로 대신한다(/profile과 동일 규칙, 2026-11-04). 시각이 있으면 기존대로 도시가 필요하다.
-    if not str(payload.get("birth_city") or "").strip() and payload.get("longitude") is None \
-            and not str(payload.get("birth_time") or "").strip():
+    # 안전망: 출생 시각이 있는데 도시가 비어 있어도(프런트가 막지만) 결제 후 생성이 실패하지 않게 기본 도시로 대신한다.
+    if not str(payload.get("birth_city") or "").strip() and payload.get("longitude") is None:
         payload["birth_city"] = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(
             str(payload.get("lang") or "de").lower(), "Berlin")
     if tier == "paid":
