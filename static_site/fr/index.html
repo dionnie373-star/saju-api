@@ -195,6 +195,20 @@
       <div id="resTexts" style="display:flex;flex-direction:column;gap:14px;"></div>
       <div id="resCompat" style="display:flex;flex-direction:column;gap:8px;align-items:center;text-align:center;background:#F6EFE3;border:1px solid #E6DFD2;border-radius:12px;padding:18px 20px;margin-top:6px;"><div class="display" style="font-size:17px;font-weight:600;color:#211D1A;">Et vous deux ?</div><p style="margin:0;font-size:14px;line-height:1.55;color:#4A4239;max-width:460px;">Le test de couple montre où vous vous ressemblez, où vous pourriez vous heurter, et trois questions à vous poser ce soir.</p><a href="#compatibilite" style="font-size:14px;font-weight:600;color:#C1442E;text-decoration:none;">Vers le test de couple →</a></div>
 
+      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Gratuit : votre profil en PDF détaillé</h3>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Gratuit, sans achat. Rédigé avec l'aide de l'IA, environ 4 pages à conserver. Nous vous l'envoyons par e-mail.</p>
+        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Recevoir le PDF détaillé par e-mail</button>
+        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="vous@exemple.fr" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
+            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Envoyer le PDF</button>
+          </div>
+          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">Nous utilisons votre adresse e-mail uniquement pour l'envoi de ce PDF. <a href="/fr/confidentialite" style="color:inherit;text-decoration:underline;">Confidentialité</a></p>
+        </div>
+        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
+      </div>
+
       <div id="resUpsell" style="display:flex;flex-direction:column;gap:18px;margin-top:8px;">
         <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
           <h3 class="display" style="margin:0;font-size:22px;font-weight:500;">Envie d'aller plus loin ?</h3>
@@ -214,21 +228,10 @@
         </div>
         <p style="margin:0;font-size:12px;color:#A79E93;text-align:center;">🔒 Paiement sécurisé par carte, PayPal et plus</p>
         <p style="margin:-8px 0 0;font-size:11.5px;color:#A79E93;text-align:center;line-height:1.5;">À des fins de divertissement et de réflexion personnelle – ni prédiction ni conseil.</p>
-      </div>
+      </div>      
 
-      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
-        <h3 style="margin:0;font-size:16px;font-weight:600;">Votre profil gratuit en PDF détaillé</h3>
-        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Rédigé avec l'aide de l'IA, environ 4 pages à conserver. Nous vous l'envoyons par e-mail.</p>
-        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Recevoir le PDF détaillé par e-mail</button>
-        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="vous@exemple.fr" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
-            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Envoyer le PDF</button>
-          </div>
-          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">Nous utilisons votre adresse e-mail uniquement pour l'envoi de ce PDF. <a href="/fr/confidentialite" style="color:inherit;text-decoration:underline;">Confidentialité</a></p>
-        </div>
-        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
-      </div>
+
+      
     </div>
   </div>
 
@@ -860,6 +863,7 @@
     });
     var sec = $('resultSection');
     sec.style.display = 'flex';
+    var pr = document.getElementById('pricing'); if (pr) pr.style.display = 'none';
     setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
     if ('IntersectionObserver' in window) {
       var up = $('resUpsell');

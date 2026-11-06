@@ -187,11 +187,19 @@
         <div id="resBars" style="display:flex;flex-direction:column;gap:9px;"></div>
       </div>
       <div id="resTexts" style="display:flex;flex-direction:column;gap:14px;"></div>
-      <a href="#compatibilidad" id="resCompatCard" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px;text-decoration:none;color:inherit;">
-        <span class="display" style="font-size:19px;font-weight:500;">¿Y cómo encajan los dos?</span>
-        <span style="font-size:14px;line-height:1.55;color:#6B625A;max-width:460px;">Pon tu perfil junto al de tu pareja: cómo muestran cariño, qué necesita cada uno en silencio y dónde puede rozar.</span>
-        <span style="font-size:14.5px;font-weight:600;color:#C1442E;">Al test de compatibilidad →</span>
-      </a>
+      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+        <h3 style="margin:0;font-size:16px;font-weight:600;">Gratis: tu perfil como PDF detallado</h3>
+        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Gratis, sin compra. Elaborado con ayuda de IA, unas 4 páginas para guardar. Te lo enviamos por correo.</p>
+        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Pedir el PDF detallado por correo</button>
+        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="tu@ejemplo.es" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
+            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Enviar PDF</button>
+          </div>
+          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">Usamos tu correo solo para enviarte este PDF. <a href="/es/privacidad" style="color:inherit;text-decoration:underline;">Privacidad</a></p>
+        </div>
+        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
+      </div>
 
       <div id="resUpsell" style="display:flex;flex-direction:column;gap:18px;margin-top:8px;">
         <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
@@ -212,21 +220,14 @@
         </div>
         <p style="margin:0;font-size:12px;color:#A79E93;text-align:center;">🔒 Pago seguro con tarjeta, PayPal y más</p>
         <p style="margin:-8px 0 0;font-size:11.5px;color:#A79E93;text-align:center;line-height:1.5;">Solo con fines de entretenimiento y reflexión personal: no es una predicción ni un consejo.</p>
-      </div>
+      </div>      <a href="#compatibilidad" id="resCompatCard" style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px;text-decoration:none;color:inherit;">
+        <span class="display" style="font-size:19px;font-weight:500;">¿Y cómo encajan los dos?</span>
+        <span style="font-size:14px;line-height:1.55;color:#6B625A;max-width:460px;">Pon tu perfil junto al de tu pareja: cómo muestran cariño, qué necesita cada uno en silencio y dónde puede rozar.</span>
+        <span style="font-size:14.5px;font-weight:600;color:#C1442E;">Al test de compatibilidad →</span>
+      </a>
 
-      <div style="background:#F3EEE4;border-radius:12px;padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
-        <h3 style="margin:0;font-size:16px;font-weight:600;">Tu perfil gratuito como PDF detallado</h3>
-        <p style="margin:0;font-size:13.5px;line-height:1.55;color:#6B625A;">Elaborado con ayuda de IA, unas 4 páginas para guardar. Te lo enviamos por correo.</p>
-        <button type="button" id="resPdfOpen" style="align-self:flex-start;padding:10px 16px;background:#FFFFFF;color:#211D1A;border:1px solid #D8CFC2;border-radius:8px;font-size:14px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Pedir el PDF detallado por correo</button>
-        <div id="resPdfForm" style="display:none;flex-direction:column;gap:10px;">
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <input id="resPdfEmail" type="email" autocomplete="email" placeholder="tu@ejemplo.es" style="flex:1 1 220px;padding:12px 14px;border:1px solid #D8CFC2;border-radius:8px;font-size:15px;font-family:'Work Sans',sans-serif;background:#FAF7F1;box-sizing:border-box;">
-            <button type="button" id="resPdfSend" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Enviar PDF</button>
-          </div>
-          <p style="margin:0;font-size:12px;color:#8A8074;line-height:1.5;">Usamos tu correo solo para enviarte este PDF. <a href="/es/privacidad" style="color:inherit;text-decoration:underline;">Privacidad</a></p>
-        </div>
-        <p id="resPdfMsg" role="status" aria-live="polite" style="margin:0;font-size:13.5px;color:#4A4239;line-height:1.55;display:none;"></p>
-      </div>
+
+      
     </div>
   </div>
 
@@ -859,6 +860,7 @@
     });
     var sec = $('resultSection');
     sec.style.display = 'flex';
+    var pr = document.getElementById('pricing'); if (pr) pr.style.display = 'none';
     setTimeout(function () { sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
     if ('IntersectionObserver' in window) {
       var up = $('resUpsell');
