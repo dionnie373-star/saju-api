@@ -506,6 +506,19 @@
   </div>
 
   <!-- Kompatibilitäts-Check -->
+  <div id="faq" style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 16px;">
+      <h2 class="display" style="margin: 0 0 8px; font-size: 26px; font-weight: 500; text-align: center;">Preguntas frecuentes</h2>
+      <details style="border-top: 1px solid #E4DCD1; padding: 14px 4px;"><summary style="cursor: pointer; font-size: 15.5px; font-weight: 600; color: #3B3630;">¿El Saju tiene base científica?</summary><p style="margin: 10px 0 0; font-size: 14.5px; line-height: 1.65; color: #6B625A;">No. El Saju es un sistema de interpretación tradicional coreano. Palja lo ofrece con fines de entretenimiento y reflexión personal: no es un análisis de personalidad con base científica, ni una predicción, ni asesoramiento médico, psicológico o financiero.</p></details>
+      <details style="border-top: 1px solid #E4DCD1; padding: 14px 4px;"><summary style="cursor: pointer; font-size: 15.5px; font-weight: 600; color: #3B3630;">¿Y si no sé mi hora de nacimiento?</summary><p style="margin: 10px 0 0; font-size: 14.5px; line-height: 1.65; color: #6B625A;">Calculamos tres pilares en lugar de cuatro. Tu perfil sigue siendo útil, y con la hora de nacimiento resulta más preciso.</p></details>
+      <details style="border-top: 1px solid #E4DCD1; padding: 14px 4px;"><summary style="cursor: pointer; font-size: 15.5px; font-weight: 600; color: #3B3630;">¿Dónde veo mi resultado gratis? ¿Necesito un correo?</summary><p style="margin: 10px 0 0; font-size: 14.5px; line-height: 1.65; color: #6B625A;">Tu resultado aparece al instante en esta página, sin correo. Solo necesitas un correo si pides el PDF detallado o un informe de pago.</p></details>
+      <details style="border-top: 1px solid #E4DCD1; padding: 14px 4px;"><summary style="cursor: pointer; font-size: 15.5px; font-weight: 600; color: #3B3630;">¿Cuándo recibo mi PDF?</summary><p style="margin: 10px 0 0; font-size: 14.5px; line-height: 1.65; color: #6B625A;">Los informes de pago se elaboran tras la compra y te llegan por correo, normalmente en pocos minutos. Revisa también la carpeta de spam.</p></details>
+      <details style="border-top: 1px solid #E4DCD1; padding: 14px 4px;"><summary style="cursor: pointer; font-size: 15.5px; font-weight: 600; color: #3B3630;">¿Cómo funciona el reembolso?</summary><p style="margin: 10px 0 0; font-size: 14.5px; line-height: 1.65; color: #6B625A;">Tienes una garantía de devolución de 60 días, sin necesidad de justificación. Escríbenos un breve correo a <a href="mailto:dionnie373@gmail.com" style="color: inherit; text-decoration: underline;">dionnie373@gmail.com</a> (<a href="/es/desistimiento" style="color: inherit; text-decoration: underline;">detalles</a>).</p></details>
+      <details style="border-top: 1px solid #E4DCD1; padding: 14px 4px;"><summary style="cursor: pointer; font-size: 15.5px; font-weight: 600; color: #3B3630;">¿Es seguro el pago?</summary><p style="margin: 10px 0 0; font-size: 14.5px; line-height: 1.65; color: #6B625A;">El pago lo gestiona Digistore24, con tarjeta, PayPal y otros métodos. Nosotros nunca vemos tus datos de pago.</p></details>
+      <div style="border-top: 1px solid #E4DCD1;"></div>
+    </div>
+  </div>
+
   <!-- Kaufdialog: Eingabefelder erscheinen direkt beim Klick auf einen Kaufbutton, danach Weiterleitung zu Digistore24 -->
   <div id="buyModal" role="dialog" aria-modal="true" aria-labelledby="buyModalTitle" style="display:none; position: fixed; inset: 0; z-index: 1000; background: rgba(33,29,26,0.55); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box; overflow-y: auto;">
     <div style="background: #FFFFFF; border-radius: 12px; width: 100%; max-width: 440px; max-height: 100%; overflow-y: auto; padding: 24px 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 60px rgba(33,29,26,0.3);">
@@ -1045,7 +1058,7 @@ function paljaTaste(y, m, d) {
       'Elemento del día: <strong>' + t.dayElem + '</strong> <span style="font-weight:600;">' + t.dayKo + '</span><br>' +
       '<span style="font-size:12.5px;color:#8A8074;">' +
       (t.edge ? 'Hacia el 4 de febrero cambia el año Saju: aquí el animal puede variar; tu perfil se calcula al día exacto. ': '') +
-      'Solo un fragmento: tu perfil completo, gratis, al pulsar el botón.</span>';
+      'Esto es solo un adelanto: al pulsar el botón verás tus pilares y tu perfil completo, gratis.</span>';
     box.innerHTML = html;
     box.style.display = 'block';
   });
