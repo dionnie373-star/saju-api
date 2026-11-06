@@ -65,14 +65,16 @@ def classify(counts, day_key=None):
     total = sum(counts.values()) or 1
     present = [k for k in ORDER if counts.get(k, 0) > 0]
     missing = [k for k in ORDER if counts.get(k, 0) == 0]
-    # 동률: 일간 원소를 먼저, 그다음 상생 순서
+    # 동률은 상생 순서로만 정한다. 일간(day_key)은 유형 선정에 쓰지 않는다(같은 개수 → 항상 같은 카드).
     def rank(k):
-        return (-counts.get(k, 0), 0 if k == day_key else 1, ORDER.index(k))
+        return (-counts.get(k, 0), ORDER.index(k))
     ranked = sorted(ORDER, key=rank)
     top, second = ranked[0], ranked[1]
-    if len(present) == 5 and counts[top] <= max(2, round(total * 0.4)):
+    top_n = counts[top]
+    leaders = [k for k in ORDER if counts.get(k, 0) == top_n]
+    if (len(present) == 5 and top_n <= max(2, round(total * 0.4))) or (len(leaders) >= 3 and top_n / total <= 0.5):
         ko, de, line, _ = BALANCED
-        return {"kind": "balanced", "ko": ko, "de": de, "line": line, "missing": []}
+        return {"kind": "balanced", "ko": ko, "de": de, "line": line, "missing": missing}
     if counts.get(second, 0) <= 1:
         ko, de, line, _ = SINGLE[top]
         return {"kind": "single", "key": top, "ko": ko, "de": de, "line": line, "missing": missing}
@@ -121,6 +123,14 @@ _NOTE = {
 }
 
 
+_BAL_SUB_N = {"de": "{n} Elemente sind sichtbar", "en": "{n} elements are visible",
+              "fr": "{n} éléments sont visibles", "es": "{n} elementos son visibles"}
+_BAL_LINE_N = {"de": "Mehrere Stimmen im Zusammenspiel – die Frage ist nur, wer dirigiert.",
+               "en": "Several voices playing together – the only question is who's conducting.",
+               "fr": "Plusieurs voix qui jouent ensemble – reste à savoir qui dirige.",
+               "es": "Varias voces tocando juntas – la cuestión es quién lleva la batuta."}
+
+
 def card_texts(counts, day_key=None, lang="de"):
     """카드·결과 화면용 문구 묶음. 개인정보 없음(개수만 입력)."""
     r = classify(counts, day_key)
@@ -133,7 +143,11 @@ def card_texts(counts, day_key=None, lang="de"):
         if loc:
             name, line = loc[0], loc[1]
     sub = _SUB[lang]
-    if r["kind"] == "balanced":
+    if r["kind"] == "balanced" and r["missing"]:
+        n = 5 - len(r["missing"])
+        subtitle = _BAL_SUB_N[lang].format(n=n)
+        line = _BAL_LINE_N[lang]
+    elif r["kind"] == "balanced":
         subtitle = sub["balanced"]
     elif r["kind"] == "single":
         subtitle = sub["single"].format(a=names[r["key"]])
