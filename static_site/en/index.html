@@ -129,10 +129,6 @@
         <p style="margin:0;font-size:12px;color:#8A8074;max-width:480px;line-height:1.5;">The link only shows your five-element balance – no birth date, name or birthplace.</p>
         <p id="resTypNote" style="margin:8px 0 0;font-size:11.5px;color:#A79E93;max-width:520px;line-height:1.5;"></p>
       </div>
-      <div id="resTopBuy" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;background:#211D1A;color:#FFFDF9;border-radius:12px;padding:16px 20px;">
-        <div style="flex:1 1 240px;"><p class="display" style="margin:0 0 4px;font-size:18px;font-weight:600;">Your 2027 annual report</p><p style="margin:0;font-size:13.5px;line-height:1.5;color:#E6DFD2;">All 12 months laid out for you, as a keepsake PDF.</p></div>
-        <button type="button" id="resTopBuyBtn" style="flex:0 0 auto;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">View — $10.00</button>
-      </div>
       <div id="resPillars" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;"></div>
       <div id="resBarsCard" style="background:#FFFDF9;border:1px solid #E6DFD2;border-radius:12px;padding:20px 22px;">
         <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;color:#3B3630;">Distribution of the Five Elements</h3>
@@ -144,16 +140,6 @@
         <div style="text-align:center;display:flex;flex-direction:column;gap:6px;">
           <h3 class="display" style="margin:0;font-size:22px;font-weight:500;">Want to go deeper?</h3>
           <p style="margin:0 auto;max-width:560px;font-size:14.5px;line-height:1.6;color:#6B625A;">Your free profile gives a first look. The annual report guides you through all 12 months of 2027. The life map also shows your ten-year life phases.</p>
-        </div>
-        <div id="resCompare" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
-          <div style="flex:1 1 260px;max-width:380px;background:#F3EEE4;border-radius:12px;padding:18px 20px;box-sizing:border-box;">
-            <p style="margin:0 0 8px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#8A8074;">Just seen · free</p>
-            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.75;color:#4A4239;"><li>Distribution of your Five Elements</li><li>Your four pillars and your zodiac animal</li><li>Short readings of your type</li></ul>
-          </div>
-          <div style="flex:1 1 260px;max-width:380px;background:#FFFDF9;border:1px solid #D8CFC2;border-radius:12px;padding:18px 20px;box-sizing:border-box;">
-            <p style="margin:0 0 8px;font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:#C1442E;">Added in the 2027 Annual Report</p>
-            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.75;color:#3B3630;"><li><strong>Your year at a glance:</strong> months when things may flow more easily, and months for more mindfulness</li><li><strong>12 monthly chapters</strong>, each with one focus (resources, relationships, work or overall balance) and a reflection question</li><li><strong>Year compass</strong> to close</li></ul>
-          </div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
           <p style="margin:0;font-size:12px;color:#A79E93;text-align:center;max-width:420px;line-height:1.5;">What the report looks like: a designed PDF with more than 2,500 words. Sample data, not personal.</p>
@@ -800,7 +786,7 @@
 
   // Result upsell: same purchase dialogs as in the price section (birth data is pre-filled from the form).
   $('resBuyPaid').addEventListener('click', function () { ev('res_up_paid'); window.paljaOpenBuy('paid', this); });
-  $('resTopBuyBtn').addEventListener('click', function () { ev('res_top_buy'); window.paljaOpenBuy('paid', this); });
+  if ($('resTopBuyBtn')) $('resTopBuyBtn').addEventListener('click', function () { ev('res_top_buy'); window.paljaOpenBuy('paid', this); });
   $('resBuyPremium').addEventListener('click', function () { ev('res_up_premium'); window.paljaOpenBuy('premium', this); });
 
   // Optional PDF by email: existing /signup route with AI text.
