@@ -962,6 +962,11 @@ def _make_short(code, src):
 for _c, _s in (("yt", "yt-profile"), ("ig", "ig-bio"), ("tt", "tt-bio"), ("th", "th-bio"), ("pin", "pin-bio")):
     _make_short(_c, _s)
 
+# 콘텐츠용 짧은 주소(2026-11-15): 프로필(bio)과 구분해서 "어느 콘텐츠가 방문을 만드는지" 본다.
+# 영상 화면 속 주소 = /v, 핀·이미지 속 주소 = /p, Threads 글·답글 링크 = /post
+for _c, _s in (("v", "video"), ("p", "bild"), ("post", "th-post")):
+    _make_short(_c, _s)
+
 
 # 궁합 영상용 입구(2026-11-05): 영상 마지막에 palja.de/liebe 를 보여주고, 바로 궁합 섹션으로 보낸다(출처 liebe).
 @app.route("/liebe", methods=["GET"])
