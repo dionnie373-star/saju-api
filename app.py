@@ -1834,7 +1834,8 @@ def api_hit():
 _EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", "neterr", "buy_open", "sticky",
                "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok",
                "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page",
-               "compat_preview", "compat_card_share", "compat_view", "compat_buy_open", "res_top_buy"}
+               "compat_preview", "compat_card_share", "compat_view", "compat_buy_open", "res_top_buy",
+               "yr_show", "yr_form", "yr_compat"}
 
 
 @app.route("/api/ev", methods=["POST"])
@@ -1958,6 +1959,9 @@ def admin_dashboard():
                 dfun_rows += td(d, SITE_LABEL[s], *v)
     # 5-b) 궁합 전용 흐름(사이트별 누적). 일반 사주 흐름과 같은 방문자에서 시작하므로 따로 페이지를 나누지 않고 한 블록으로 보여 준다.
     cp_steps = [
+        ("연도 띠 입구: 결과 표시", lambda s: ev_sum(site=s, ev=("yr_show",))),
+        ("연도 띠 입구 → 전체 프로필 클릭", lambda s: ev_sum(site=s, ev=("yr_form",))),
+        ("연도 띠 입구 → 궁합 클릭", lambda s: ev_sum(site=s, ev=("yr_compat",))),
         ("궁합 칸이 보임", lambda s: ev_sum(site=s, ev=("compat_view",))),
         ("무료 미리보기 클릭", lambda s: ev_sum(site=s, ev=("compat_preview",))),
         ("미리보기 카드 공유/저장", lambda s: ev_sum(site=s, ev=("compat_card_share",))),
@@ -2065,13 +2069,21 @@ def _fulfill_report_order(tier, custom_data, email):
     if tier == "compatibility":
         # 궁합 리포트는 사람 두 명의 생년월일시가 필요하다 (본인 + 상대방).
         # customData 필드명은 랜딩페이지 폼과 맞춰서 _a/_b 접미사로 구분한다.
-        required = ("birth_date_a", "birth_city_a", "birth_date_b", "birth_city_b")
+        # 출생지는 선택(2026-11-18): 비어 있으면 언어별 기본 도시로 대신한다(무료 프로필/미리보기와 동일 규칙).
+        # 출생 시각이 있는데 도시가 없는 경우는 프런트가 막지만, 결제 후 실패하지 않도록 같은 기본 도시를 쓴다.
+        required = ("birth_date_a", "birth_date_b")
         missing = [k for k in required if not custom_data.get(k)]
         if missing:
             raise PipelineError(
                 f"Kompatibilität benötigt Geburtsdaten für beide Personen (fehlt: {', '.join(missing)})",
                 400,
             )
+        _compat_default_city = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(
+            str(custom_data.get("lang") or "de").lower(), "Berlin")
+        custom_data = dict(custom_data)
+        for _suf in ("a", "b"):
+            if not str(custom_data.get("birth_city_" + _suf) or "").strip():
+                custom_data["birth_city_" + _suf] = _compat_default_city
 
         payload_a = {
             "name": custom_data.get("name_a"),
