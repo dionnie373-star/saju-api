@@ -22,7 +22,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import KeepTogether, Paragraph, Spacer, Table, TableStyle
 
 _BASE = os.path.dirname(__file__)
 _KO_FONT_PATH = os.path.join(_BASE, "fonts", "NotoSerifKR-Hangul-SemiBold.ttf")
@@ -400,3 +400,78 @@ def build_overview_flowables(calc_result, *, hour_known=True, lang="de", h2_styl
         out.append(Paragraph(st["hour_note"], note))
     out.append(Spacer(1, 6 * mm))
     return out
+
+
+# ---------------------------------------------------------------------------
+# 대운 한눈에 보기 표 (프리미엄 리포트): 나이 / 연도 / 간지 / 오행 / 축, 현재 행 강조
+# 데이터는 run_calculation()의 daewoon["entries"]에서 코드로만 그린다(LLM 문장 아님).
+# ---------------------------------------------------------------------------
+
+_DW_STRINGS = {
+    "de": {"title": "Deine acht Lebensphasen im Überblick",
+           "cols": ["Alter", "Ab Jahr", "Zyklus", "Elemente", "Schwerpunkt"], "here": "DU BIST HIER",
+           "axes": {"재물운": "Ressourcen", "관계운": "Beziehung", "직업운": "Talent & Werk", "총운": "Stabilität"},
+           "note": "Jede Phase dauert zehn Jahre. Der Schwerpunkt benennt das Thema, das in diesem Zyklus im Vordergrund steht."},
+    "fr": {"title": "Vos huit phases de vie en un coup d'œil",
+           "cols": ["Âge", "Dès l'année", "Cycle", "Éléments", "Thème"], "here": "VOUS ÊTES ICI",
+           "axes": {"재물운": "Ressources", "관계운": "Relations", "직업운": "Talents & œuvre", "총운": "Équilibre"},
+           "note": "Chaque phase dure dix ans. Le thème indique ce qui est au premier plan pendant ce cycle."},
+    "es": {"title": "Tus ocho etapas de vida de un vistazo",
+           "cols": ["Edad", "Desde el año", "Ciclo", "Elementos", "Tema"], "here": "ESTÁS AQUÍ",
+           "axes": {"재물운": "Recursos", "관계운": "Relaciones", "직업운": "Talento y obra", "총운": "Equilibrio"},
+           "note": "Cada etapa dura diez años. El tema indica lo que ocupa el primer plano en ese ciclo."},
+    "en": {"title": "Your eight life phases at a glance",
+           "cols": ["Age", "From year", "Cycle", "Elements", "Focus"], "here": "YOU ARE HERE",
+           "axes": {"재물운": "Resources", "관계운": "Relationships", "직업운": "Talent & work", "총운": "Balance"},
+           "note": "Each phase lasts ten years. The focus names the theme in the foreground during that cycle."},
+}
+
+
+def build_daewoon_table(entries, *, lang="de", width_mm=166, h3_style=None):
+    """entries: run_calculation()["daewoon"]["entries"]. 반환: flowable 리스트."""
+    st = _DW_STRINGS.get(lang, _DW_STRINGS["de"])
+    names = _names(lang)
+    head = ParagraphStyle("dw_head", fontName="WorkSans-Bold", fontSize=8.5, leading=11, textColor=HexColor(INK))
+    cell = ParagraphStyle("dw_cell", fontName="WorkSans", fontSize=9, leading=12, textColor=HexColor(INK))
+    soft = ParagraphStyle("dw_soft", fontName="WorkSans", fontSize=9, leading=12, textColor=HexColor(INK_SOFT))
+    ko = ParagraphStyle("dw_ko", fontName="KoreanSerif", fontSize=15, leading=18, textColor=HexColor(INK))
+    here = ParagraphStyle("dw_here", fontName="WorkSans-Bold", fontSize=6.5, leading=8, textColor=HexColor(ACCENT))
+    note = ParagraphStyle("dw_note", fontName="WorkSans", fontSize=8.5, leading=12, textColor=HexColor(INK_SOFT),
+                          spaceBefore=2 * mm)
+
+    def dot(el):
+        return f'<font color="{ELEMENT_COLORS[el]}" size="10">●</font>&nbsp;{names[el]}'
+
+    data = [[Paragraph(c, head) for c in st["cols"]]]
+    current_row = None
+    for i, e in enumerate(entries, start=1):
+        p = e["pillar"]
+        age = f'{e["start_age"]}–{e["end_age"]}'
+        if e.get("is_current"):
+            current_row = i
+            age_cell = [Paragraph(f"<b>{age}</b>", cell), Paragraph(st["here"], here)]
+        else:
+            age_cell = Paragraph(age, cell)
+        els = Paragraph(f'{dot(p["cheon_gan_element"])}<br/>{dot(p["ji_ji_element"])}', cell)
+        data.append([age_cell, Paragraph(str(e["start_year"]), soft), Paragraph(p["hangul"], ko), els,
+                     Paragraph(st["axes"].get(e["axis"], e["axis"]), cell)])
+
+    w = width_mm * mm
+    cw = [26 * mm, 22 * mm, 22 * mm, 50 * mm, w - 120 * mm]
+    t = Table(data, colWidths=cw, repeatRows=1)
+    style = [
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("LINEBELOW", (0, 0), (-1, 0), 0.8, HexColor(INK)),
+        ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+    ]
+    for r in range(1, len(data) - 1):
+        style.append(("LINEBELOW", (0, r), (-1, r), 0.4, HexColor(RULE)))
+    if current_row:
+        style += [("BACKGROUND", (0, current_row), (-1, current_row), HexColor("#F6EEE6")),
+                  ("LINEBEFORE", (0, current_row), (0, current_row), 2.5, HexColor(ACCENT))]
+    t.setStyle(TableStyle(style))
+    out = []
+    if h3_style is not None:
+        out.append(Paragraph(st["title"], h3_style))
+    out += [t, Paragraph(st["note"], note)]
+    return [KeepTogether(out), Spacer(1, 4 * mm)]

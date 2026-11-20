@@ -1794,6 +1794,20 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     )
 
 
+def _premium_phase_table(calc_result, lang):
+    """프리미엄 리포트 "한눈에 보기"에 넣는 대운 표. 실패해도 리포트는 그대로 진행(빈 리스트)."""
+    try:
+        import pdf_design
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib.colors import HexColor
+        h3 = ParagraphStyle("dw_h3", fontName="Fraunces", fontSize=13, leading=17, textColor=HexColor("#211D1A"),
+                            spaceBefore=2 * mm, spaceAfter=2 * mm)
+        return pdf_design.build_daewoon_table(calc_result["daewoon"]["entries"], lang=lang, h3_style=h3)
+    except Exception as e:  # noqa: BLE001 - 부가 디자인 요소
+        print(f"[report_pipeline] 경고: 대운 표 생성 실패, 없이 진행: {e!r}")
+        return []
+
+
 def run_premium_signup(*, payload, calc_result):
     """프리미엄(대운) 인생 지도 리포트 파이프라인.
 
@@ -1850,7 +1864,7 @@ def run_premium_signup(*, payload, calc_result):
                 _H2_RULE,
                 _build_daewoon_timeline_drawing(daewoon_facts, lang=lang),
                 Spacer(1, 6 * mm),
-            ]
+            ] + _premium_phase_table(calc_result, lang)
         except Exception as e:  # noqa: BLE001 - 타임라인 그래픽은 부가 요소, 실패해도 리포트 발송은 막지 않음
             print(f"[report_pipeline] 경고: 타임라인 그래픽 생성 실패, 없이 진행: {e}")
             intro_flowables = None
