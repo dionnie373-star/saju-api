@@ -45,6 +45,7 @@
   }
 </style>
 <style>@media (max-width:700px){.pdf-strip{flex-wrap:nowrap!important;overflow-x:auto;justify-content:flex-start!important;scroll-snap-type:x mandatory;gap:16px!important;width:100%;padding:4px 6vw 22px;margin:0 -6vw;box-sizing:content-box;-webkit-overflow-scrolling:touch}.pdf-fig{flex:0 0 76%!important;max-width:none!important;scroll-snap-align:center}.pdf-hint{display:block!important}}.nav-link{white-space:nowrap}.lang-sw summary{white-space:nowrap}@media (max-width:760px){.paar-q{display:none}}@media (max-width:400px){.nav-ratgeber{display:none}}@media (max-width:480px){.nav-link{font-size:11.5px!important;letter-spacing:.03em!important;margin-right:0!important}}.lang-sw{position:relative;margin-left:6px}.lang-sw summary{list-style:none;cursor:pointer;font-size:13.5px;letter-spacing:.02em;color:#3B3630;border:1px solid #B9AE9E;border-radius:999px;padding:7px 14px;min-height:20px;background:#FFFDF9;user-select:none;white-space:nowrap}.lang-sw summary:hover{border-color:#C1442E}.lg-short{display:none}@media (max-width:560px){.lg-full{display:none}.lg-short{display:inline;font-weight:600}.lang-sw summary{padding:7px 11px}}.lang-sw summary::-webkit-details-marker{display:none}.lang-sw[open] summary{border-color:#C1442E;color:#211D1A}.lang-sw ul{position:absolute;left:0;top:42px;border-radius:10px;margin:0;padding:4px 0;list-style:none;background:#fff;border:1px solid #E6DFD2;box-shadow:0 6px 18px rgba(33,29,26,.12);z-index:60;min-width:140px}.lang-sw li a{display:block;padding:11px 18px;font-size:14px;color:#211D1A;text-decoration:none;white-space:nowrap}.lang-sw li a:hover,.lang-sw li a[aria-current]{background:#F6F2E8}</style><link rel="alternate" hreflang="de" href="https://palja.de/"><link rel="alternate" hreflang="fr" href="https://palja.fr/"><link rel="alternate" hreflang="es" href="https://palja.es/"><link rel="alternate" hreflang="en" href="https://palja.one/"><link rel="alternate" hreflang="x-default" href="https://palja.one/">
+<style id="res-v3">#resUpsell{order:1}#resCompatCard{order:2;border-width:1px!important}#resUpsell h3{font-size:21px}</style>
 <style id="hero-v2">
 /* Hero v2 (2026-11-21): Formular zuerst, Geburtsjahr-Teaser als leiser Zweitweg, kuerzere Texte. Mobile = max 640px. */
 @media (max-width:640px){
@@ -291,32 +292,13 @@
     </div>
   </div>
 
-  <!-- Wie es funktioniert -->
-  <div style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center; background: #F3EEE4;">
-    <div style="width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 40px;">
-      <h2 class="display" style="margin: 0; font-size: 28px; font-weight: 500; text-align: center;">So funktioniert's</h2>
-      <div style="display: flex; gap: 32px; flex-wrap: wrap; justify-content: center;">
-
-        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
-          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">1</div>
-          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Geburtsdaten eingeben</h3>
-          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Datum, Uhrzeit (optional) und Ort — mehr brauchen wir nicht.</p>
-        </div>
-
-        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
-          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">2</div>
-          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Wir erstellen dein Fünf-Elemente-Profil</h3>
-          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Nach der traditionellen koreanischen Saju-Lehre — berechnet auf Basis deiner Geburtsdaten.</p>
-        </div>
-
-        <div style="flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 12px; align-items: flex-start;">
-          <div class="display" style="width: 40px; height: 40px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600;">3</div>
-          <h3 style="margin: 0; font-size: 17px; font-weight: 600;">Dein Ergebnis sofort auf dieser Seite</h3>
-          <p style="margin: 0; font-size: 14.5px; line-height: 1.6; color: #6B625A;">Direkt nach dem Klick – ohne E-Mail. Das ausführliche PDF bekommst du auf Wunsch zusätzlich.</p>
-        </div>
-
-      </div>
-    </div>
+  <!-- So funktioniert's (v3: kompakter Streifen statt drei großer Blöcke) -->
+  <div style="width: 100%; box-sizing: border-box; padding: 28px 6vw; display: flex; justify-content: center; background: #F3EEE4;">
+    <ol style="list-style: none; margin: 0; padding: 0; width: 100%; max-width: 980px; display: flex; flex-wrap: wrap; gap: 14px 32px; justify-content: center; font-size: 14.5px; line-height: 1.45; color: #4A4239;">
+      <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">1</span><span><b>Geburtsdatum eingeben</b> – Uhrzeit und Ort sind optional</span></li>
+      <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">2</span><span><b>Profil sofort sehen</b> – direkt auf dieser Seite, ohne E-Mail</span></li>
+      <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">3</span><span><b>Auf Wunsch tiefer gehen</b> – als PDF-Report</span></li>
+    </ol>
   </div>
 
   <!-- Beispielauszug: echte PDF-Seiten statt reiner Text-Zitate.
