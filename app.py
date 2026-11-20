@@ -2712,6 +2712,52 @@ def _ipn_safe_log_form(form):
 _LAST_SIG_ALERT_AT = 0.0
 
 
+_UNLINKED_ORDER_MAIL = {
+    "de": ("Dein Palja-Zugang – so erhältst du deinen Report",
+           "Danke für deine Bestellung! Dein Report ist ein digitales Produkt (PDF) und wird ausschließlich per E-Mail zugestellt.",
+           "Damit wir ihn für dich berechnen können, brauchen wir deine Geburtsdaten. Bitte antworte auf diese E-Mail (oder schreibe an {contact}) mit: Geburtsdatum, Uhrzeit (falls bekannt), Geburtsort"
+           " und – bei der Lebenskarte – dein Geschlecht; für den Kompatibilitäts-Check die Daten beider Personen. Du erhältst deinen Report innerhalb von 24 Stunden.",
+           "Alternativ bestellst du direkt über https://palja.de/ – dort werden die Daten beim Kauf abgefragt und der Report kommt automatisch in wenigen Minuten."),
+    "en": ("Your Palja access – how to get your report",
+           "Thank you for your order! Your report is a digital product (PDF) and is delivered by email only.",
+           "To calculate it for you we need your birth details. Please reply to this email (or write to {contact}) with: date of birth, time (if known), place of birth"
+           " and – for the Life Map – your gender; for the Compatibility Check, the details of both people. You will receive your report within 24 hours.",
+           "Alternatively, order through https://palja.de/en/ – the details are collected at purchase and the report arrives automatically within a few minutes."),
+    "fr": ("Votre accès Palja – comment recevoir votre rapport",
+           "Merci pour votre commande ! Votre rapport est un produit numérique (PDF), livré uniquement par e-mail.",
+           "Pour le calculer, nous avons besoin de vos données de naissance. Répondez à cet e-mail (ou écrivez à {contact}) avec : date de naissance, heure (si connue), lieu de naissance"
+           " et – pour la Carte de vie – votre sexe ; pour le Check de compatibilité, les données des deux personnes. Vous recevrez votre rapport sous 24 heures.",
+           "Vous pouvez aussi commander directement via https://palja.fr/ – les données sont saisies à l'achat et le rapport arrive automatiquement en quelques minutes."),
+    "es": ("Tu acceso a Palja – cómo recibir tu informe",
+           "¡Gracias por tu pedido! Tu informe es un producto digital (PDF) y se entrega únicamente por correo electrónico.",
+           "Para calcularlo necesitamos tus datos de nacimiento. Responde a este correo (o escribe a {contact}) con: fecha de nacimiento, hora (si la conoces), lugar de nacimiento"
+           " y – para el Mapa de vida – tu género; para el Chequeo de compatibilidad, los datos de ambas personas. Recibirás tu informe en un plazo de 24 horas.",
+           "También puedes pedirlo directamente en https://palja.es/ – los datos se piden al comprar y el informe llega automáticamente en pocos minutos."),
+}
+
+
+def _send_unlinked_order_email(email, language, order_id):
+    """토큰(생년월일 등 주문 데이터) 없이 들어온 결제용 안내 메일. 리포트는 만들지 않고,
+    구매자에게 수령 방법(이메일 회신으로 생년월일 전달 또는 사이트에서 재주문)을 알린다.
+    실패해도 IPN 처리를 깨지 않는다."""
+    try:
+        email = (email or "").strip()
+        if not email or "@" not in email:
+            return False
+        import html as _h
+        from report_pipeline import send_email
+        lang = (language or "de").lower()[:2]
+        subj, p1, p2, p3 = _UNLINKED_ORDER_MAIL.get(lang, _UNLINKED_ORDER_MAIL["de"])
+        contact = OWNER_ALERT_EMAIL
+        body = "<p>{}</p><p>{}</p><p>{}</p><p style='color:#8A8074;font-size:12px'>Order {}</p>".format(
+            _h.escape(p1), _h.escape(p2.format(contact=contact)), _h.escape(p3), _h.escape(str(order_id or "")))
+        send_email(to_email=email, subject=subj, html_body=body, reply_to=contact)
+        return True
+    except Exception as e:  # noqa: BLE001
+        app.logger.error("[unlinked-mail] 실패: %s", type(e).__name__)
+        return False
+
+
 def _digistore24_webhook_impl():
     """Digistore24 IPN(Instant Payment Notification) 웹훅.
 
@@ -2800,10 +2846,18 @@ def _digistore24_webhook_impl():
         if request.form.get("api_mode", "") == "test" and not pending_token:
             # Digistore24 테스트 결제(TEST PAY)/테스트 IPN은 토큰 없이 직접 결제창으로 들어오면
             # 항상 토큰이 없다. 여기서 400을 주면 "연결이 에러만 낸다"며 IPN이 자동 비활성화되어
-            # (2026-10-12 재발) 실결제까지 막히므로, 테스트 주문은 200으로 무시한다(발송 없음).
-            app.logger.info("[digistore24 무시] test 주문, 토큰 없음 order=%s", order_id)
-            return jsonify({"ok": True, "ignored": "test_order_without_token"})
+            # (2026-10-12 재발) 실결제까지 막히므로, 테스트 주문은 200으로 처리한다.
+            # 2026-11-21: Digistore24 심사팀이 주문서 링크로 직접 테스트 구매를 했는데 "상품을 받지 못했다"고
+            # 반려했다. 그래서 발송 대신 "접근·이용 안내 메일"을 구매자 이메일로 보낸다(실제 리포트는 생성하지 않음).
+            _send_unlinked_order_email(request.form.get("email", ""), request.form.get("language", ""), order_id)
+            app.logger.warning("[digistore24 안내메일] test 주문, 토큰 없음 order=%s", order_id)
+            return jsonify({"ok": True, "ignored": "test_order_without_token", "guide_mail": True})
         _log_rejected_request("pending_token_not_found")
+        # 2026-11-21: 실결제인데 주문 데이터가 없으면(링크로 직접 구매 등) 구매자가 아무것도 못 받는다.
+        # 안내 메일(이메일 회신으로 생년월일 전달)을 보내고, 같은 IPN 재전송으로 메일이 반복되지 않도록
+        # 처리 완료로 두고 200을 돌려준다. 운영자 알림은 위 _log_rejected_request가 이미 보냈다.
+        if _send_unlinked_order_email(request.form.get("email", ""), request.form.get("language", ""), order_id):
+            return jsonify({"ok": True, "guide_mail": True, "note": "no pending order data"})
         _unmark_order()
         return jsonify({
             "ok": False,
