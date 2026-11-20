@@ -55,7 +55,7 @@
 <style>.lang-sw{position:relative;margin-left:6px}.lang-sw summary{list-style:none;cursor:pointer;font-size:13.5px;letter-spacing:.02em;color:#3B3630;border:1px solid #B9AE9E;border-radius:999px;padding:7px 14px;min-height:20px;background:#FFFDF9;user-select:none;white-space:nowrap}.lang-sw summary:hover{border-color:#C1442E}.lg-short{display:none}@media (max-width:560px){.lg-full{display:none}.lg-short{display:inline;font-weight:600}.lang-sw summary{padding:7px 11px}}.lang-sw summary::-webkit-details-marker{display:none}.lang-sw[open] summary{border-color:#C1442E;color:#211D1A}.lang-sw ul{position:absolute;left:0;top:42px;border-radius:10px;margin:0;padding:4px 0;list-style:none;background:#fff;border:1px solid #E6DFD2;box-shadow:0 6px 18px rgba(33,29,26,.12);z-index:60;min-width:140px}.lang-sw li a{display:block;padding:11px 18px;font-size:14px;color:#211D1A;text-decoration:none;white-space:nowrap}.lang-sw li a:hover,.lang-sw li a[aria-current]{background:#F6F2E8}</style><link rel="alternate" hreflang="de" href="https://palja.de/"><link rel="alternate" hreflang="fr" href="https://palja.fr/"><link rel="alternate" hreflang="es" href="https://palja.es/"><link rel="alternate" hreflang="en" href="https://palja.one/"><link rel="alternate" hreflang="x-default" href="https://palja.one/">
 <style>.nav-link{white-space:nowrap}.lang-sw summary{white-space:nowrap}@media (max-width:480px){.nav-link{font-size:11.5px!important;letter-spacing:.03em!important;margin-right:0!important}}</style>
 <style>@media (max-width:400px){.nav-ratgeber{display:none}}</style>
-<style id="res-v3">#resUpsell{order:1}#resCompatCard{order:2;border-width:1px!important}#resUpsell h3{font-size:21px}</style>
+<style id="res-v3">#resUpsell{order:1}#resCompatCard{order:2;border-width:1px!important}#resUpsell h3{font-size:21px}html.src-compat #resCompatCard{order:1;border-width:2px!important}html.src-compat #resUpsell{order:2}</style>
 <style id="hero-v2">
 /* Hero v2 (2026-11-21): formulaire d'abord, teaser de l'année en voie secondaire discrète, textes plus courts. Mobile = max 640px. */
 @media (max-width:640px){
@@ -284,7 +284,7 @@
           </div>
           <div style="flex:1 1 300px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Carte de vie premium</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
-            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li>Tout le contenu du rapport annuel</li><li><strong>Analyse des périodes de vie (Daewoon)</strong> — vos grands cycles de dix ans</li><li><strong>Au format PDF</strong> — votre guide de réflexion personnel</li></ul>
+            <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li><strong>Analyse des périodes de vie (Daewoon)</strong> — vos grands cycles de dix ans</li><li><strong>Au format PDF</strong> — votre guide de réflexion personnel</li></ul>
             <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Voir la carte de vie — 24,90 €</button>
           </div>
         </div>
@@ -295,6 +295,23 @@
 
 
       
+    </div>
+  </div>
+
+  <!-- v3: Beispiel-Ergebnis (echte Berechnung, als Beispiel gekennzeichnet) -->
+  <div id="sampleResult" style="width:100%;box-sizing:border-box;padding:40px 6vw 8px;display:flex;justify-content:center;">
+    <div style="width:100%;max-width:720px;background:#FFFFFF;border:1px solid #E6DFD2;border-radius:12px;padding:24px 22px;box-sizing:border-box;display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start;">
+        <span style="font-size:11px;letter-spacing:.06em;font-weight:600;color:#C1442E;border:1px solid #C1442E;border-radius:4px;padding:2px 8px;">EXEMPLE – pas un vrai profil</span>
+        <h2 class="display" style="margin:0;font-size:24px;font-weight:500;">À quoi ressemble votre résultat gratuit</h2>
+        <span style="font-size:13px;color:#8A8074;">Exemple : né le 15/05/1990, 12h00, Berlin</span>
+      </div>
+      <div style="display:flex;gap:6px;padding:12px 0;border-top:1px solid #EFE9DD;border-bottom:1px solid #EFE9DD;"><div style="flex:1;text-align:center;"><div style="font-size:12px;color:#8A8074;">Année</div><div style="font-size:26px;font-weight:600;letter-spacing:2px;margin-top:2px;">庚午</div></div><div style="flex:1;text-align:center;"><div style="font-size:12px;color:#8A8074;">Mois</div><div style="font-size:26px;font-weight:600;letter-spacing:2px;margin-top:2px;">辛巳</div></div><div style="flex:1;text-align:center;"><div style="font-size:12px;color:#8A8074;">Jour</div><div style="font-size:26px;font-weight:600;letter-spacing:2px;margin-top:2px;">庚辰</div></div><div style="flex:1;text-align:center;"><div style="font-size:12px;color:#8A8074;">Heure</div><div style="font-size:26px;font-weight:600;letter-spacing:2px;margin-top:2px;">辛巳</div></div></div>
+      <div style="display:flex;flex-direction:column;gap:6px;"><div style="font-size:13px;font-weight:600;">Cinq éléments</div><div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="flex:0 0 62px;color:#4A4239;">Bois</span><span style="flex:1;height:8px;background:#EFE9DD;border-radius:4px;overflow:hidden;"><span style="display:block;height:100%;width:0%;background:#5B8A5A;"></span></span><span style="flex:0 0 14px;text-align:right;color:#6B625A;">0</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="flex:0 0 62px;color:#4A4239;">Feu</span><span style="flex:1;height:8px;background:#EFE9DD;border-radius:4px;overflow:hidden;"><span style="display:block;height:100%;width:37%;background:#C1442E;"></span></span><span style="flex:0 0 14px;text-align:right;color:#6B625A;">3</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="flex:0 0 62px;color:#4A4239;">Terre</span><span style="flex:1;height:8px;background:#EFE9DD;border-radius:4px;overflow:hidden;"><span style="display:block;height:100%;width:12%;background:#B8923D;"></span></span><span style="flex:0 0 14px;text-align:right;color:#6B625A;">1</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="flex:0 0 62px;color:#4A4239;">Métal</span><span style="flex:1;height:8px;background:#EFE9DD;border-radius:4px;overflow:hidden;"><span style="display:block;height:100%;width:50%;background:#8A8F98;"></span></span><span style="flex:0 0 14px;text-align:right;color:#6B625A;">4</span></div><div style="display:flex;align-items:center;gap:8px;font-size:13px;"><span style="flex:0 0 62px;color:#4A4239;">Eau</span><span style="flex:1;height:8px;background:#EFE9DD;border-radius:4px;overflow:hidden;"><span style="display:block;height:100%;width:0%;background:#3F6E96;"></span></span><span style="flex:0 0 14px;text-align:right;color:#6B625A;">0</span></div></div>
+      <p style="margin:0;font-size:14.5px;line-height:1.65;color:#4A4239;"><strong>Le Forgeron</strong> – Transforme la chaleur en quelque chose d'utile – tout en parlant étonnamment peu.<br>Dans le Saju, l'élément du jour représente le noyau de votre personnalité – une image traditionnelle, pas un verdict. Le Métal est associé à la clarté, à la structure et aux exigences élevées. Question pour vous : où votre exigence vous sert-elle, et où peut-elle s'adoucir ?</p>
+      <div style="background:#F3EEE4;border-radius:8px;padding:12px 14px;font-size:13.5px;line-height:1.6;color:#4A4239;"><strong>En plus dans le PDF:</strong> 12 chapitres mensuels pour 2027 avec question de réflexion · Votre boussole de l'année en un coup d'œil</div>
+      <a href="#signupCard" style="align-self:flex-start;padding:12px 20px;background:#C1442E;color:#fff;border-radius:8px;font-size:15px;font-weight:600;text-decoration:none;font-family:'Work Sans',sans-serif;">Créer mon propre profil</a>
+      <span style="font-size:11.5px;color:#A79E93;line-height:1.5;">Calculé avec le même calculateur que votre résultat. Pour le divertissement et la réflexion personnelle.</span>
     </div>
   </div>
 
@@ -478,7 +495,6 @@
             <span class="display" style="font-size: 20px; font-weight: 600;">24,90 €</span>
           </div>
           <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
-            <li>Tout le contenu du rapport annuel</li>
             <li><strong>Analyse des périodes de vie (Daewoon)</strong> — vos grands cycles de dix ans</li>
             <li>Pistes de réflexion sur les relations, le travail et vos priorités personnelles</li>
             <li><strong>Au format PDF</strong> — votre guide de réflexion personnel sur vos périodes de vie</li>
@@ -1052,6 +1068,8 @@
     } catch (e) { return ''; }
   }
   paljaSrc();
+  /* v3: Paar-/Liebes-Herkunft zeigt im Ergebnis zuerst den Kompatibilitäts-Check */
+  try { if (/compat|liebe|paar|pareja|amor|couple|amour|partner/i.test(paljaSrc() || '')) { document.documentElement.classList.add('src-compat'); } } catch (e) {}
   // Anonyme Seitenaufruf-Zählung (kein Cookie, keine IP-Speicherung): nur Datum, Quelle, Pfad.
   // Eigene Besuche ausschließen: ?nohit=1 setzt ein lokales Flag (nur in diesem Browser, nichts wird gesendet); ?nohit=0 hebt es auf.
   window.paljaNoHit = false;
