@@ -321,11 +321,11 @@
 
       <div class="pdf-strip" style="display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
         <figure class="pdf-fig" style="margin: 0; flex: 0 1 320px; max-width: 320px;">
-          <img src="/images/pdf-preview-cover.jpg" alt="Titelseite eines Palja-Reports mit den fünf Elementen" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <img class="zoomable" src="/images/pdf-preview-cover.jpg" alt="Titelseite eines Palja-Reports mit den fünf Elementen" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
           <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Titelseite</figcaption>
         </figure>
         <figure class="pdf-fig" style="margin: 0; flex: 0 1 320px; max-width: 320px;">
-          <img src="/images/pdf-preview-body.jpg" alt="Beispielseite eines Palja-Reports mit Elemente-Diagramm und den vier Säulen" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <img class="zoomable" src="/images/pdf-preview-body.jpg" alt="Beispielseite eines Palja-Reports mit Elemente-Diagramm und den vier Säulen" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
           <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Deine Fünf Elemente und vier Säulen</figcaption>
         </figure>
       </div>
@@ -348,6 +348,25 @@
         Dazu gibt es eine Übersicht auf einen Blick und drei Fragen, die ihr gleich heute Abend
         besprechen könnt. Eine traditionelle Deutung zur Reflexion, kein Urteil über „passt“ oder „passt nicht“.
       </p>
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 8px 0 14px;">
+        <div class="pdf-strip" style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-1.jpg" alt="Beispielseite eines Palja-Kompatibilitäts-Checks mit Fünf-Elemente-Diagramm und vier Säulen" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Beide Profile im Überblick</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-2.jpg" alt="Beispielseite eines Palja-Kompatibilitäts-Checks mit Zusammenfassung und Einleitung" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Auf einen Blick &amp; Einleitung</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-3.jpg" alt="Beispielseite eines Palja-Kompatibilitäts-Checks mit drei Gesprächsfragen" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Drei Fragen für heute Abend</figcaption>
+        </figure>
+        </div>
+        <p class="pdf-hint" style="display:none;margin:0;font-size:12.5px;color:#8A8074;">← Zum Weiterblättern wischen →</p>
+        <p style="margin: 0; font-size: 12.5px; color: #A79E93; font-style: italic;">Tippe auf eine Seite zum Vergrößern. Beispielhafte, erfundene Daten (Jonas &amp; Mina) zur Veranschaulichung von Aufbau und Stil.</p>
+        <a href="/images/compat-sample.pdf" target="_blank" rel="noopener" style="font-size: 13.5px; color: #C1442E; text-decoration: underline;">Komplettes Beispiel-PDF ansehen (7 Seiten)</a>
+      </div>
       <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">
         Gib eure beiden Geburtsdaten ein und erhalte die Analyse per E-Mail —
         du kannst das für so viele Paare wiederholen, wie du möchtest.
@@ -1251,6 +1270,36 @@ function paljaTaste(y, m, d) {
     io.observe(sec);
   }
   if (btn) { btn.addEventListener('click', function () { ev('compat_buy_open'); }); }
+})();
+</script>
+
+<!-- Beispielseiten vergrößern (Lightbox): Klick/Tippen auf .zoomable, Pfeile/Wischen zum Blättern, Esc/Klick daneben schließt. -->
+<style>
+.zoomable{cursor:zoom-in}
+#lbx{position:fixed;inset:0;background:rgba(33,29,26,.88);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;box-sizing:border-box}
+#lbx.on{display:flex}
+#lbx img{max-width:min(94vw,760px);max-height:90vh;width:auto;height:auto;background:#fff;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#lbx button{position:absolute;background:rgba(255,253,249,.95);border:none;border-radius:999px;width:44px;height:44px;font-size:22px;line-height:1;cursor:pointer;color:#211D1A}
+#lbx .lx{top:14px;right:14px}#lbx .lp{left:12px;top:50%;transform:translateY(-50%)}#lbx .ln{right:12px;top:50%;transform:translateY(-50%)}
+#lbx .lc{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#EDE6DA;font-size:13px}
+</style>
+<div id="lbx" role="dialog" aria-modal="true" aria-label="Beispielseite"><button class="lx" aria-label="Schließen">×</button><button class="lp" aria-label="Vorherige Seite">‹</button><img alt=""><button class="ln" aria-label="Nächste Seite">›</button><div class="lc"></div></div>
+<script>
+(function(){
+  var box=document.getElementById('lbx'); if(!box) return;
+  var img=box.querySelector('img'), cnt=box.querySelector('.lc'), list=[], idx=0, sx=null;
+  function show(){ var el=list[idx]; img.src=el.currentSrc||el.src; img.alt=el.alt||''; cnt.textContent=(idx+1)+' / '+list.length; box.querySelector('.lp').style.display=box.querySelector('.ln').style.display=list.length>1?'':'none'; }
+  function open(el){ var grp=el.closest('.pdf-strip'); list=[].slice.call((grp||document).querySelectorAll('img.zoomable')); idx=Math.max(0,list.indexOf(el)); show(); box.classList.add('on'); document.body.style.overflow='hidden'; }
+  function close(){ box.classList.remove('on'); document.body.style.overflow=''; }
+  function go(d){ idx=(idx+d+list.length)%list.length; show(); }
+  [].forEach.call(document.querySelectorAll('img.zoomable'),function(el){ el.addEventListener('click',function(){ open(el); try{ if(window.ev) window.ev('sample_zoom'); }catch(e){} }); });
+  box.addEventListener('click',function(e){ if(e.target===box) close(); });
+  box.querySelector('.lx').addEventListener('click',close);
+  box.querySelector('.lp').addEventListener('click',function(e){ e.stopPropagation(); go(-1); });
+  box.querySelector('.ln').addEventListener('click',function(e){ e.stopPropagation(); go(1); });
+  document.addEventListener('keydown',function(e){ if(!box.classList.contains('on')) return; if(e.key==='Escape') close(); if(e.key==='ArrowLeft') go(-1); if(e.key==='ArrowRight') go(1); });
+  box.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+  box.addEventListener('touchend',function(e){ if(sx===null) return; var dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)>50 && list.length>1) go(dx<0?1:-1); });
 })();
 </script>
 </body>

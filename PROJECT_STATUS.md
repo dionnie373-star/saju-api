@@ -891,3 +891,13 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 라우트: palja.de/{en/guides,fr/guides,es/guias}, 언어 도메인에서는 palja.one/en/guides, palja.fr/guides, palja.es/guias. 비공개 상태(noindex)는 기존 규칙(palja.one/FR_PUBLIC/ES_PUBLIC)에 따라 자동 해제.
 - hreflang 상호 연결(DE 포함), 헤더에 Guides 링크 추가(EN/FR/ES). DE ddi 글의 &lt;em&gt; 표시 오류 수정.
 - 번역 표기: EN Sheep(Goat/Ram 병기), FR Chèvre, ES Cabra. 유료 안내: EN $10 / FR·ES 9,90 €.
+
+## 서비스 3종 (palja.de, 코드 기준 확인: static_site/index.html)
+| 서비스 | 가격 | Digistore ID | 샘플 현황 |
+|---|---|---|---|
+| Jahresreport | 9,90 € | 740708 | 기존 실제 미리보기 이미지 2장 (pdf-preview-cover/body.jpg) |
+| Kompatibilitäts-Check | 9,90 € | 740941 | 실제 샘플 3페이지 (images/compat-sample-1..3.jpg) + 전체 PDF (images/compat-sample.pdf), 예시 Jonas & Mina(가상) |
+| Premium-Lebenskarte | 24,90 € | 740939 | 실제 샘플 없음. design_qa/palja_test_report.pdf는 플레이스홀더라 고객용 사용 금지 |
+- 반려동물/Tiere 서비스는 존재하지 않음(과거 오해). 무료 프로필(Gratis-Vorschau)은 별도.
+- 샘플 UI 결정(2025-11-20): 호버 없이 바로 노출 + 클릭 시 확대(라이트박스, 이전/다음, Esc, 바깥 클릭 닫기). 샘플은 "비개인 예시 데이터" 문구 필수, 가짜 후기/실명 금지.
+- 로컬 확인 완료, 아직 배포 전 (사용자 승인 대기).
