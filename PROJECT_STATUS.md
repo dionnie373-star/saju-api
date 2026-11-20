@@ -900,7 +900,7 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 | Premium-Lebenskarte | 24,90 € | 740939 | 실제 샘플 없음. design_qa/palja_test_report.pdf는 플레이스홀더라 고객용 사용 금지 |
 - 반려동물/Tiere 서비스는 존재하지 않음(과거 오해). 무료 프로필(Gratis-Vorschau)은 별도.
 - 샘플 UI 결정(2025-11-20): 호버 없이 바로 노출 + 클릭 시 확대(라이트박스, 이전/다음, Esc, 바깥 클릭 닫기). 샘플은 "비개인 예시 데이터" 문구 필수, 가짜 후기/실명 금지.
-- 로컬 확인 완료, 아직 배포 전 (사용자 승인 대기).
+- 2026-11-20 22:50 KST: sample-ui를 main에 병합·배포 완료(Render 자동배포, 라이브 확인: 이미지·PDF·확대 동작). Premium 샘플/코드는 premium-quality에 남음.
 
 ## Premium 샘플 / 품질 개선 (2026-11-20, 브랜치 premium-quality, main 미병합)
 - 10/9 메일의 Premium PDF는 옛 버전(차트·표 없음, 2,700단어). 현재 코드는 표지·오행 차트·사주 4기둥 표·대운 타임라인이 이미 있음.
