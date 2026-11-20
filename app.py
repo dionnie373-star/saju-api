@@ -1957,6 +1957,13 @@ def admin_dashboard():
                  ev_sum(day=d, site=s, ev=("res_up_view",)), ev_sum(day=d, site=s, ev=BUY), ev_sum(day=d, site=s, ev=("order_paid",))]
             if any(v):
                 dfun_rows += td(d, SITE_LABEL[s], *v)
+    # 5-a) 구매 클릭 × src(날짜·사이트·src·이벤트별). 내부 점검 태그(deploycheck 등)와 실제 유입을 구분하려는 표.
+    BUY_ALL = BUY + ("compat_buy_open",)
+    buy_src_rows = "".join(
+        td(d, SITE_LABEL.get(s, s), sr, x, n)
+        for (d, s, sr, x), n in sorted(evn.items(), key=lambda kv: (kv[0][0], kv[0][1], kv[0][2], kv[0][3]), reverse=True)
+        if x in BUY_ALL
+    )
     # 5-b) 궁합 전용 흐름(사이트별 누적). 일반 사주 흐름과 같은 방문자에서 시작하므로 따로 페이지를 나누지 않고 한 블록으로 보여 준다.
     cp_steps = [
         ("연도 띠 입구: 결과 표시", lambda s: ev_sum(site=s, ev=("yr_show",))),
@@ -2009,6 +2016,7 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 <h2>공유 카드(원소 유형) · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{sh_rows}</table></div>
 <h2>일별 공유 카드</h2><div class="w"><table>{th("날짜","카드 표시","공유 행동","공유 링크 열람","메인 방문(src=share)")}{sh_day_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
 <h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 클릭","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
+<h2>구매 클릭 × 접속 루트(src) · 날짜별 <small>(src는 이미 저장돼 있어 과거 건도 표시됨. 시각은 저장하지 않음)</small></h2><div class="w"><table>{th("날짜","사이트","src","이벤트","횟수")}{buy_src_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
 <p><small>페이지뷰 = JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
 사이트 구분은 이번 배포 이후부터 정확함: 호스트(palja.fr/palja.es/palja.one)와 /en 경로로 분류하며, 배포 이전 기록은 전부 DE로 표시됨(FR/ES 도메인 방문이 섞여 있을 수 있음).
 EN은 palja.de/en과 palja.one을 합산. 무료 프로필은 신청 언어 기준. 결제 완료(신규)는 이번 배포 이후 실결제만(테스트 제외), 「주문(기존 합계)」은 사이트 구분 없는 기존 처리 건수(테스트 포함 가능).
