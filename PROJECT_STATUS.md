@@ -901,3 +901,10 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 반려동물/Tiere 서비스는 존재하지 않음(과거 오해). 무료 프로필(Gratis-Vorschau)은 별도.
 - 샘플 UI 결정(2025-11-20): 호버 없이 바로 노출 + 클릭 시 확대(라이트박스, 이전/다음, Esc, 바깥 클릭 닫기). 샘플은 "비개인 예시 데이터" 문구 필수, 가짜 후기/실명 금지.
 - 로컬 확인 완료, 아직 배포 전 (사용자 승인 대기).
+
+## Premium 샘플 / 품질 개선 (2026-11-20, 브랜치 premium-quality, main 미병합)
+- 10/9 메일의 Premium PDF는 옛 버전(차트·표 없음, 2,700단어). 현재 코드는 표지·오행 차트·사주 4기둥 표·대운 타임라인이 이미 있음.
+- 추가: pdf_design.build_daewoon_table + report_pipeline._premium_phase_table (대운 8행 표, 현재 대운 강조, de/fr/es/en).
+- 프롬프트 4개 언어에서 "연간 리포트를 이미 읽은 고객" 전제 삭제(단독으로 읽히게). 실제 API 생성으로 미검증 → main 병합 전 서버에서 Premium 1부 생성 테스트 필요.
+- 사이트 샘플: images/premium-sample-1..4.jpg + premium-sample.pdf (13쪽, 가상 인물 Mara 1990-05-15). 본문 3,441단어는 API 키가 없어 파이프라인이 아니라 Claude가 같은 프롬프트 규칙·계산된 사실로 직접 작성(check_mechanical_rules 통과). 실제 생성 결과와 톤이 같은지는 서버 생성본으로 비교 권장.
+- 배포 순서: premium-quality는 sample-ui를 포함. 병합하면 컴퍼티빌리티/연간 샘플 + Premium 샘플 + 코드 변경이 함께 나감.
