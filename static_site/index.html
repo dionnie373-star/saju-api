@@ -1172,7 +1172,10 @@ function paljaTaste(y, m, d) {
   function upd() {
     ticking = false;
     var r = card.getBoundingClientRect();
-    if (r.bottom < 0) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
+    /* Nur zwischen Formular und Paar-Check zeigen: ab Paar-Check (Formular, Preise, FAQ, Footer) würde der Balken Eingabefelder und Kauf-Buttons verdecken. */
+    var zone = document.getElementById('kompatibilitaet') || document.getElementById('pricing');
+    var inZone = zone ? zone.getBoundingClientRect().top < window.innerHeight - 80 : false;
+    if (r.bottom < 0 && !inZone) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
   }
   window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(upd); } }, { passive: true });
   b.addEventListener('click', function () {

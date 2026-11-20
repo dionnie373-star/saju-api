@@ -1138,7 +1138,10 @@ function paljaTaste(y, m, d) {
   function upd() {
     ticking = false;
     var r = card.getBoundingClientRect();
-    if (r.bottom < 0) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
+    /* Solo entre el formulario y la sección de pareja: después taparía campos y botones de compra. */
+    var zone = document.getElementById('compatibilidad') || document.getElementById('pricing');
+    var inZone = zone ? zone.getBoundingClientRect().top < window.innerHeight - 80 : false;
+    if (r.bottom < 0 && !inZone) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
   }
   window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(upd); } }, { passive: true });
   b.addEventListener('click', function () {
