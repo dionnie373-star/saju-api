@@ -909,3 +909,9 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 가격·상품·궁합 계산은 미변경. 4개 언어(DE/EN/FR/ES) 로컬 E2E: 연도 입력 → 생년월일 입력 → 제출 → 프로필 생성 정상, JS 오류 0.
 - 모바일 하단 고정 버튼은 별도(commit a2b2e80): 폼 이후~Paar-Check 직전 구간에서만 표시(DE/ES/FR; EN은 원래 없음).
 - 구매 클릭×src 표 추가(commit 24cb4d6). 클릭 시각은 저장 안 함.
+
+## 2026-11-21 v3 결과 화면 개편 (결과 화면·업셀·신뢰 문구)
+- 배포 시각: 2026-11-21 08:27 KST 푸시 (= 2026-11-20 23:27 UTC). Render 반영은 푸시 후 수 분. 이 시각 이후의 "구매 클릭"(res_up_paid/res_up_premium/compat)은 v3 영향으로 해석할 것. Hero v2(08:12 KST)와 시각이 15분 차이라 시작률 지표는 v2 기준으로 봐도 무방(v3는 폼 앞 구간을 바꾸지 않음, 단 예시 카드가 히어로 아래에 추가됨).
+- 변경(DE/EN/ES/FR): ① "So funktioniert's" 한 줄 3단계 띠 ② 히어로 아래 "샘플" 배지 무료 결과 예시 카드(#sampleResult, 1990-05-15 12:00 Berlin 실제 계산 결과) ③ 결과 화면 업셀 순서: 기본 = 연간 리포트 먼저, src에 compat/liebe/paar/pareja/amor/couple/amour/partner 포함 시 궁합 카드 먼저(html.src-compat) ④ Premium 카드의 "연간 리포트 전체 포함" 줄 삭제(실제 제공물과 일치; 결과 화면·가격 섹션).
+- 가격·상품·궁합 계산·이벤트 코드 미변경. 공개 환불 문구의 개인 Gmail은 사용자 결정으로 그대로 둠(미해결).
+- 롤백: git revert -m 1 <머지 커밋>.
