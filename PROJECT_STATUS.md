@@ -915,3 +915,4 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 변경(DE/EN/ES/FR): ① "So funktioniert's" 한 줄 3단계 띠 ② 히어로 아래 "샘플" 배지 무료 결과 예시 카드(#sampleResult, 1990-05-15 12:00 Berlin 실제 계산 결과) ③ 결과 화면 업셀 순서: 기본 = 연간 리포트 먼저, src에 compat/liebe/paar/pareja/amor/couple/amour/partner 포함 시 궁합 카드 먼저(html.src-compat) ④ Premium 카드의 "연간 리포트 전체 포함" 줄 삭제(실제 제공물과 일치; 결과 화면·가격 섹션).
 - 가격·상품·궁합 계산·이벤트 코드 미변경. 공개 환불 문구의 개인 Gmail은 사용자 결정으로 그대로 둠(미해결).
 - 롤백: git revert -m 1 <머지 커밋>.
+- 2026-11-21 08:3x KST 수정: 모바일에서 Geburtszeit/Geburtsort 접힘 해제(항상 펼쳐 표시, 선택 입력). 사용자 피드백: 눌러야 펴지는 방식이 불편. 이로써 Hero v2의 "모바일 접힘" 항목은 철회됨(시작률 비교 시 참고).
