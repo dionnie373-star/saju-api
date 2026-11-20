@@ -1835,7 +1835,10 @@ _EV_ALLOWED = {"view_form", "taste", "start", "val_err", "submit", "ok", "err", 
                "res_ok", "res_err", "res_up_view", "res_up_paid", "res_up_premium", "res_pdf_open", "res_pdf_ok",
                "card_view", "card_dl", "card_copy", "card_mail", "card_share", "card_page",
                "compat_preview", "compat_card_share", "compat_view", "compat_buy_open", "res_top_buy",
-               "yr_show", "yr_form", "yr_compat"}
+               "yr_show", "yr_form", "yr_compat",
+               # 히어로 v2 (2026-11-21 KST 배포): 새 버전 로드 표식, 연도 입력 시작, 핵심 이벤트의 모바일분(_m)
+               "hero_v2", "yr_start",
+               "hero_v2_m", "view_form_m", "start_m", "taste_m", "submit_m", "res_ok_m", "yr_start_m", "yr_show_m"}
 
 
 @app.route("/api/ev", methods=["POST"])
@@ -1964,6 +1967,27 @@ def admin_dashboard():
         for (d, s, sr, x), n in sorted(evn.items(), key=lambda kv: (kv[0][0], kv[0][1], kv[0][2], kv[0][3]), reverse=True)
         if x in BUY_ALL
     )
+    # 5-c) 히어로 v2 전/후 비교(일별) + 모바일/데스크톱. 배포 = 2026-11-21 KST 오전 (= UTC 11-20 밤, 이 날은 전/후 혼재).
+    #      hero_v2 = 새 버전 페이지 로드 수(정확한 노출). _m 이벤트는 모바일(<=640px)분이고 데스크톱 = 전체 - 모바일(배포 이후만 유효).
+    HERO_V2_DAY = "2026-11-20"
+
+    def _pct(a, b):
+        return f"{100 * a / b:.0f}%" if b else "–"
+
+    h2_rows = ""
+    for d in all_days:
+        vf, st, sb = (ev_sum(day=d, ev=(x,)) for x in ("view_form", "start", "submit"))
+        hv2 = ev_sum(day=d, ev=("hero_v2",))
+        if not any((vf, st, sb, hv2)):
+            continue
+        ys, yh = ev_sum(day=d, ev=("yr_start",)), ev_sum(day=d, ev=("yr_show",))
+        phase = "전" if d < HERO_V2_DAY else ("배포일(혼재)" if d == HERO_V2_DAY else "후")
+        if d < HERO_V2_DAY:
+            mob = ["–"] * 6
+        else:
+            vfm, stm = ev_sum(day=d, ev=("view_form_m",)), ev_sum(day=d, ev=("start_m",))
+            mob = [vfm, stm, _pct(stm, vfm), vf - vfm, st - stm, _pct(st - stm, vf - vfm)]
+        h2_rows += td(d, phase, hv2, vf, st, _pct(st, vf), sb, *mob, ys, yh)
     # 5-b) 궁합 전용 흐름(사이트별 누적). 일반 사주 흐름과 같은 방문자에서 시작하므로 따로 페이지를 나누지 않고 한 블록으로 보여 준다.
     cp_steps = [
         ("연도 띠 입구: 결과 표시", lambda s: ev_sum(site=s, ev=("yr_show",))),
@@ -2017,6 +2041,7 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 <h2>일별 공유 카드</h2><div class="w"><table>{th("날짜","카드 표시","공유 행동","공유 링크 열람","메인 방문(src=share)")}{sh_day_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
 <h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 클릭","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
 <h2>구매 클릭 × 접속 루트(src) · 날짜별 <small>(src는 이미 저장돼 있어 과거 건도 표시됨. 시각은 저장하지 않음)</small></h2><div class="w"><table>{th("날짜","사이트","src","이벤트","횟수")}{buy_src_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
+<h2>히어로 v2 전/후 · 모바일/데스크톱 <small>(배포 2026-11-21 KST 오전. 시작률 = 입력 시작 ÷ 폼 보임. hero_v2 = 새 버전 로드 수)</small></h2><div class="w"><table>{th("날짜","구분","hero_v2","폼 보임","입력 시작","시작률","제출","모바일 폼","모바일 시작","모바일 시작률","데스크톱 폼","데스크톱 시작","데스크톱 시작률","연도 입력 시작","연도 결과")}{h2_rows or '<tr><td colspan=15>–</td></tr>'}</table></div>
 <p><small>페이지뷰 = JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
 사이트 구분은 이번 배포 이후부터 정확함: 호스트(palja.fr/palja.es/palja.one)와 /en 경로로 분류하며, 배포 이전 기록은 전부 DE로 표시됨(FR/ES 도메인 방문이 섞여 있을 수 있음).
 EN은 palja.de/en과 palja.one을 합산. 무료 프로필은 신청 언어 기준. 결제 완료(신규)는 이번 배포 이후 실결제만(테스트 제외), 「주문(기존 합계)」은 사이트 구분 없는 기존 처리 건수(테스트 포함 가능).
