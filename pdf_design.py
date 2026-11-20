@@ -475,3 +475,201 @@ def build_daewoon_table(entries, *, lang="de", width_mm=166, h3_style=None):
         out.append(Paragraph(st["title"], h3_style))
     out += [t, Paragraph(st["note"], note)]
     return [KeepTogether(out), Spacer(1, 4 * mm)]
+
+
+# ---------------------------------------------------------------------------
+# 프리미엄 보강 3종 (모두 코드로 계산·렌더링, LLM 문장 아님)
+#  1) 챕터 시작 카드(대운 한 시기의 나이·연도·간지·오행·축)
+#  2) "Deine Grundlage" 카드(일간·강약·용신·희신)
+#  3) 향후 10년 세운 표(해마다 간지·오행, 용신 오행이 들어오는 해 표시)
+# ---------------------------------------------------------------------------
+
+import re as _re
+
+_HANJA_EL = {"木": "목", "火": "화", "土": "토", "金": "금", "水": "수"}
+
+_EX_STRINGS = {
+    "de": {
+        "years_label": "Jahre", "from": "ab", "here": "DU BIST HIER",
+        "axes": {"재물운": "Schwerpunkt: Ressourcen", "관계운": "Schwerpunkt: Beziehung",
+                 "직업운": "Schwerpunkt: Talent & Werk", "총운": "Schwerpunkt: Gesamtgleichgewicht"},
+        "f_core": "Dein Kern", "f_strength": "Stärke des Kerns", "f_support": "Stützt das Gleichgewicht",
+        "f_accompany": "Begleitet es",
+        "levels": {"balanced": "ausgewogen", "strong": "kräftig", "light": "zart"},
+        "y_title": "Die nächsten zehn Jahre im Überblick",
+        "y_cols": ["Jahr", "Alter", "Jahressäule", "Elemente", "Zyklus", "Hinweis"],
+        "y_support": "stützendes Element",
+        "y_note": "Jedes Jahr trägt eine eigene Säule aus zwei Elementen. Die Tabelle zeigt nur, welche Elemente auftauchen; sie ist keine Vorhersage.",
+    },
+    "fr": {
+        "years_label": "ans", "from": "dès", "here": "VOUS ÊTES ICI",
+        "axes": {"재물운": "Thème : ressources", "관계운": "Thème : relations",
+                 "직업운": "Thème : talents et œuvre", "총운": "Thème : équilibre général"},
+        "f_core": "Votre noyau", "f_strength": "Force du noyau", "f_support": "Soutient l'équilibre",
+        "f_accompany": "L'accompagne",
+        "levels": {"balanced": "équilibrée", "strong": "marquée", "light": "légère"},
+        "y_title": "Les dix prochaines années en un coup d'œil",
+        "y_cols": ["Année", "Âge", "Pilier de l'année", "Éléments", "Cycle", "Repère"],
+        "y_support": "élément de soutien",
+        "y_note": "Chaque année porte un pilier de deux éléments. Le tableau montre seulement quels éléments apparaissent ; ce n'est pas une prédiction.",
+    },
+    "es": {
+        "years_label": "años", "from": "desde", "here": "ESTÁS AQUÍ",
+        "axes": {"재물운": "Tema: recursos", "관계운": "Tema: relaciones",
+                 "직업운": "Tema: talento y obra", "총운": "Tema: equilibrio general"},
+        "f_core": "Tu núcleo", "f_strength": "Fuerza del núcleo", "f_support": "Apoya el equilibrio",
+        "f_accompany": "Lo acompaña",
+        "levels": {"balanced": "equilibrada", "strong": "marcada", "light": "suave"},
+        "y_title": "Los próximos diez años de un vistazo",
+        "y_cols": ["Año", "Edad", "Pilar del año", "Elementos", "Ciclo", "Nota"],
+        "y_support": "elemento de apoyo",
+        "y_note": "Cada año lleva un pilar de dos elementos. La tabla solo muestra qué elementos aparecen; no es una predicción.",
+    },
+    "en": {
+        "years_label": "years", "from": "from", "here": "YOU ARE HERE",
+        "axes": {"재물운": "Focus: resources", "관계운": "Focus: relationships",
+                 "직업운": "Focus: talent & work", "총운": "Focus: overall balance"},
+        "f_core": "Your core", "f_strength": "Strength of the core", "f_support": "Supports the balance",
+        "f_accompany": "Accompanies it",
+        "levels": {"balanced": "balanced", "strong": "pronounced", "light": "gentle"},
+        "y_title": "The next ten years at a glance",
+        "y_cols": ["Year", "Age", "Year pillar", "Elements", "Cycle", "Note"],
+        "y_support": "supporting element",
+        "y_note": "Each year carries a pillar of two elements. The table only shows which elements appear; it is not a prediction.",
+    },
+}
+
+
+def _ex(lang):
+    return _EX_STRINGS.get(lang, _EX_STRINGS["de"])
+
+
+def parse_yongsin_elements(compact):
+    """compact 문자열에서 용신/희신 오행(한글) 추출. 못 찾으면 None."""
+    y = _re.search(r"용신=([목화토금수])", compact or "")
+    h = _re.search(r"희신 ([木火土金水])", compact or "")
+    return (y.group(1) if y else None), (_HANJA_EL.get(h.group(1)) if h else None)
+
+
+def build_phase_card(entry, *, lang="de", width_mm=166):
+    """챕터 시작 카드: 나이대·시작 연도 / 간지(한글) / 오행 색 점 / 축."""
+    st, ex = _DW_STRINGS.get(lang, _DW_STRINGS["de"]), _ex(lang)
+    names = _names(lang)
+    p = entry["pillar"]
+    age = ParagraphStyle("pc_age", fontName="Fraunces", fontSize=17, leading=20, textColor=HexColor(INK))
+    sub = ParagraphStyle("pc_sub", fontName="WorkSans", fontSize=8.5, leading=11, textColor=HexColor(INK_SOFT))
+    ko = ParagraphStyle("pc_ko", fontName="KoreanSerif", fontSize=20, leading=24, textColor=HexColor(INK))
+    small = ParagraphStyle("pc_small", fontName="WorkSans", fontSize=9, leading=12, textColor=HexColor(INK))
+    tag = ParagraphStyle("pc_tag", fontName="WorkSans-Bold", fontSize=7, leading=9, textColor=HexColor(ACCENT))
+
+    def dot(el):
+        return f'<font color="{ELEMENT_COLORS[el]}" size="10">●</font>&nbsp;{names[el]}'
+
+    left = [Paragraph(f'{entry["start_age"]}–{entry["end_age"]}', age),
+            Paragraph(f'{ex["years_label"]} · {ex["from"]} {entry["start_year"]}', sub)]
+    mid = [Paragraph(p["hangul"], ko)]
+    els = Paragraph(f'{dot(p["cheon_gan_element"])}<br/>{dot(p["ji_ji_element"])}', small)
+    right = [Paragraph(ex["axes"].get(entry["axis"], entry["axis"]), small)]
+    if entry.get("is_current"):
+        right.append(Paragraph(ex["here"], tag))
+    w = width_mm * mm
+    t = Table([[left, mid, els, right]], colWidths=[34 * mm, 22 * mm, 38 * mm, w - 94 * mm])
+    fill = "#F6EEE6" if entry.get("is_current") else "#F7F4EE"
+    t.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("BACKGROUND", (0, 0), (-1, -1), HexColor(fill)),
+        ("LINEBEFORE", (0, 0), (0, 0), 3, HexColor(ACCENT if entry.get("is_current") else INK_SOFT)),
+        ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+        ("LEFTPADDING", (0, 0), (-1, -1), 8),
+    ]))
+    return KeepTogether([Spacer(1, 1.5 * mm), t, Spacer(1, 3 * mm)])
+
+
+def build_foundation_card(calc_result, *, lang="de", width_mm=166):
+    """"Deine Grundlage" 카드: 일간 오행·강약·용신·희신. 값은 계산 결과에서만 가져온다."""
+    ex = _ex(lang)
+    names = _names(lang)
+    day = calc_result["pillars"]["day"]
+    core_el = day["cheon_gan_element"]
+    core_ko = day["hangul"][0]
+    lvl = (calc_result.get("ilgan_strength") or {}).get("level", "")
+    score = (calc_result.get("ilgan_strength") or {}).get("score")
+    key = "strong" if "강" in lvl else "light" if "약" in lvl else "balanced"
+    yong, hee = parse_yongsin_elements(calc_result.get("compact", ""))
+
+    lab = ParagraphStyle("fc_lab", fontName="WorkSans", fontSize=8, leading=10, textColor=HexColor(INK_SOFT))
+    big = ParagraphStyle("fc_big", fontName="Fraunces", fontSize=14, leading=18, textColor=HexColor(INK))
+    ko = ParagraphStyle("fc_ko", fontName="KoreanSerif", fontSize=20, leading=24, textColor=HexColor(INK))
+
+    def dot(el):
+        return (f'<font name="WorkSans" color="{ELEMENT_COLORS[el]}" size="12">●</font>&nbsp;{names[el]}'
+                if el else "–")
+
+    strength = ex["levels"][key] + (f' ({score:.1f}/10)'.replace(".", ",") if (score is not None and lang == "de") else
+                                     (f' ({score:.1f}/10)' if score is not None else ""))
+    cells = [
+        [Paragraph(ex["f_core"], lab), Paragraph(core_ko, ko), Paragraph(dot(core_el), big)],
+        [Paragraph(ex["f_strength"], lab), Paragraph(strength, big)],
+        [Paragraph(ex["f_support"], lab), Paragraph(dot(yong), big)],
+        [Paragraph(ex["f_accompany"], lab), Paragraph(dot(hee), big)],
+    ]
+    w = width_mm * mm
+    t = Table([cells], colWidths=[w * 0.25] * 4)
+    t.setStyle(TableStyle([
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("BACKGROUND", (0, 0), (-1, -1), HexColor("#F7F4EE")),
+        ("LINEBEFORE", (1, 0), (-1, 0), 0.4, HexColor(RULE)),
+        ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    return KeepTogether([Spacer(1, 1.5 * mm), t, Spacer(1, 3 * mm)])
+
+
+def build_yearly_table(calc_result, *, lang="de", width_mm=166, h3_style=None):
+    """향후 10년 세운 표. calc_result["yearly"]: {"2026": {"year_pillar": {...}}, ...}"""
+    yearly = calc_result.get("yearly") or {}
+    rows = sorted((v for v in yearly.values() if v.get("year_pillar")), key=lambda v: v["year"])
+    if not rows:
+        return []
+    ex, names = _ex(lang), _names(lang)
+    entries = (calc_result.get("daewoon") or {}).get("entries") or []
+    try:
+        birth_year = int(calc_result["input"]["birth_datetime_parsed"][:4])
+    except Exception:  # noqa: BLE001
+        birth_year = None
+    yong, _hee = parse_yongsin_elements(calc_result.get("compact", ""))
+
+    head = ParagraphStyle("yr_head", fontName="WorkSans-Bold", fontSize=8.5, leading=11, textColor=HexColor(INK))
+    cell = ParagraphStyle("yr_cell", fontName="WorkSans", fontSize=9, leading=12, textColor=HexColor(INK))
+    soft = ParagraphStyle("yr_soft", fontName="WorkSans", fontSize=8.5, leading=11, textColor=HexColor(INK_SOFT))
+    ko = ParagraphStyle("yr_ko", fontName="KoreanSerif", fontSize=15, leading=18, textColor=HexColor(INK))
+    note = ParagraphStyle("yr_note", fontName="WorkSans", fontSize=8.5, leading=12, textColor=HexColor(INK_SOFT),
+                          spaceBefore=2 * mm)
+
+    def dot(el):
+        return f'<font color="{ELEMENT_COLORS[el]}" size="10">●</font>&nbsp;{names[el]}'
+
+    data = [[Paragraph(c, head) for c in ex["y_cols"]]]
+    for v in rows:
+        y, yp = v["year"], v["year_pillar"]
+        a, b = yp["cheon_gan_element"], yp["ji_ji_element"]
+        age = (y - birth_year) if birth_year else ""
+        phase = ""
+        for e in entries:
+            if e["start_year"] <= y < e["start_year"] + 10:
+                phase = f'{e["start_age"]}–{e["end_age"]}'
+        hint = f'<font color="{ELEMENT_COLORS[yong]}" size="10">●</font>&nbsp;{ex["y_support"]}' if yong in (a, b) else ""
+        data.append([Paragraph(f"<b>{y}</b>", cell), Paragraph(str(age), soft), Paragraph(yp["hangul"], ko),
+                     Paragraph(f"{dot(a)}<br/>{dot(b)}", cell), Paragraph(phase, soft), Paragraph(hint, soft)])
+    w = width_mm * mm
+    t = Table(data, colWidths=[16 * mm, 14 * mm, 28 * mm, 38 * mm, 22 * mm, w - 118 * mm], repeatRows=1)
+    style = [("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("LINEBELOW", (0, 0), (-1, 0), 0.8, HexColor(INK)),
+             ("TOPPADDING", (0, 0), (-1, -1), 2.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5)]
+    for r in range(1, len(data) - 1):
+        style.append(("LINEBELOW", (0, r), (-1, r), 0.4, HexColor(RULE)))
+    t.setStyle(TableStyle(style))
+    out = []
+    if h3_style is not None:
+        out.append(Paragraph(ex["y_title"], h3_style))
+    out += [t, Paragraph(ex["y_note"], note)]
+    return [KeepTogether(out), Spacer(1, 4 * mm)]

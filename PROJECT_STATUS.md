@@ -908,3 +908,6 @@ FR 상품을 복제해 언어=Spanish, 판매 페이지 https://palja.es/, 감�
 - 프롬프트 4개 언어에서 "연간 리포트를 이미 읽은 고객" 전제 삭제(단독으로 읽히게). 실제 API 생성으로 미검증 → main 병합 전 서버에서 Premium 1부 생성 테스트 필요.
 - 사이트 샘플: images/premium-sample-1..4.jpg + premium-sample.pdf (13쪽, 가상 인물 Mara 1990-05-15). 본문 3,441단어는 API 키가 없어 파이프라인이 아니라 Claude가 같은 프롬프트 규칙·계산된 사실로 직접 작성(check_mechanical_rules 통과). 실제 생성 결과와 톤이 같은지는 서버 생성본으로 비교 권장.
 - 배포 순서: premium-quality는 sample-ui를 포함. 병합하면 컴퍼티빌리티/연간 샘플 + Premium 샘플 + 코드 변경이 함께 나감.
+- 2026-11-20 23:30 KST 보강 2~4 구현(브랜치 premium-quality, 미병합): (2) "Deine Grundlage" 챕터(DE 프롬프트 1-2번 추가 + 일간·강약·용신·희신 카드, pdf_design.build_foundation_card), (3) "Die nächsten zehn Jahre" 세운 표(올해부터 10년; app.py가 premium일 때 yearly만 별도 계산해 compact는 불변; pdf_design.build_yearly_table), (4) 각 시기 챕터 시작 카드(build_phase_card, report_pipeline._premium_chapter_hook). 연속 소제목 쪽 끝 고아 방지(_keep_headings_with_next 개선).
+- 새 샘플: 18쪽, 본문 3,681단어(Claude가 직접 작성, 파이프라인 미경유). FR/ES/EN은 표·카드는 지원하지만 "Grundlage" 챕터 프롬프트는 DE만 추가됨(미완).
+- 미해결: 사이트 Premium 카드 "Alles aus dem Jahresreport" 문구 vs 실제 납품(Lebenskarte 단독) 불일치 → 문구 수정 또는 연간 리포트 동봉 결정 필요.

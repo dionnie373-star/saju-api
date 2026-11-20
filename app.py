@@ -2134,6 +2134,17 @@ def _fulfill_report_order(tier, custom_data, email):
 
     calc_result = run_calculation(payload)
 
+    if tier == "premium":
+        # 프리미엄 PDF의 "향후 10년" 표용 세운(올해부터 10년). 본문 프롬프트에 들어가는 compact는
+        # 건드리지 않으려고 별도 계산해서 yearly만 덧붙인다. 실패해도 리포트 발송은 막지 않는다.
+        try:
+            _y0 = date.today().year
+            calc_result["yearly"] = run_calculation(
+                {**payload, "target_years": list(range(_y0, _y0 + 10))}
+            ).get("yearly") or {}
+        except Exception as _e:  # noqa: BLE001
+            print(f"[premium] 경고: 세운 계산 실패, 표 없이 진행: {_e!r}")
+
     if tier == "paid":
         run_paid_signup(payload=payload, calc_result=calc_result)
     else:

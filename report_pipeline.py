@@ -900,7 +900,7 @@ def _build_toc_flowables(report_text, *, heading="Inhalt", lang="de"):
     return [KeepTogether(block), PageBreak()]
 
 
-def _report_text_to_flowables(report_text, lang="de", compact=False):
+def _report_text_to_flowables(report_text, lang="de", compact=False, chapter_hook=None):
     """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환.
 
     compact=True면 빈 줄 사이 간격을 줄인다(마지막 페이지가 거의 빌 때 한 번 더 만드는 용도).
@@ -945,6 +945,14 @@ def _report_text_to_flowables(report_text, lang="de", compact=False):
         if kind == "h2":
             flowables.append(Paragraph(safe, _PDF_STYLES["h2"]))
             flowables.append(_H2_RULE)
+            if chapter_hook is not None:
+                try:
+                    extra = chapter_hook(content)
+                except Exception as e:  # noqa: BLE001 - 부가 카드, 실패해도 본문은 그대로
+                    print(f"[report_pipeline] 경고: 챕터 카드 생성 실패(무시): {e!r}")
+                    extra = None
+                if extra:
+                    flowables.extend(extra)
         elif kind == "bullet":
             # 예전엔 이 줄들이 그냥 "- 텍스트"로 그대로 찍혀서 제대로 된 글머리
             # 기호처럼 안 보였음 — reportlab의 bulletText로 실제 불릿을 그린다.
@@ -959,16 +967,39 @@ def _report_text_to_flowables(report_text, lang="de", compact=False):
 
 def _keep_headings_with_next(flowables):
     """제목(h2)+구분선이 페이지 맨 아래에 홀로 남는 것을 막는다(2026-10-11 프랑스어
-    궁합 테스트에서 실제로 발생). 제목·구분선·바로 다음 흐름요소를 KeepTogether로 묶는다."""
+    궁합 테스트에서 실제로 발생). 제목·구분선·바로 다음 흐름요소를 KeepTogether로 묶는다.
+    제목 바로 다음에 또 제목(예: 대챕터 → 첫 시기 챕터)이 오면 그 제목과 구분선까지 한 묶음에 넣는다."""
+    def _is_h2(f):
+        return isinstance(f, Paragraph) and f.style.name == "PaljaH2"
+
     out = []
     i = 0
     n = len(flowables)
     while i < n:
         f = flowables[i]
-        is_h2 = isinstance(f, Paragraph) and f.style.name == "PaljaH2"
-        if is_h2 and i + 2 < n and flowables[i + 1] is _H2_RULE:
-            out.append(KeepTogether([f, flowables[i + 1], flowables[i + 2]]))
-            i += 3
+        if _is_h2(f) and i + 2 < n and flowables[i + 1] is _H2_RULE:
+            group = [f, flowables[i + 1]]
+            j = i + 2
+            took_card = False
+            while True:
+                # 제목 뒤의 빈 줄(Spacer)은 건너뛰고, 그 뒤 "실제" 요소까지 같은 묶음에 넣는다.
+                k = j
+                while k < n and isinstance(flowables[k], Spacer):
+                    k += 1
+                if k + 1 < n and _is_h2(flowables[k]) and flowables[k + 1] is _H2_RULE:
+                    group += flowables[j:k + 2]  # 연속 제목(대챕터 → 첫 시기 챕터)
+                    j = k + 2
+                    continue
+                if k < n:
+                    group += flowables[j:k + 1]
+                    j = k + 1
+                    # 챕터 카드(KeepTogether) 다음에는 첫 본문 문단까지 함께 묶는다(한 번만).
+                    if isinstance(flowables[k], KeepTogether) and not took_card:
+                        took_card = True
+                        continue
+                break
+            out.append(KeepTogether(group))
+            i = j
         else:
             out.append(f)
             i += 1
@@ -1080,7 +1111,8 @@ class _TailProbe(Flowable):
 
 
 def _build_pdf_once(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
-                    cover=False, overview_flowables=None, top_mm=24, bottom_mm=20, compact=False):
+                    cover=False, overview_flowables=None, top_mm=24, bottom_mm=20, compact=False,
+                    chapter_hook=None):
     """리포트 텍스트를 A4 PDF로 한 번 렌더링한다. (페이지 수, 마지막 페이지 사용 비율)을 돌려준다.
 
     intro_flowables: 표지(제목/부제) 바로 다음, 본문 텍스트 전에 끼워 넣을
@@ -1113,7 +1145,7 @@ def _build_pdf_once(out_path, *, title, subtitle, report_text, intro_flowables=N
     story.extend(_build_toc_flowables(
         report_text, heading=(i18n.STRINGS[lang]["toc_heading"] if lang != "de" else "Inhalt"), lang=lang
     ))
-    story.extend(_report_text_to_flowables(report_text, lang=lang, compact=compact))
+    story.extend(_report_text_to_flowables(report_text, lang=lang, compact=compact, chapter_hook=chapter_hook))
     probe = _TailProbe()
     story.append(probe)
 
@@ -1127,7 +1159,7 @@ def _build_pdf_once(out_path, *, title, subtitle, report_text, intro_flowables=N
 
 
 def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, lang="de",
-              cover=False, overview_flowables=None):
+              cover=False, overview_flowables=None, chapter_hook=None):
     """리포트 텍스트를 A4 PDF로 렌더링해서 out_path에 저장.
 
     마지막 페이지에 몇 줄만 남는 경우(거의 빈 페이지)에는 문단 사이 간격을 줄여 한 번 더 만들어
@@ -1135,7 +1167,8 @@ def build_pdf(out_path, *, title, subtitle, report_text, intro_flowables=None, l
     """
     import copy
 
-    kwargs = dict(title=title, subtitle=subtitle, report_text=report_text, lang=lang, cover=cover)
+    kwargs = dict(title=title, subtitle=subtitle, report_text=report_text, lang=lang, cover=cover,
+                  chapter_hook=chapter_hook)
     # 첫 빌드가 flowable을 소비·변형하므로, 재시도용 사본은 첫 빌드 전에 만들어 둔다(복사 실패 시 재시도 없음).
     try:
         spare_intro = copy.deepcopy(intro_flowables)
@@ -1466,7 +1499,7 @@ LAST_REPORT_TEXT = ""
 
 
 def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_subject, email_html_template, pdf_filename, pdf_intro_flowables=None, geocoding_notice_cities=None, lang="de",
-                 pdf_overview_flowables=None):
+                 pdf_overview_flowables=None, chapter_hook=None):
     global LAST_REPORT_TEXT
     LAST_REPORT_TEXT = report_text
     import tempfile
@@ -1480,7 +1513,7 @@ def _send_report(*, email, name, pdf_title, pdf_subtitle, report_text, email_sub
                 build_pdf(
                     pdf_path, title=pdf_title, subtitle=pdf_subtitle, report_text=report_text,
                     intro_flowables=pdf_intro_flowables, lang=lang,
-                    cover=True, overview_flowables=pdf_overview_flowables,
+                    cover=True, overview_flowables=pdf_overview_flowables, chapter_hook=chapter_hook,
                 )
             except Exception as e:  # noqa: BLE001
                 print(f"[report_pipeline] 경고: 표지/개요 PDF 생성 실패, 기본 레이아웃으로 재시도: {e!r}")
@@ -1795,17 +1828,42 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
 
 
 def _premium_phase_table(calc_result, lang):
-    """프리미엄 리포트 "한눈에 보기"에 넣는 대운 표. 실패해도 리포트는 그대로 진행(빈 리스트)."""
+    """프리미엄 리포트 "한눈에 보기"에 넣는 대운 표 + 향후 10년 세운 표. 실패해도 리포트는 그대로 진행(빈 리스트)."""
     try:
         import pdf_design
         from reportlab.lib.styles import ParagraphStyle
         from reportlab.lib.colors import HexColor
         h3 = ParagraphStyle("dw_h3", fontName="Fraunces", fontSize=13, leading=17, textColor=HexColor("#211D1A"),
                             spaceBefore=2 * mm, spaceAfter=2 * mm)
-        return pdf_design.build_daewoon_table(calc_result["daewoon"]["entries"], lang=lang, h3_style=h3)
+        out = pdf_design.build_daewoon_table(calc_result["daewoon"]["entries"], lang=lang, h3_style=h3)
+        try:
+            out += pdf_design.build_yearly_table(calc_result, lang=lang, h3_style=h3)
+        except Exception as e:  # noqa: BLE001
+            print(f"[report_pipeline] 경고: 세운 표 생성 실패, 없이 진행: {e!r}")
+        return out
     except Exception as e:  # noqa: BLE001 - 부가 디자인 요소
         print(f"[report_pipeline] 경고: 대운 표 생성 실패, 없이 진행: {e!r}")
         return []
+
+
+_PHASE_HEADING_RE = re.compile(r"^(\d+)\s*(?:–|-|—|bis|à|a|to)\s*(\d+)\b")
+_FOUNDATION_HEADING_RE = re.compile(r"^(Deine Grundlage|Votre socle|Tu base|Your foundation)", re.I)
+
+
+def _premium_chapter_hook(calc_result, lang):
+    """각 시기 챕터 제목 밑에 카드(나이·연도·간지·오행·축), "Deine Grundlage" 밑에 기초 카드를 꽂는 훅."""
+    import pdf_design
+    entries = {e["start_age"]: e for e in (calc_result.get("daewoon") or {}).get("entries", [])}
+
+    def hook(heading):
+        m = _PHASE_HEADING_RE.match(heading)
+        if m and int(m.group(1)) in entries:
+            return [pdf_design.build_phase_card(entries[int(m.group(1))], lang=lang)]
+        if _FOUNDATION_HEADING_RE.match(heading):
+            return [pdf_design.build_foundation_card(calc_result, lang=lang)]
+        return None
+
+    return hook
 
 
 def run_premium_signup(*, payload, calc_result):
@@ -1880,6 +1938,7 @@ def run_premium_signup(*, payload, calc_result):
             email_subject=subj, email_html_template=tpl, pdf_filename=fn,
             pdf_intro_flowables=intro_flowables, geocoding_notice_cities=[fallback_city], lang=lang,
             pdf_overview_flowables=_build_overview(calc_result, hour_known=_hour_known(payload), lang=lang),
+            chapter_hook=_premium_chapter_hook(calc_result, lang),
         )
 
     return _send_report(
@@ -1894,4 +1953,5 @@ def run_premium_signup(*, payload, calc_result):
         pdf_filename="Palja-Lebenskarte.pdf",
         pdf_intro_flowables=intro_flowables,
         geocoding_notice_cities=[fallback_city],
+        chapter_hook=_premium_chapter_hook(calc_result, lang),
     )
