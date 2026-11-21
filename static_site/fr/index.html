@@ -115,7 +115,7 @@
               <div style="font-size:12px;line-height:1.5;color:#8A8074;margin-top:6px;">L’année du Saju commence vers le 4 février : si vous êtes né(e) en janvier ou début février, il peut s’agir de l’animal de l’année précédente. À titre de divertissement et de réflexion personnelle.</div>
               <div style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13.5px;">
                 <a id="yrToForm" href="#signupCard" style="color:#C1442E;font-weight:600;text-decoration:underline;">Votre profil complet, gratuit →</a>
-                <a id="yrToCompat" href="#kompatibilitaet" style="color:#C1442E;font-weight:600;text-decoration:underline;">Comparer avec votre partenaire →</a>
+                <a id="yrToCompat" href="#compatibilite" style="color:#C1442E;font-weight:600;text-decoration:underline;">Comparer avec votre partenaire →</a>
               </div>
             </div>
           </div>
@@ -356,105 +356,7 @@
     </div>
   </div>
 
-  <!-- Kompatibilitäts-Check -->
-  <div id="compatibilite" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center;">
-    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
-      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A79E93;">Extra</span>
-      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Test de couple : vous deux, vu par le Saju</h2>
-      <p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">
-        Où vous vous ressemblez, où vous pourriez vous heurter, ce dont chacun a besoin en silence — et trois questions pour une vraie conversation ce soir. Une lecture traditionnelle pour réfléchir ensemble, pas un verdict.
-      </p>
-      <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">
-        Saisissez vos deux dates de naissance : le rapport PDF arrive par e-mail.
-      </p>
-
-      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
-
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Vous</h3>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Prénom <span style="font-weight:400;color:#8A8074;">(facultatif, pour des textes plus personnels)</span></label>
-              <input id="compatName_a" type="text" placeholder="Votre prénom" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date de naissance</label>
-              <input id="compatDate_a" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
-              <select id="compatTime_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Je ne sais pas</option><option value="23:30">23:00–00:00 h (tard dans la nuit)</option><option value="00:30">00:00–01:00 h (après minuit)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l\'heure)</span></label>
-              <input id="compatCity_a" type="text" placeholder="p. ex. Paris" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <details><summary style="cursor:pointer;font-size:12.5px;color:#6B625A;">Plus d'options (sexe, pour la formulation)</summary><div style="margin-top:8px;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(facultatif, pour la formulation du texte)</span></label>
-              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-                <option value="">Non précisé</option>
-                <option value="female">Féminin</option>
-                <option value="male">Masculin</option>
-                <option value="divers">Autre</option>
-              </select>
-            </div></div></details>
-          </div>
-
-          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">L'autre personne</h3>
-            <p style="margin: 0; font-size: 11.5px; line-height: 1.5; color: #8A8074;">Ne saisissez que des données que cette personne accepte de partager.</p>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Prénom <span style="font-weight:400;color:#8A8074;">(facultatif, pour des textes plus personnels)</span></label>
-              <input id="compatName_b" type="text" placeholder="Son prénom" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date de naissance</label>
-              <input id="compatDate_b" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
-              <select id="compatTime_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Je ne sais pas</option><option value="23:30">23:00–00:00 h (tard dans la nuit)</option><option value="00:30">00:00–01:00 h (après minuit)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l\'heure)</span></label>
-              <input id="compatCity_b" type="text" placeholder="p. ex. Marseille" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <details><summary style="cursor:pointer;font-size:12.5px;color:#6B625A;">Plus d'options (sexe, pour la formulation)</summary><div style="margin-top:8px;">
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-              <label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(facultatif, pour la formulation du texte)</span></label>
-              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-                <option value="">Non précisé</option>
-                <option value="female">Féminin</option>
-                <option value="male">Masculin</option>
-                <option value="divers">Autre</option>
-              </select>
-            </div></div></details>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px;">
-          <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Adresse e-mail (pour l'envoi)</label>
-          <input id="compatEmail" type="email" placeholder="vous@exemple.fr" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-        </div>
-
-        <button type="button" id="cpvBtn" style="padding: 12px 20px; background: #FFFDF9; color: #C1442E; border: 1.5px solid #C1442E; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">Voir l'aperçu gratuit</button>
-        <div id="cpvBox" class="cpv-box" style="display:none;border:1px solid #E6DFD2;border-radius:12px;background:#FFFDF9;padding:16px;text-align:center;flex-direction:column;gap:10px;">
-          <img id="cpvImg" alt="" style="width:100%;max-width:340px;margin:0 auto;border-radius:10px;border:1px solid #E6DFD2;display:none;">
-          <div id="cpvText" style="font-size:13.5px;line-height:1.6;color:#4A4239;"></div>
-          <button type="button" id="cpvShare" style="padding:10px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:none;">Enregistrer / partager l'image</button>
-          <div style="font-size:12px;color:#8A8074;">Gratuit, sans e-mail. L'image ne montre ni noms ni dates. Si le bouton ne répond pas (par ex. dans le navigateur d'Instagram), appuyez longuement sur l'image pour l'enregistrer.</div>
-        </div>
-        <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
-
-        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
-          Lancer le test — 9,90 €
-        </button>
-        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center;">Prix TVA légale en vigueur incluse. 🔒 Paiement sécurisé par carte bancaire, PayPal et plus</p>
-        <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">Garantie satisfait ou remboursé de 60 jours — sans avoir à vous justifier (<a href="/fr/retractation" style="color: inherit; text-decoration: underline;">détails</a>). Produit numérique : livraison au format PDF par e-mail.</p>
-      </div>
-    </div>
-  </div>
+  
 
 
 
@@ -577,6 +479,91 @@
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- Kompatibilitäts-Check -->
+  <div id="compatibilite" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;"><span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A79E93;">Extra</span><h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">Test de couple : vous deux, vu par le Saju</h2><p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">
+        Saisissez vos deux dates de naissance : le rapport PDF arrive par e-mail.
+      </p><div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">Vous</h3>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date de naissance</label>
+              <input id="compatDate_a" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#6B625A;">Plus précis ? Prénom, heure et lieu de naissance (facultatif)</summary><div style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;"><div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Prénom <span style="font-weight:400;color:#8A8074;">(facultatif, pour des textes plus personnels)</span></label>
+              <input id="compatName_a" type="text" placeholder="Votre prénom" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
+              <select id="compatTime_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Je ne sais pas</option><option value="23:30">23:00–00:00 h (tard dans la nuit)</option><option value="00:30">00:00–01:00 h (après minuit)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select>
+            </div><div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l\'heure)</span></label>
+              <input id="compatCity_a" type="text" placeholder="p. ex. Paris" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#6B625A;">Plus d'options (sexe, pour la formulation)</summary><div style="margin-top:8px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(facultatif, pour la formulation du texte)</span></label>
+              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Non précisé</option>
+                <option value="female">Féminin</option>
+                <option value="male">Masculin</option>
+                <option value="divers">Autre</option>
+              </select>
+            </div></div></details></div></details>
+          </div>
+
+          <div style="flex: 1 1 240px; min-width: 220px; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">L'autre personne</h3>
+            <p style="margin: 0; font-size: 11.5px; line-height: 1.5; color: #8A8074;">Ne saisissez que des données que cette personne accepte de partager.</p>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date de naissance</label>
+              <input id="compatDate_b" type="date" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#6B625A;">Plus précis ? Prénom, heure et lieu de naissance (facultatif)</summary><div style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;"><div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Prénom <span style="font-weight:400;color:#8A8074;">(facultatif, pour des textes plus personnels)</span></label>
+              <input id="compatName_b" type="text" placeholder="Son prénom" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label>
+              <select id="compatTime_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;"><option value="">Je ne sais pas</option><option value="23:30">23:00–00:00 h (tard dans la nuit)</option><option value="00:30">00:00–01:00 h (après minuit)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select>
+            </div><div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l\'heure)</span></label>
+              <input id="compatCity_b" type="text" placeholder="p. ex. Marseille" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#6B625A;">Plus d'options (sexe, pour la formulation)</summary><div style="margin-top:8px;">
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(facultatif, pour la formulation du texte)</span></label>
+              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Non précisé</option>
+                <option value="female">Féminin</option>
+                <option value="male">Masculin</option>
+                <option value="divers">Autre</option>
+              </select>
+            </div></div></details></div></details>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Adresse e-mail (pour l'envoi)</label>
+          <input id="compatEmail" type="email" placeholder="vous@exemple.fr" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <button type="button" id="cpvBtn" style="padding: 12px 20px; background: #FFFDF9; color: #C1442E; border: 1.5px solid #C1442E; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">Voir l'aperçu gratuit</button>
+        <div id="cpvBox" class="cpv-box" style="display:none;border:1px solid #E6DFD2;border-radius:12px;background:#FFFDF9;padding:16px;text-align:center;flex-direction:column;gap:10px;">
+          <img id="cpvImg" alt="" style="width:100%;max-width:340px;margin:0 auto;border-radius:10px;border:1px solid #E6DFD2;display:none;">
+          <div id="cpvText" style="font-size:13.5px;line-height:1.6;color:#4A4239;"></div>
+          <button type="button" id="cpvShare" style="padding:10px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:none;">Enregistrer / partager l'image</button>
+          <div style="font-size:12px;color:#8A8074;">Gratuit, sans e-mail. L'image ne montre ni noms ni dates. Si le bouton ne répond pas (par ex. dans le navigateur d'Instagram), appuyez longuement sur l'image pour l'enregistrer.</div>
+        </div>
+        <p id="compatError" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Lancer le test — 9,90 €
+        </button>
+        <p style="margin: 0; font-size: 11.5px; color: #A79E93; text-align: center;">Prix TVA légale en vigueur incluse. 🔒 Paiement sécurisé par carte bancaire, PayPal et plus</p>
+        <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">Garantie satisfait ou remboursé de 60 jours — sans avoir à vous justifier (<a href="/fr/retractation" style="color: inherit; text-decoration: underline;">détails</a>). Produit numérique : livraison au format PDF par e-mail.</p>
+      </div><p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">
+        Où vous vous ressemblez, où vous pourriez vous heurter, ce dont chacun a besoin en silence — et trois questions pour une vraie conversation ce soir. Une lecture traditionnelle pour réfléchir ensemble, pas un verdict.
+      </p></div>
   </div>
 
   <div id="faq" style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center;">
