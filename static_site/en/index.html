@@ -499,8 +499,8 @@
       <p id="mProduct" style="margin: 0; font-size: 14px; font-weight: 600; color: #211D1A;"></p>
       <p style="margin: 0; font-size: 13.5px; color: #6B625A; line-height: 1.55;">Enter your birth details. You then go directly to secure payment at Digistore24.</p>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label><input id="mBirthdate" type="date" min="1900-01-01" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
-      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Birth time (optional)</label><input id="mBirthtime" type="time" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
-      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="color: #C1442E;">*</span></label><input id="mBirthplace" type="text" autocomplete="off" placeholder="City, Country (e.g. Lagos, Nigeria)" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Birth time (optional)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">I don't know</option><option value="23:30">11 pm–12 am (late night)</option><option value="00:30">12–1 am (after midnight)</option><option value="02:00">1–3 am</option><option value="04:00">3–5 am</option><option value="06:00">5–7 am</option><option value="08:00">7–9 am</option><option value="10:00">9–11 am</option><option value="12:00">11 am–1 pm</option><option value="14:00">1–3 pm</option><option value="16:00">3–5 pm</option><option value="18:00">5–7 pm</option><option value="20:00">7–9 pm</option><option value="22:00">9–11 pm</option></select></div>
+      <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(needed with your birth time)</span></label><input id="mBirthplace" type="text" autocomplete="off" placeholder="City, Country (e.g. Lagos, Nigeria)" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Email address <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><span style="font-size: 12px; color: #675E55;">We send your report to this address.</span></div>
       <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Gender (needed for the Life Map Premium) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Please choose</option><option value="female">Female</option><option value="male">Male</option></select>
@@ -595,13 +595,13 @@
     var gender = $('gender').value.trim();
 
     if (!birthdate) { showCheckoutError('Please enter your date of birth.'); return; }
-    if (!birthplace) { showCheckoutError('Please enter your place of birth.'); return; }
+    if (birthtime && !birthplace) { showCheckoutError('Please add your place of birth for your birth time.'); return; }
     if (!email || email.indexOf('@') === -1) { showCheckoutError('Please enter a valid email address.'); return; }
     if (tier === 'premium' && !gender) { showCheckoutError('For the Life Map Premium, please choose your gender.'); return; }
     var productId = DIGISTORE24_PRODUCT_IDS[tier];
     if (!productId) { showCheckoutError('This report cannot be ordered yet. Please come back soon.'); return; }
 
-    var orderData = { email: email, birth_date: birthdate, birth_time: birthtime, birth_city: birthplace, lang: 'en' };
+    var orderData = { email: email, birth_date: birthdate, birth_time: birthtime, birth_city: birthtime ? birthplace : '', lang: 'en' };
     if (gender) { orderData.gender = gender; }
 
     ev('buy_open');
@@ -617,6 +617,8 @@
   }
 
   var MAP = [['mBirthdate', 'birthdate'], ['mBirthtime', 'birthtime'], ['mBirthplace', 'birthplace'], ['mEmail', 'email'], ['mGender', 'gender']];
+    function syncMPlace() { var t = document.getElementById('mBirthtime'), r = document.getElementById('mPlaceRow'); if (t && r) { r.style.display = t.value ? 'flex' : 'none'; } }
+  (function () { var t = document.getElementById('mBirthtime'); if (t) { t.addEventListener('change', syncMPlace); t.addEventListener('input', syncMPlace); } })();
   function openBuyModal(tier, opener) {
     buyModalTier = tier;
     lastOpener = opener || document.activeElement;
@@ -624,6 +626,7 @@
     $('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
     $('mProduct').textContent = PRODUCT_LABEL[tier] || '';
     $('mError').style.display = 'none';
+    syncMPlace();
     buyModalEl.style.display = 'flex';
     $('mBirthdate').focus();
   }
@@ -650,6 +653,7 @@
   });
   $('mGo').addEventListener('click', function (e) {
     MAP.forEach(function (p) { var d = $(p[1]); if (d) d.value = $(p[0]).value; });
+    try { document.getElementById('birthtime').dispatchEvent(new Event('change')); } catch (e) {}
     openCheckout(buyModalTier, e.currentTarget);
   });
   try { var today = new Date().toISOString().slice(0, 10); ['mBirthdate', 'compatDate_a', 'compatDate_b'].forEach(function (i) { $(i).max = today; }); } catch (e) {}
@@ -843,7 +847,7 @@
     return {
       birth_date: $('birthdate').value.trim(),
       birth_time: $('birthtime').value.trim(),
-      birth_city: $('birthplace').value.trim(),
+      birth_city: $('birthtime').value.trim() ? $('birthplace').value.trim() : '',
     };
   }
 

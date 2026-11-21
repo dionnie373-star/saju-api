@@ -637,7 +637,7 @@
       <p style="margin: 0; font-size: 13.5px; color: #6B625A; line-height: 1.55;">Bitte gib deine Geburtsdaten ein — danach geht es direkt weiter zur sicheren Zahlung bei Digistore24.</p>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsdatum <span style="color: #C1442E;">*</span></label><input id="mBirthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Weiß ich nicht</option><option value="23:30">23:00–00:00 Uhr (spätnachts)</option><option value="00:30">00:00–01:00 Uhr (nach Mitternacht)</option><option value="02:00">01:00–03:00 Uhr</option><option value="04:00">03:00–05:00 Uhr</option><option value="06:00">05:00–07:00 Uhr</option><option value="08:00">07:00–09:00 Uhr</option><option value="10:00">09:00–11:00 Uhr</option><option value="12:00">11:00–13:00 Uhr</option><option value="14:00">13:00–15:00 Uhr</option><option value="16:00">15:00–17:00 Uhr</option><option value="18:00">17:00–19:00 Uhr</option><option value="20:00">19:00–21:00 Uhr</option><option value="22:00">21:00–23:00 Uhr</option></select></div>
-      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional; mit Geburtszeit nötig)</span></label><input id="mBirthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional; mit Geburtszeit nötig)</span></label><input id="mBirthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">E-Mail-Adresse <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" placeholder="du@beispiel.de" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geschlecht (für die Premium-Lebenskarte nötig) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Bitte wählen</option><option value="female">Weiblich</option><option value="male">Männlich</option></select></div>
@@ -753,7 +753,7 @@
       email: email,
       birth_date: birthdate,
       birth_time: birthtime,
-      birth_city: birthplace,
+      birth_city: birthtime ? birthplace : '',
     };
     if (gender) { orderData.gender = gender; }
 
@@ -775,12 +775,15 @@
   // --- Kaufdialog (2026-10-14): Klick auf einen Kaufbutton öffnet direkt die Eingabefelder; danach Weiterleitung zu Digistore24.
   var buyModalEl = document.getElementById('buyModal');
   var buyModalTier = null;
+    function syncMPlace() { var t = document.getElementById('mBirthtime'), r = document.getElementById('mPlaceRow'); if (t && r) { r.style.display = t.value ? 'flex' : 'none'; } }
+  (function () { var t = document.getElementById('mBirthtime'); if (t) { t.addEventListener('change', syncMPlace); t.addEventListener('input', syncMPlace); } })();
   function openBuyModal(tier) {
     buyModalTier = tier;
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var s = document.getElementById(p[1]); if (s) document.getElementById(p[0]).value = s.value; });
     document.getElementById('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
     document.getElementById('mError').style.display = 'none';
+    syncMPlace();
     buyModalEl.style.display = 'flex';
     document.getElementById('mBirthdate').focus();
   }
@@ -791,6 +794,7 @@
   document.getElementById('mGo').addEventListener('click', function (ev) {
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var d = document.getElementById(p[1]); if (d) d.value = document.getElementById(p[0]).value; });
+    try { document.getElementById('birthtime').dispatchEvent(new Event('change')); } catch (e) {}
     openCheckout(buyModalTier, ev.currentTarget);
   });
 
@@ -985,7 +989,7 @@
     return {
       birth_date: $('birthdate').value.trim(),
       birth_time: $('birthtime').value.trim(),
-      birth_city: $('birthplace').value.trim(),
+      birth_city: $('birthtime').value.trim() ? $('birthplace').value.trim() : '',
     };
   }
 
