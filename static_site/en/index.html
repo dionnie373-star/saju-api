@@ -141,11 +141,12 @@
               <span style="font-size: 12px; color: #675E55;">Choose “I don't know” if you're unsure – we then calculate three pillars. We use local solar time, so a birth near midnight can fall on the neighboring hour or day.</span>
             </div>
           </details>
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(optional)</span></label>
+          <div id="placeWrap" style="display: none; flex-direction: column; gap: 6px;">
+            <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(needed with your birth time)</span></label>
             <input id="birthplace" type="text" placeholder="City, Country (e.g. Lagos, Nigeria)" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            <span style="font-size: 12px; color: #675E55;">If you add a birth time, the place makes the profile more precise.</span>
+            <span style="font-size: 12px; color: #675E55;">The place sets the time zone for your birth time, so please add the city where you were born.</span>
           </div>
+        <script>(function(){var t=document.getElementById('birthtime'),w=document.getElementById('placeWrap');if(!t||!w)return;function s(){w.style.display=t.value?'flex':'none';}t.addEventListener('change',s);s();})();</script>
           <input id="email" type="hidden">
           <div style="display:none;"><select id="gender" aria-hidden="true" tabindex="-1"><option value="">-</option><option value="female">Female</option><option value="male">Male</option></select></div>
           <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">See my profile now</button>

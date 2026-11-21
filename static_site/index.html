@@ -156,11 +156,12 @@
         </div>
         </details>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div id="placeWrap" style="display: none; flex-direction: column; gap: 6px;">
           <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional)</span></label>
           <input id="birthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Optional. Ohne Ort rechnen wir mit Berlin – mit Geburtszeit wird das Profil durch den Ort genauer.</span>
+          <span style="font-size: 12px; color: #8A8074;">Mit Geburtszeit wird das Profil durch den Ort genauer – vor allem, wenn du nicht in Deutschland geboren bist. Ohne Angabe rechnen wir mit Berlin.</span>
         </div>
+        <script>(function(){var t=document.getElementById('birthtime'),w=document.getElementById('placeWrap');if(!t||!w)return;function s(){w.style.display=t.value?'flex':'none';}t.addEventListener('change',s);s();})();</script>
 
         <input id="email" type="hidden">
 
