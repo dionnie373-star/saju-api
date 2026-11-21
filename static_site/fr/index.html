@@ -165,11 +165,12 @@
         </div>
         </details>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div id="placeWrap" style="display: none; flex-direction: column; gap: 6px;">
           <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif)</span></label>
           <input id="birthplace" type="text" placeholder="p. ex. Lyon" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Facultatif. Sans lieu, nous calculons avec Paris – avec l'heure de naissance, le lieu rend le profil plus précis.</span>
+          <span style="font-size: 12px; color: #8A8074;">Avec l'heure de naissance, le lieu rend le profil plus précis – surtout si vous n'êtes pas né(e) en France. Sans indication, nous calculons avec Paris.</span>
         </div>
+        <script>(function(){var t=document.getElementById('birthtime'),w=document.getElementById('placeWrap');if(!t||!w)return;function s(){w.style.display=t.value?'flex':'none';}t.addEventListener('change',s);s();})();</script>
 
         <input id="email" type="hidden">
 
@@ -322,6 +323,14 @@
       <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">2</span><span><b>Voyez votre profil aussitôt</b> – sur cette page, sans e-mail</span></li>
       <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">3</span><span><b>Allez plus loin si vous le souhaitez</b> – en rapport PDF</span></li>
     </ol>
+  </div>
+
+  <div style="width: 100%; box-sizing: border-box; padding: 56px 6vw 0; display: flex; justify-content: center;">
+    <section style="max-width: 640px; margin: 0 auto; font-size: 14px; line-height: 1.7; color: #4A4239; text-align: center;">
+        <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #211D1A;">Qu'est-ce que le Saju (사주 팔자) ?</h2>
+        <p style="margin: 0 0 10px;">Le Saju – appelé en Corée aussi « Palja » (팔자, « huit caractères ») – est la version coréenne du Bazi, les quatre piliers chinois. De l'année, du mois, du jour et de l'heure de naissance naissent huit caractères qui montrent comment les cinq éléments (Bois, Feu, Terre, Métal et Eau) se répartissent chez vous. Votre animal du zodiaque chinois en fait aussi partie.</p>
+        <p style="margin: 0;"><a href="/fr/guides/" style="color: inherit; text-decoration: underline;">Guides : le Saju, le Bazi et les cinq éléments expliqués simplement →</a></p>
+      </section>
   </div>
 
   <!-- Aperçu du PDF (même section que sur la page DE) -->
@@ -570,14 +579,6 @@
     </div>
   </div>
 
-  <div style="width: 100%; box-sizing: border-box; padding: 56px 6vw 0; display: flex; justify-content: center;">
-    <section style="max-width: 640px; margin: 0 auto; font-size: 14px; line-height: 1.7; color: #4A4239; text-align: center;">
-        <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #211D1A;">Qu'est-ce que le Saju (사주 팔자) ?</h2>
-        <p style="margin: 0 0 10px;">Le Saju – appelé en Corée aussi « Palja » (팔자, « huit caractères ») – est la version coréenne du Bazi, les quatre piliers chinois. De l'année, du mois, du jour et de l'heure de naissance naissent huit caractères qui montrent comment les cinq éléments (Bois, Feu, Terre, Métal et Eau) se répartissent chez vous. Votre animal du zodiaque chinois en fait aussi partie.</p>
-        <p style="margin: 0;"><a href="/fr/guides/" style="color: inherit; text-decoration: underline;">Guides : le Saju, le Bazi et les cinq éléments expliqués simplement →</a></p>
-      </section>
-  </div>
-
   <div id="faq" style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center;">
     <div style="width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 16px;">
       <h2 class="display" style="margin: 0 0 8px; font-size: 26px; font-weight: 500; text-align: center;">Questions fréquentes</h2>
@@ -598,7 +599,7 @@
       <p style="margin: 0; font-size: 13.5px; color: #6B625A; line-height: 1.55;">Saisissez vos données de naissance — vous passerez ensuite directement au paiement sécurisé via Digistore24.</p>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date de naissance <span style="color: #C1442E;">*</span></label><input id="mBirthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Je ne sais pas</option><option value="23:30">23:00–00:00 h (tard dans la nuit)</option><option value="00:30">00:00–01:00 h (après minuit)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select></div>
-      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l’heure)</span></label><input id="mBirthplace" type="text" placeholder="p. ex. Paris" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l’heure)</span></label><input id="mBirthplace" type="text" placeholder="p. ex. Paris" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Adresse e-mail <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" placeholder="vous@exemple.fr" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe (nécessaire pour la carte de vie premium) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Veuillez choisir</option><option value="female">Féminin</option><option value="male">Masculin</option></select></div>
@@ -714,7 +715,7 @@
       email: email,
       birth_date: birthdate,
       birth_time: birthtime,
-      birth_city: birthplace,
+      birth_city: birthtime ? birthplace : '',
       lang: 'fr',
     };
     if (gender) { orderData.gender = gender; }
@@ -736,12 +737,15 @@
   // --- Kaufdialog (2026-10-14): Klick auf einen Kaufbutton öffnet direkt die Eingabefelder; danach Weiterleitung zu Digistore24.
   var buyModalEl = document.getElementById('buyModal');
   var buyModalTier = null;
+    function syncMPlace() { var t = document.getElementById('mBirthtime'), r = document.getElementById('mPlaceRow'); if (t && r) { r.style.display = t.value ? 'flex' : 'none'; } }
+  (function () { var t = document.getElementById('mBirthtime'); if (t) { t.addEventListener('change', syncMPlace); t.addEventListener('input', syncMPlace); } })();
   function openBuyModal(tier) {
     buyModalTier = tier;
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var s = document.getElementById(p[1]); if (s) document.getElementById(p[0]).value = s.value; });
     document.getElementById('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
     document.getElementById('mError').style.display = 'none';
+    syncMPlace();
     buyModalEl.style.display = 'flex';
     document.getElementById('mBirthdate').focus();
   }
@@ -752,6 +756,7 @@
   document.getElementById('mGo').addEventListener('click', function (ev) {
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var d = document.getElementById(p[1]); if (d) d.value = document.getElementById(p[0]).value; });
+    try { document.getElementById('birthtime').dispatchEvent(new Event('change')); } catch (e) {}
     openCheckout(buyModalTier, ev.currentTarget);
   });
 
@@ -946,7 +951,7 @@
     return {
       birth_date: $('birthdate').value.trim(),
       birth_time: $('birthtime').value.trim(),
-      birth_city: $('birthplace').value.trim(),
+      birth_city: $('birthtime').value.trim() ? $('birthplace').value.trim() : '',
     };
   }
 

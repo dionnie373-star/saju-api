@@ -156,11 +156,12 @@
         </div>
         </details>
 
-        <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div id="placeWrap" style="display: none; flex-direction: column; gap: 6px;">
           <label for="birthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional)</span></label>
           <input id="birthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-          <span style="font-size: 12px; color: #8A8074;">Optional. Ohne Ort rechnen wir mit Berlin – mit Geburtszeit wird das Profil durch den Ort genauer.</span>
+          <span style="font-size: 12px; color: #8A8074;">Mit Geburtszeit wird das Profil durch den Ort genauer – vor allem, wenn du nicht in Deutschland geboren bist. Ohne Angabe rechnen wir mit Berlin.</span>
         </div>
+        <script>(function(){var t=document.getElementById('birthtime'),w=document.getElementById('placeWrap');if(!t||!w)return;function s(){w.style.display=t.value?'flex':'none';}t.addEventListener('change',s);s();})();</script>
 
         <input id="email" type="hidden">
 
@@ -316,6 +317,14 @@
       <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">2</span><span><b>Profil sofort sehen</b> – direkt auf dieser Seite, ohne E-Mail</span></li>
       <li style="display: flex; gap: 10px; align-items: center;"><span class="display" style="flex: 0 0 26px; height: 26px; border-radius: 50%; background: #211D1A; color: #FAF7F1; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600;">3</span><span><b>Auf Wunsch tiefer gehen</b> – als PDF-Report</span></li>
     </ol>
+  </div>
+
+  <div style="width: 100%; box-sizing: border-box; padding: 56px 6vw 0; display: flex; justify-content: center;">
+    <section style="max-width: 640px; margin: 0 auto; font-size: 14px; line-height: 1.7; color: #4A4239; text-align: center;">
+        <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #211D1A;">Was ist Saju (사주 팔자)?</h2>
+        <p style="margin: 0 0 10px;">Saju – in Korea auch „Palja“ (팔자, „acht Zeichen“) genannt – ist die koreanische Form von Bazi, den chinesischen Vier Säulen. Aus Geburtsjahr, -monat, -tag und -stunde entstehen acht Schriftzeichen, die zeigen, wie die Fünf Elemente (Holz, Feuer, Erde, Metall, Wasser) bei dir verteilt sind. Auch dein chinesisches Tierzeichen gehört dazu.</p>
+        <p style="margin: 0;"><a href="/wissen/" style="color: inherit; text-decoration: underline;">Ratgeber: Saju, Bazi und die Fünf Elemente einfach erklärt →</a></p>
+      </section>
   </div>
 
   <!-- Beispielauszug: echte PDF-Seiten statt reiner Text-Zitate.
@@ -608,14 +617,6 @@
     </div>
   </div>
 
-  <div style="width: 100%; box-sizing: border-box; padding: 56px 6vw 0; display: flex; justify-content: center;">
-    <section style="max-width: 640px; margin: 0 auto; font-size: 14px; line-height: 1.7; color: #4A4239; text-align: center;">
-        <h2 style="margin: 0 0 8px; font-size: 18px; font-weight: 600; color: #211D1A;">Was ist Saju (사주 팔자)?</h2>
-        <p style="margin: 0 0 10px;">Saju – in Korea auch „Palja“ (팔자, „acht Zeichen“) genannt – ist die koreanische Form von Bazi, den chinesischen Vier Säulen. Aus Geburtsjahr, -monat, -tag und -stunde entstehen acht Schriftzeichen, die zeigen, wie die Fünf Elemente (Holz, Feuer, Erde, Metall, Wasser) bei dir verteilt sind. Auch dein chinesisches Tierzeichen gehört dazu.</p>
-        <p style="margin: 0;"><a href="/wissen/" style="color: inherit; text-decoration: underline;">Ratgeber: Saju, Bazi und die Fünf Elemente einfach erklärt →</a></p>
-      </section>
-  </div>
-
   <div id="faq" style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center;">
     <div style="width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 16px;">
       <h2 class="display" style="margin: 0 0 8px; font-size: 26px; font-weight: 500; text-align: center;">Häufige Fragen</h2>
@@ -636,7 +637,7 @@
       <p style="margin: 0; font-size: 13.5px; color: #6B625A; line-height: 1.55;">Bitte gib deine Geburtsdaten ein — danach geht es direkt weiter zur sicheren Zahlung bei Digistore24.</p>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsdatum <span style="color: #C1442E;">*</span></label><input id="mBirthdate" type="date" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtszeit (optional)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Weiß ich nicht</option><option value="23:30">23:00–00:00 Uhr (spätnachts)</option><option value="00:30">00:00–01:00 Uhr (nach Mitternacht)</option><option value="02:00">01:00–03:00 Uhr</option><option value="04:00">03:00–05:00 Uhr</option><option value="06:00">05:00–07:00 Uhr</option><option value="08:00">07:00–09:00 Uhr</option><option value="10:00">09:00–11:00 Uhr</option><option value="12:00">11:00–13:00 Uhr</option><option value="14:00">13:00–15:00 Uhr</option><option value="16:00">15:00–17:00 Uhr</option><option value="18:00">17:00–19:00 Uhr</option><option value="20:00">19:00–21:00 Uhr</option><option value="22:00">21:00–23:00 Uhr</option></select></div>
-      <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional; mit Geburtszeit nötig)</span></label><input id="mBirthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
+      <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geburtsort <span style="font-weight:400;color:#8A8074;">(optional; mit Geburtszeit nötig)</span></label><input id="mBirthplace" type="text" placeholder="z. B. Berlin" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">E-Mail-Adresse <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" placeholder="du@beispiel.de" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Geschlecht (für die Premium-Lebenskarte nötig) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Bitte wählen</option><option value="female">Weiblich</option><option value="male">Männlich</option></select></div>
@@ -752,7 +753,7 @@
       email: email,
       birth_date: birthdate,
       birth_time: birthtime,
-      birth_city: birthplace,
+      birth_city: birthtime ? birthplace : '',
     };
     if (gender) { orderData.gender = gender; }
 
@@ -774,12 +775,15 @@
   // --- Kaufdialog (2026-10-14): Klick auf einen Kaufbutton öffnet direkt die Eingabefelder; danach Weiterleitung zu Digistore24.
   var buyModalEl = document.getElementById('buyModal');
   var buyModalTier = null;
+    function syncMPlace() { var t = document.getElementById('mBirthtime'), r = document.getElementById('mPlaceRow'); if (t && r) { r.style.display = t.value ? 'flex' : 'none'; } }
+  (function () { var t = document.getElementById('mBirthtime'); if (t) { t.addEventListener('change', syncMPlace); t.addEventListener('input', syncMPlace); } })();
   function openBuyModal(tier) {
     buyModalTier = tier;
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var s = document.getElementById(p[1]); if (s) document.getElementById(p[0]).value = s.value; });
     document.getElementById('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
     document.getElementById('mError').style.display = 'none';
+    syncMPlace();
     buyModalEl.style.display = 'flex';
     document.getElementById('mBirthdate').focus();
   }
@@ -790,6 +794,7 @@
   document.getElementById('mGo').addEventListener('click', function (ev) {
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var d = document.getElementById(p[1]); if (d) d.value = document.getElementById(p[0]).value; });
+    try { document.getElementById('birthtime').dispatchEvent(new Event('change')); } catch (e) {}
     openCheckout(buyModalTier, ev.currentTarget);
   });
 
@@ -984,7 +989,7 @@
     return {
       birth_date: $('birthdate').value.trim(),
       birth_time: $('birthtime').value.trim(),
-      birth_city: $('birthplace').value.trim(),
+      birth_city: $('birthtime').value.trim() ? $('birthplace').value.trim() : '',
     };
   }
 
