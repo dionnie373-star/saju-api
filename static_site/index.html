@@ -1183,7 +1183,7 @@ function paljaTaste(y, m, d) {
     ticking = false;
     var r = card.getBoundingClientRect();
     /* Nur zwischen Formular und Paar-Check zeigen: ab Paar-Check (Formular, Preise, FAQ, Footer) würde der Balken Eingabefelder und Kauf-Buttons verdecken. */
-    var zone = document.getElementById('kompatibilitaet') || document.getElementById('pricing');
+    var zone = document.getElementById('pricing') || document.getElementById('kompatibilitaet');
     var inZone = zone ? zone.getBoundingClientRect().top < window.innerHeight - 80 : false;
     if (r.bottom < 0 && !inZone) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
   }

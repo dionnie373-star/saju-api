@@ -133,7 +133,8 @@
             <label for="birthdate" style="font-size: 13px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
             <input id="birthdate" type="date" min="1900-01-01" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
           </div>
-          <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
+          <div id="tasteBox" aria-live="polite" style="display:none; background:#F6EFE3; border:1px solid #E6DFD2; border-radius:10px; padding:14px 16px; font-size:14px; line-height:1.55; color:#4A4239;"></div>
+        <details open style="border-top: 1px solid #EDE6DA; padding-top: 10px;">
             <summary style="cursor: pointer; font-size: 13.5px; color: #4A4239;">Add birth time &amp; place <span style="color: #675E55;">(optional – more precise)</span></summary>
             <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 10px;">
               <label for="birthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Birth time</label>
@@ -1134,6 +1135,66 @@
     io.observe(sec);
   }
   if (btn) { btn.addEventListener('click', function () { ev('compat_buy_open'); }); }
+})();
+</script>
+<script>
+// Sofort-Vorschau (rein im Browser, nichts wird gesendet): Jahrestier/-element und Tageselement.
+(function () {
+function paljaTaste(y, m, d) {
+  var ANIMALS = ['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'];
+  var ELEM = ['Wood','Wood','Fire','Fire','Earth','Earth','Metal','Metal','Water','Water'];
+  var HANJA_S = '甲乙丙丁戊己庚辛壬癸', HANJA_B = '子丑寅卯辰巳午未申酉戌亥';
+  var edge = (m === 2 && d >= 3 && d <= 5);
+  var sy = (m < 2 || (m === 2 && d < 4)) ? y - 1 : y;
+  var ys = ((sy - 4) % 10 + 10) % 10, yb = ((sy - 4) % 12 + 12) % 12;
+  var jdn = Math.floor(Date.UTC(y, m - 1, d) / 86400000) + 2440588;
+  var di = (((jdn - 2451545) + 54) % 60 + 60) % 60; // 2000-01-01 = 戊午
+  var ds = di % 10;
+  return { animal: ANIMALS[yb], yearElem: ELEM[ys], yearHanja: HANJA_S[ys] + HANJA_B[yb],
+           dayElem: ELEM[ds], dayKo: ['나무','나무','불','불','흙','흙','쇠','쇠','물','물'][ds], edge: edge };
+}
+
+  var box = document.getElementById('tasteBox');
+  var inp = document.getElementById('birthdate');
+  if (!box || !inp) return;
+  inp.addEventListener('change', function () {
+    var v = (inp.value || '').split('-');
+    if (v.length !== 3) { box.style.display = 'none'; return; }
+    var y = +v[0], m = +v[1], d = +v[2];
+    if (!y || y < 1900 || y > 2100) { box.style.display = 'none'; return; }
+    var t = paljaTaste(y, m, d);
+    var html = '<strong>Your first look (traditional):</strong><br>' +
+      'Year: <strong>' + t.yearElem + ' · ' + t.animal + '</strong> · ' +
+      'Day element: <strong>' + t.dayElem + '</strong> <span style="font-weight:600;">' + t.dayKo + '</span><br>' +
+      '<span style="font-size:12.5px;color:#8A8074;">' +
+      (t.edge ? 'Around 4 February the Saju year changes – the animal may differ here; your profile is calculated to the exact day. ' : '') +
+      'This is just a preview: click the button to see your pillars and your full profile, free of charge.</span>';
+    box.innerHTML = html;
+    box.style.display = 'block';
+  });
+})();
+</script>
+<div id="stickyCta"><button type="button" id="stickyBtn">Create my free profile</button></div>
+<script>
+(function () {
+  var bar = document.getElementById('stickyCta'), card = document.getElementById('signupCard'), b = document.getElementById('stickyBtn');
+  if (!bar || !card || !b) { return; }
+  var ticking = false;
+  function upd() {
+    ticking = false;
+    var r = card.getBoundingClientRect();
+    /* Only between the form and the prices: from there on the bar would cover input fields and buy buttons. */
+    var zone = document.getElementById('pricing') || document.getElementById('compatibility');
+    var inZone = zone ? zone.getBoundingClientRect().top < window.innerHeight - 80 : false;
+    if (r.bottom < 0 && !inZone) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
+  }
+  window.addEventListener('scroll', function () { if (!ticking) { ticking = true; requestAnimationFrame(upd); } }, { passive: true });
+  b.addEventListener('click', function () {
+    if (window.paljaEv) { paljaEv('sticky'); }
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(function () { var bd = document.getElementById('birthdate'); if (bd) { bd.focus({ preventScroll: true }); } }, 600);
+  });
+  upd();
 })();
 </script>
 </body>
