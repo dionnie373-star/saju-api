@@ -1151,7 +1151,7 @@ function paljaTaste(y, m, d) {
     ticking = false;
     var r = card.getBoundingClientRect();
     /* Solo entre el formulario y la sección de pareja: después taparía campos y botones de compra. */
-    var zone = document.getElementById('compatibilidad') || document.getElementById('pricing');
+    var zone = document.getElementById('pricing') || document.getElementById('compatibilidad');
     var inZone = zone ? zone.getBoundingClientRect().top < window.innerHeight - 80 : false;
     if (r.bottom < 0 && !inZone) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
   }

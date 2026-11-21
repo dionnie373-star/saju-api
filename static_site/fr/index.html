@@ -1157,7 +1157,7 @@ function paljaTaste(y, m, d) {
     ticking = false;
     var r = card.getBoundingClientRect();
     /* Seulement entre le formulaire et la section couple : ensuite la barre cacherait champs et boutons d'achat. */
-    var zone = document.getElementById('compatibilite') || document.getElementById('pricing');
+    var zone = document.getElementById('pricing') || document.getElementById('compatibilite');
     var inZone = zone ? zone.getBoundingClientRect().top < window.innerHeight - 80 : false;
     if (r.bottom < 0 && !inZone) { bar.classList.add('show'); } else { bar.classList.remove('show'); }
   }
