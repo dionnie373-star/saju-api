@@ -97,7 +97,7 @@
               <div style="font-size:12px;line-height:1.5;color:#8A8074;margin-top:6px;">The Saju year begins around 4 February – if you were born in January or early February, you may belong to the previous year’s animal. For entertainment and self-reflection.</div>
               <div style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:13.5px;">
                 <a id="yrToForm" href="#signupCard" style="color:#C1442E;font-weight:600;text-decoration:underline;">Your full profile, free →</a>
-                <a id="yrToCompat" href="#kompatibilitaet" style="color:#C1442E;font-weight:600;text-decoration:underline;">Compare with your partner →</a>
+                <a id="yrToCompat" href="#compatibility" style="color:#C1442E;font-weight:600;text-decoration:underline;">Compare with your partner →</a>
               </div>
             </div>
           </div>
@@ -289,89 +289,7 @@
     </section>
   </div>
 
-  <!-- Kompatibilitäts-Check -->
-  <div id="compatibility" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #F3EEE4;">
-    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;">
-      <span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #675E55;">Extra</span>
-      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">How do the two of you fit together?</h2>
-      <p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">A Couple Check puts two Saju charts side by side. You receive a PDF with an at-a-glance page, how you show closeness, what each of you needs quietly, where friction can arise, and three questions for tonight.</p>
-      <p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">A traditional reading for reflection, not a verdict. Enter two dates of birth and receive the PDF by email.</p>
-
-      <div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
-
-        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">You</h3>
-            
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">First name <span style="font-weight:400;color:#675E55;">(optional, for more personal text)</span></label>
-              <input id="compatName_a" type="text" autocomplete="off" placeholder="Your first name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
-              <input id="compatDate_a" type="date" min="1900-01-01" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Birth time <span style="font-weight:400;color:#675E55;">(optional, makes it more precise)</span></label>
-              <input id="compatTime_a" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(optional; needed with birth time)</span></label>
-              <input id="compatCity_a" type="text" autocomplete="off" placeholder="e.g. Lagos, Nigeria" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <details><summary style="cursor:pointer;font-size:12.5px;color:#4A4239;">Gender (optional)</summary><div style="display: flex; flex-direction: column; gap: 6px; margin-top:6px;"><label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Gender <span style="font-weight: 400; color: #675E55;">(optional, for the wording of the text)</span></label>
-              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-                <option value="">Not specified</option>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="divers">Other</option>
-              </select>
-            </div></details>
-          </div>
-
-          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
-            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">The other person</h3>
-            <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #675E55;">First name and gender are optional. Enter details of another person only if that person agrees.</p>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">First name <span style="font-weight:400;color:#675E55;">(optional, for more personal text)</span></label>
-              <input id="compatName_b" type="text" autocomplete="off" placeholder="Their first name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
-              <input id="compatDate_b" type="date" min="1900-01-01" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Birth time <span style="font-weight:400;color:#675E55;">(optional, makes it more precise)</span></label>
-              <input id="compatTime_b" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(optional; needed with birth time)</span></label>
-              <input id="compatCity_b" type="text" autocomplete="off" placeholder="e.g. Manila, Philippines" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-            </div>
-            <details><summary style="cursor:pointer;font-size:12.5px;color:#4A4239;">Gender (optional)</summary><div style="display: flex; flex-direction: column; gap: 6px; margin-top:6px;"><label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Gender <span style="font-weight: 400; color: #675E55;">(optional, for the wording of the text)</span></label>
-              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-                <option value="">Not specified</option>
-                <option value="female">Female</option>
-                <option value="male">Male</option>
-                <option value="divers">Other</option>
-              </select>
-            </div></details>
-          </div>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Email address (we send the PDF here) <span style="color: #C1442E;">*</span></label>
-          <input id="compatEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
-        </div>
-
-        <button type="button" id="cpvBtn" style="padding: 12px 20px; background: #FFFDF9; color: #C1442E; border: 1.5px solid #C1442E; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">See the free preview</button>
-        <div id="cpvBox" class="cpv-box" style="display:none;border:1px solid #E6DFD2;border-radius:12px;background:#FFFDF9;padding:16px;text-align:center;flex-direction:column;gap:10px;">
-          <img id="cpvImg" alt="" style="width:100%;max-width:340px;margin:0 auto;border-radius:10px;border:1px solid #E6DFD2;display:none;">
-          <div id="cpvText" style="font-size:13.5px;line-height:1.6;color:#4A4239;"></div>
-          <button type="button" id="cpvShare" style="padding:10px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:none;">Save / share image</button>
-          <div style="font-size:12px;color:#8A8074;">Free, no email needed. The image shows no names or dates. If the button does nothing (e.g. in the Instagram browser), press and hold the image to save it.</div>
-        </div>
-        <p id="compatError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
-
-        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
-          Get the Couple Check — $10.00
-        </button>
-        <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">Price in US dollars. Taxes may be added at checkout depending on your country. Secure payment by card, PayPal and more. Payment is processed by Digistore24.com.</p>
-        <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">60-day money-back guarantee – no reason needed (<a href="/en/refund" style="color: inherit; text-decoration: underline;">details</a>). Digital product: we deliver a PDF by email. <a href="/en/terms" style="color: inherit; text-decoration: underline;">Terms of Sale</a> · <a href="/en/privacy" style="color: inherit; text-decoration: underline;">Privacy Policy</a></p>
-      </div>
-    </div>
-  </div>
+  
 
   <!-- Preise: Gratis vs. Jahresreport / Lebenskarte -->
   <div id="pricing" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #FAF7F1;">
@@ -490,6 +408,75 @@
         </table>
       </div>
     </div>
+  </div>
+
+  <!-- Kompatibilitäts-Check -->
+  <div id="compatibility" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #F3EEE4;">
+    <div style="width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; align-items: center; text-align: center;"><span style="font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #675E55;">Extra</span><h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">How do the two of you fit together?</h2><p style="margin: 0 0 20px; font-size: 14px; color: #6B625A; max-width: 480px;">A traditional reading for reflection, not a verdict. Enter two dates of birth and receive the PDF by email.</p><div style="width: 100%; background: #FFFFFF; border: 1px solid #E4DCD1; border-radius: 16px; padding: 32px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; text-align: left;">
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">You</h3>
+            
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatDate_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
+              <input id="compatDate_a" type="date" min="1900-01-01" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#4A4239;">Optional details: name, birth time, place of birth</summary><div style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;"><div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatName_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">First name <span style="font-weight:400;color:#675E55;">(optional, for more personal text)</span></label>
+              <input id="compatName_a" type="text" autocomplete="off" placeholder="Your first name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatTime_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Birth time <span style="font-weight:400;color:#675E55;">(optional, makes it more precise)</span></label>
+              <input id="compatTime_a" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatCity_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(optional; needed with birth time)</span></label>
+              <input id="compatCity_a" type="text" autocomplete="off" placeholder="e.g. Lagos, Nigeria" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#4A4239;">Gender (optional)</summary><div style="display: flex; flex-direction: column; gap: 6px; margin-top:6px;"><label for="compatGender_a" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Gender <span style="font-weight: 400; color: #675E55;">(optional, for the wording of the text)</span></label>
+              <select id="compatGender_a" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Not specified</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="divers">Other</option>
+              </select>
+            </div></details></div></details>
+          </div>
+
+          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+            <h3 style="margin: 0; font-size: 15px; font-weight: 600; color: #211D1A;">The other person</h3>
+            <p style="margin: 0; font-size: 12px; line-height: 1.5; color: #675E55;">First name and gender are optional. Enter details of another person only if that person agrees.</p>
+            <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatDate_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Date of birth <span style="color: #C1442E;">*</span></label>
+              <input id="compatDate_b" type="date" min="1900-01-01" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#4A4239;">Optional details: name, birth time, place of birth</summary><div style="display: flex; flex-direction: column; gap: 14px; margin-top: 12px;"><div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatName_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">First name <span style="font-weight:400;color:#675E55;">(optional, for more personal text)</span></label>
+              <input id="compatName_b" type="text" autocomplete="off" placeholder="Their first name" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatTime_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Birth time <span style="font-weight:400;color:#675E55;">(optional, makes it more precise)</span></label>
+              <input id="compatTime_b" type="time" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatCity_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(optional; needed with birth time)</span></label>
+              <input id="compatCity_b" type="text" autocomplete="off" placeholder="e.g. Manila, Philippines" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+            </div><details><summary style="cursor:pointer;font-size:12.5px;color:#4A4239;">Gender (optional)</summary><div style="display: flex; flex-direction: column; gap: 6px; margin-top:6px;"><label for="compatGender_b" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Gender <span style="font-weight: 400; color: #675E55;">(optional, for the wording of the text)</span></label>
+              <select id="compatGender_b" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+                <option value="">Not specified</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="divers">Other</option>
+              </select>
+            </div></details></div></details>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;"><label for="compatEmail" style="font-size: 12.5px; font-weight: 500; color: #4A4239;">Email address (we send the PDF here) <span style="color: #C1442E;">*</span></label>
+          <input id="compatEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 10px 12px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 14px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+        </div>
+
+        <button type="button" id="cpvBtn" style="padding: 12px 20px; background: #FFFDF9; color: #C1442E; border: 1.5px solid #C1442E; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">See the free preview</button>
+        <div id="cpvBox" class="cpv-box" style="display:none;border:1px solid #E6DFD2;border-radius:12px;background:#FFFDF9;padding:16px;text-align:center;flex-direction:column;gap:10px;">
+          <img id="cpvImg" alt="" style="width:100%;max-width:340px;margin:0 auto;border-radius:10px;border:1px solid #E6DFD2;display:none;">
+          <div id="cpvText" style="font-size:13.5px;line-height:1.6;color:#4A4239;"></div>
+          <button type="button" id="cpvShare" style="padding:10px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:none;">Save / share image</button>
+          <div style="font-size:12px;color:#8A8074;">Free, no email needed. The image shows no names or dates. If the button does nothing (e.g. in the Instagram browser), press and hold the image to save it.</div>
+        </div>
+        <p id="compatError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
+
+        <button type="button" id="buyCompatBtn" style="padding: 13px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">
+          Get the Couple Check — $10.00
+        </button>
+        <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">Price in US dollars. Taxes may be added at checkout depending on your country. Secure payment by card, PayPal and more. Payment is processed by Digistore24.com.</p>
+        <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">60-day money-back guarantee – no reason needed (<a href="/en/refund" style="color: inherit; text-decoration: underline;">details</a>). Digital product: we deliver a PDF by email. <a href="/en/terms" style="color: inherit; text-decoration: underline;">Terms of Sale</a> · <a href="/en/privacy" style="color: inherit; text-decoration: underline;">Privacy Policy</a></p>
+      </div><p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">A Couple Check puts two Saju charts side by side. You receive a PDF with an at-a-glance page, how you show closeness, what each of you needs quietly, where friction can arise, and three questions for tonight.</p></div>
   </div>
 
   <!-- Kaufdialog: Eingabefelder erscheinen beim Klick auf einen Kaufbutton, danach Weiterleitung zu Digistore24 (kein Verzichts-Checkbox) -->
