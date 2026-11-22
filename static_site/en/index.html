@@ -64,6 +64,7 @@
 }
 @media (min-width:641px){.hp-short{display:none}}
 </style>
+<style>@media (max-width:700px){.pdf-strip{flex-wrap:nowrap!important;overflow-x:auto;justify-content:flex-start!important;scroll-snap-type:x mandatory;gap:16px!important;width:100%;padding:4px 6vw 22px;margin:0 -6vw;box-sizing:content-box;-webkit-overflow-scrolling:touch}.pdf-fig{flex:0 0 76%!important;max-width:none!important;scroll-snap-align:center}.pdf-hint{display:block!important}}</style>
 </head>
 <body>
 <div style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch;">
@@ -292,6 +293,29 @@
 
   
 
+  <!-- PDF preview (same section as on the DE page) -->
+  <div style="width: 100%; box-sizing: border-box; padding: 72px 6vw; display: flex; justify-content: center;">
+    <div style="width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 28px; align-items: center; text-align: center;">
+      <h2 class="display" style="margin: 0; font-size: 26px; font-weight: 500;">A look inside</h2>
+      <p style="margin: 0; font-size: 15px; color: #6B625A; max-width: 520px;">This is what your report really looks like: a designed PDF to keep, not a block of text in an email.</p>
+
+      <div class="pdf-strip" style="display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 320px; max-width: 320px;">
+          <img class="zoomable" src="/images/pdf-preview-cover-en.jpg" alt="Cover page of a Palja report with the five elements" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Cover page</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 320px; max-width: 320px;">
+          <img class="zoomable" src="/images/pdf-preview-body-en.jpg" alt="Sample page of a Palja report with the element chart and the four pillars" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Your five elements and four pillars</figcaption>
+        </figure>
+      </div>
+
+      <p class="pdf-hint" style="display:none;margin:-14px 0 0;font-size:12.5px;color:#8A8074;">← Swipe to see more →</p>
+      <p style="margin: 0; font-size: 13px; color: #A79E93; font-style: italic;">Example data, not personal, to show structure and style.</p>
+      <p style="margin: 0; font-size: 14px; color: #8A8074;">This is how your report begins. After that it guides you month by month.</p>
+    </div>
+  </div>
+
   <!-- Preise: Gratis vs. Jahresreport / Lebenskarte -->
   <div id="pricing" style="width: 100%; box-sizing: border-box; padding: 72px 6vw 88px; display: flex; justify-content: center; background: #FAF7F1;">
     <div style="width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 40px;">
@@ -477,7 +501,25 @@
         </button>
         <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">Price in US dollars. Taxes may be added at checkout depending on your country. Secure payment by card, PayPal and more. Payment is processed by Digistore24.com.</p>
         <p style="margin: 0; font-size: 12.5px; color: #675E55; text-align: center; line-height: 1.6;">60-day money-back guarantee – no reason needed (<a href="/en/refund" style="color: inherit; text-decoration: underline;">details</a>). Digital product: we deliver a PDF by email. <a href="/en/terms" style="color: inherit; text-decoration: underline;">Terms of Sale</a> · <a href="/en/privacy" style="color: inherit; text-decoration: underline;">Privacy Policy</a></p>
-      </div><p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">A Couple Check puts two Saju charts side by side. You receive a PDF with an at-a-glance page, how you show closeness, what each of you needs quietly, where friction can arise, and three questions for tonight.</p></div>
+      </div><p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">A Couple Check puts two Saju charts side by side. You receive a PDF with an at-a-glance page, how you show closeness, what each of you needs quietly, where friction can arise, and three questions for tonight.</p><div style="width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 8px 0 14px;">
+        <div class="pdf-strip" style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-en-1.jpg" alt="Sample page of a Palja Couple Check with five-element chart and four pillars" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Both profiles at a glance</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-en-2.jpg" alt="Sample page of a Palja Couple Check with summary and introduction" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">At a glance &amp; introduction</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-en-3.jpg" alt="Sample page of a Palja Couple Check with three conversation questions" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Three questions for tonight</figcaption>
+        </figure>
+        </div>
+        <p class="pdf-hint" style="display:none;margin:0;font-size:12.5px;color:#8A8074;">← Swipe to see more →</p>
+        <p style="margin: 0; font-size: 12.5px; color: #A79E93; font-style: italic;">Tap a page to enlarge. Example pages with fictional data (Emma &amp; Daniel) to show structure and style.</p>
+        <a href="/images/compat-sample-en.pdf" target="_blank" rel="noopener" style="font-size: 13.5px; color: #C1442E; text-decoration: underline;">View the full sample PDF (8 pages)</a>
+      </div></div>
   </div>
 
   <div id="faq" style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center;">
@@ -1195,6 +1237,35 @@ function paljaTaste(y, m, d) {
     setTimeout(function () { var bd = document.getElementById('birthdate'); if (bd) { bd.focus({ preventScroll: true }); } }, 600);
   });
   upd();
+})();
+</script>
+<!-- Beispielseiten vergrößern (Lightbox): Klick/Tippen auf .zoomable, Pfeile/Wischen zum Blättern, Esc/Klick daneben schließt. -->
+<style>
+.zoomable{cursor:zoom-in}
+#lbx{position:fixed;inset:0;background:rgba(33,29,26,.88);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;box-sizing:border-box}
+#lbx.on{display:flex}
+#lbx img{max-width:min(94vw,760px);max-height:90vh;width:auto;height:auto;background:#fff;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#lbx button{position:absolute;background:rgba(255,253,249,.95);border:none;border-radius:999px;width:44px;height:44px;font-size:22px;line-height:1;cursor:pointer;color:#211D1A}
+#lbx .lx{top:14px;right:14px}#lbx .lp{left:12px;top:50%;transform:translateY(-50%)}#lbx .ln{right:12px;top:50%;transform:translateY(-50%)}
+#lbx .lc{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#EDE6DA;font-size:13px}
+</style>
+<div id="lbx" role="dialog" aria-modal="true" aria-label="Sample page"><button class="lx" aria-label="Close">×</button><button class="lp" aria-label="Previous page">‹</button><img alt=""><button class="ln" aria-label="Next page">›</button><div class="lc"></div></div>
+<script>
+(function(){
+  var box=document.getElementById('lbx'); if(!box) return;
+  var img=box.querySelector('img'), cnt=box.querySelector('.lc'), list=[], idx=0, sx=null;
+  function show(){ var el=list[idx]; img.src=el.currentSrc||el.src; img.alt=el.alt||''; cnt.textContent=(idx+1)+' / '+list.length; box.querySelector('.lp').style.display=box.querySelector('.ln').style.display=list.length>1?'':'none'; }
+  function open(el){ var grp=el.closest('.pdf-strip'); list=[].slice.call((grp||document).querySelectorAll('img.zoomable')); idx=Math.max(0,list.indexOf(el)); show(); box.classList.add('on'); document.body.style.overflow='hidden'; }
+  function close(){ box.classList.remove('on'); document.body.style.overflow=''; }
+  function go(d){ idx=(idx+d+list.length)%list.length; show(); }
+  [].forEach.call(document.querySelectorAll('img.zoomable'),function(el){ el.addEventListener('click',function(){ open(el); try{ if(window.paljaEv) window.paljaEv('sample_zoom'); }catch(e){} }); });
+  box.addEventListener('click',function(e){ if(e.target===box) close(); });
+  box.querySelector('.lx').addEventListener('click',close);
+  box.querySelector('.lp').addEventListener('click',function(e){ e.stopPropagation(); go(-1); });
+  box.querySelector('.ln').addEventListener('click',function(e){ e.stopPropagation(); go(1); });
+  document.addEventListener('keydown',function(e){ if(!box.classList.contains('on')) return; if(e.key==='Escape') close(); if(e.key==='ArrowLeft') go(-1); if(e.key==='ArrowRight') go(1); });
+  box.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+  box.addEventListener('touchend',function(e){ if(sx===null) return; var dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)>50 && list.length>1) go(dx<0?1:-1); });
 })();
 </script>
 </body>
