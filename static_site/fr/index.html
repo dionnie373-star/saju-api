@@ -341,11 +341,11 @@
 
       <div class="pdf-strip" style="display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
         <figure class="pdf-fig" style="margin: 0; flex: 0 1 320px; max-width: 320px;">
-          <img src="/images/pdf-preview-cover-fr.jpg" alt="Page de couverture d'un rapport Palja avec les cinq éléments" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <img class="zoomable" src="/images/pdf-preview-cover-fr.jpg" alt="Page de couverture d'un rapport Palja avec les cinq éléments" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
           <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Page de couverture</figcaption>
         </figure>
         <figure class="pdf-fig" style="margin: 0; flex: 0 1 320px; max-width: 320px;">
-          <img src="/images/pdf-preview-body-fr.jpg" alt="Page d'un rapport Palja avec le graphique des éléments et les quatre piliers" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
+          <img class="zoomable" src="/images/pdf-preview-body-fr.jpg" alt="Page d'un rapport Palja avec le graphique des éléments et les quatre piliers" loading="lazy" width="320" height="452" style="width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid #E4DCD1; box-shadow: 0 18px 40px rgba(33,29,26,0.16);">
           <figcaption style="margin-top: 12px; font-size: 13px; color: #8A8074;">Vos cinq éléments et vos quatre piliers</figcaption>
         </figure>
       </div>
@@ -563,7 +563,25 @@
         <p style="margin: 0; font-size: 12px; color: #6B625A; text-align: center; line-height: 1.6;">Garantie satisfait ou remboursé de 60 jours — sans avoir à vous justifier (<a href="/fr/retractation" style="color: inherit; text-decoration: underline;">détails</a>). Produit numérique : livraison au format PDF par e-mail.</p>
       </div><p style="margin: 0; font-size: 16px; color: #3B3630; max-width: 480px; line-height: 1.55;">
         Où vous vous ressemblez, où vous pourriez vous heurter, ce dont chacun a besoin en silence — et trois questions pour une vraie conversation ce soir. Une lecture traditionnelle pour réfléchir ensemble, pas un verdict.
-      </p></div>
+      </p><div style="width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; margin: 8px 0 14px;">
+        <div class="pdf-strip" style="display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; align-items: flex-start;">
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-fr-1.jpg" alt="Page d'exemple d'un test de compatibilité Palja avec graphique des éléments et quatre piliers" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Les deux profils en un coup d'œil</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-fr-2.jpg" alt="Page d'exemple d'un test de compatibilité Palja avec résumé et introduction" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">En un coup d'œil &amp; introduction</figcaption>
+        </figure>
+        <figure class="pdf-fig" style="margin: 0; flex: 0 1 200px; max-width: 200px;">
+          <img class="zoomable" src="/images/compat-sample-fr-3.jpg" alt="Page d'exemple d'un test de compatibilité Palja avec trois questions de conversation" loading="lazy" width="200" height="283" style="width: 100%; height: auto; display: block; border: 1px solid #E6DFD2; border-radius: 6px; box-shadow: 0 6px 18px rgba(33,29,26,0.10); cursor: zoom-in;">
+          <figcaption style="margin-top: 8px; font-size: 12.5px; color: #8A8074;">Trois questions pour ce soir</figcaption>
+        </figure>
+        </div>
+        <p class="pdf-hint" style="display:none;margin:0;font-size:12.5px;color:#8A8074;">← Faites glisser pour feuilleter →</p>
+        <p style="margin: 0; font-size: 12.5px; color: #A79E93; font-style: italic;">Touchez une page pour l'agrandir. Pages d'exemple avec données fictives (Léa &amp; Hugo) pour illustrer la structure et le style.</p>
+        <a href="/images/compat-sample-fr.pdf" target="_blank" rel="noopener" style="font-size: 13.5px; color: #C1442E; text-decoration: underline;">Voir l'exemple PDF complet (7 pages)</a>
+      </div></div>
   </div>
 
   <div id="faq" style="width: 100%; box-sizing: border-box; padding: 64px 6vw; display: flex; justify-content: center;">
@@ -1256,6 +1274,35 @@ function paljaTaste(y, m, d) {
     io.observe(sec);
   }
   if (btn) { btn.addEventListener('click', function () { ev('compat_buy_open'); }); }
+})();
+</script>
+<!-- Beispielseiten vergrößern (Lightbox): Klick/Tippen auf .zoomable, Pfeile/Wischen zum Blättern, Esc/Klick daneben schließt. -->
+<style>
+.zoomable{cursor:zoom-in}
+#lbx{position:fixed;inset:0;background:rgba(33,29,26,.88);display:none;align-items:center;justify-content:center;z-index:9999;padding:16px;box-sizing:border-box}
+#lbx.on{display:flex}
+#lbx img{max-width:min(94vw,760px);max-height:90vh;width:auto;height:auto;background:#fff;border-radius:6px;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#lbx button{position:absolute;background:rgba(255,253,249,.95);border:none;border-radius:999px;width:44px;height:44px;font-size:22px;line-height:1;cursor:pointer;color:#211D1A}
+#lbx .lx{top:14px;right:14px}#lbx .lp{left:12px;top:50%;transform:translateY(-50%)}#lbx .ln{right:12px;top:50%;transform:translateY(-50%)}
+#lbx .lc{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#EDE6DA;font-size:13px}
+</style>
+<div id="lbx" role="dialog" aria-modal="true" aria-label="Page d'exemple"><button class="lx" aria-label="Fermer">×</button><button class="lp" aria-label="Page précédente">‹</button><img alt=""><button class="ln" aria-label="Page suivante">›</button><div class="lc"></div></div>
+<script>
+(function(){
+  var box=document.getElementById('lbx'); if(!box) return;
+  var img=box.querySelector('img'), cnt=box.querySelector('.lc'), list=[], idx=0, sx=null;
+  function show(){ var el=list[idx]; img.src=el.currentSrc||el.src; img.alt=el.alt||''; cnt.textContent=(idx+1)+' / '+list.length; box.querySelector('.lp').style.display=box.querySelector('.ln').style.display=list.length>1?'':'none'; }
+  function open(el){ var grp=el.closest('.pdf-strip'); list=[].slice.call((grp||document).querySelectorAll('img.zoomable')); idx=Math.max(0,list.indexOf(el)); show(); box.classList.add('on'); document.body.style.overflow='hidden'; }
+  function close(){ box.classList.remove('on'); document.body.style.overflow=''; }
+  function go(d){ idx=(idx+d+list.length)%list.length; show(); }
+  [].forEach.call(document.querySelectorAll('img.zoomable'),function(el){ el.addEventListener('click',function(){ open(el); try{ if(window.paljaEv) window.paljaEv('sample_zoom'); }catch(e){} }); });
+  box.addEventListener('click',function(e){ if(e.target===box) close(); });
+  box.querySelector('.lx').addEventListener('click',close);
+  box.querySelector('.lp').addEventListener('click',function(e){ e.stopPropagation(); go(-1); });
+  box.querySelector('.ln').addEventListener('click',function(e){ e.stopPropagation(); go(1); });
+  document.addEventListener('keydown',function(e){ if(!box.classList.contains('on')) return; if(e.key==='Escape') close(); if(e.key==='ArrowLeft') go(-1); if(e.key==='ArrowRight') go(1); });
+  box.addEventListener('touchstart',function(e){ sx=e.touches[0].clientX; },{passive:true});
+  box.addEventListener('touchend',function(e){ if(sx===null) return; var dx=e.changedTouches[0].clientX-sx; sx=null; if(Math.abs(dx)>50 && list.length>1) go(dx<0?1:-1); });
 })();
 </script>
 </body>
