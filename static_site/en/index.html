@@ -767,7 +767,7 @@
     var box = $('resTyp'); if (!box) { return; }
     var t = d.typ; if (!t || !t.code) { box.style.display = 'none'; var bc0 = document.getElementById('resBarsCard'); if (bc0) { bc0.style.display = ''; } return; }
     var link = window.location.origin + '/t/' + t.code, png = '/t/' + t.code + '.png';
-    $('resTypImg').src = '/typ-img/' + t.img + '.png';
+    $('resTypImg').src = '/typ-img/' + t.img + '.png?v=2';
     $('resTypName').textContent = t.name; $('resTypSub').textContent = t.subtitle; $('resTypLine').textContent = t.line;
     $('resTypNote').textContent = t.note;
     var cb = $('resTypCounts'); cb.textContent = '';
