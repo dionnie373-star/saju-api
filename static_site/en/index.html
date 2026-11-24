@@ -151,6 +151,17 @@
         <script>(function(){var t=document.getElementById('birthtime'),w=document.getElementById('placeWrap');if(!t||!w)return;function s(){w.style.display=t.value?'flex':'none';}t.addEventListener('change',s);s();})();</script>
           <input id="email" type="hidden">
           <div style="display:none;"><select id="gender" aria-hidden="true" tabindex="-1"><option value="">-</option><option value="female">Female</option><option value="male">Male</option></select></div>
+          <div style="display: none; flex-direction: column; gap: 6px;">
+            <label for="interest" style="font-size: 13px; font-weight: 500; color: #4A4239;">What interests you most? <span style="font-weight: 400; color: #8A8074;">(optional)</span></label>
+            <select id="interest" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
+              <option value="">Choose an option</option>
+              <option value="self">Understanding myself better</option>
+              <option value="korea">Korean culture and tradition</option>
+              <option value="relationship">Relationships and compatibility</option>
+              <option value="yearreview">Year review and outlook</option>
+              <option value="curious">Just curious</option>
+            </select>
+          </div>
           <button type="button" id="submitBtn" style="margin-top: 6px; padding: 14px 20px; background: #C1442E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; font-family: 'Work Sans', sans-serif; cursor: pointer;">See my profile now</button>
           <p id="errorMsg" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; text-align: center; line-height: 1.5; display: none;"></p>
           <p id="infoMsg" role="status" aria-live="polite" style="margin: 0; font-size: 13.5px; color: #4A4239; text-align: center; line-height: 1.55; display: none;"></p>
