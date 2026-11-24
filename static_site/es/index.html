@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="es">
-<!-- BORRADOR es-prep: traducción preparada sin revisión de hablante nativo ni jurídica. Productos Digistore24 ES: 746748 y 746753 aprobados; 746751 (premium) pendiente — botón desactivado hasta la aprobación. -->
+<!-- Traducción preparada sin revisión de hablante nativo ni jurídica. Productos Digistore24 ES: 746748 y 746753 aprobados; 746751 (premium): comprobar el estado de aprobación en Digistore24. -->
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -629,10 +629,8 @@
 <script>
 (function () {
   // Paddle은 "업종 승인 거부"로 라이브 전환이 막혀서 포기하고(2026-10-03),
-  // Digistore24로 교체 중 — 테스트용으로 Jahresreport 상품(740708)만 먼저
-  // 등록해서 업종 승인 여부를 확인하는 단계다. 아직 premium/compatibility는
-  // Digistore24 상품이 없어서 빈 값으로 둔다(기존 Paddle 궁합 애드온과 같은
-  // "값 없으면 비활성" 패턴).
+  // Digistore24로 교체 완료(2026-11, 상품 승인됨). 아래 상품 ID가 언어별 실제 상품이다.
+  // 값이 비어 있으면 버튼은 "값 없으면 비활성" 패턴으로 동작한다.
   //
   // Digistore24는 Paddle.js 같은 임베드 모달이 없고, 자체 호스팅 주문서
   // (checkout-ds24.com)로 리다이렉트하는 방식이다.
@@ -645,7 +643,7 @@
   // 서버가 돌려준 무작위 토큰만 "custom"에 싣는다 — 실제 개인정보는 URL에
   // 전혀 노출되지 않는다 (app.py의 _PENDING_DIGISTORE24_ORDERS 설명 참고).
   var DIGISTORE24_PRODUCT_IDS = {
-    // es-prep: 스페인어 Digistore24 상품이 아직 없다 → 빈 값이면 버튼이 "곧 이용 가능" 안내를 보인다. 상품 생성/승인 후 ID를 채울 것.
+    // 스페인어 상품 ID(DS-ie). 746751(premium)은 승인 상태를 Digistore24 상품 목록에서 확인할 것(2026-10 시점 미승인 회신).
     paid: '746748',    // Palja ES Informe anual - EUR 9,90
     premium: '746751', // Palja ES Mapa de vida premium - EUR 24,90
     compatibility: '746753', // Palja ES Test de compatibilidad - EUR 9,90

@@ -100,15 +100,35 @@ EL_NAME = {
     "en": {"wood": "Wood", "fire": "Fire", "earth": "Earth", "metal": "Metal", "water": "Water"},
 }
 _SUB = {
-    "de": {"single": "{a} steht im Vordergrund", "duo": "{a} am stärksten vertreten · {b} als zweites Element",
+    "de": {"single": "{a} steht im Vordergrund",
+           "duo": "{a} am stärksten vertreten · {b} als zweites Element",
+           "duo_tie": "{a} am stärksten vertreten · danach {b}",
+           "duo_even": "{a} gleich stark vertreten",
            "balanced": "Alle fünf Elemente sind sichtbar"},
-    "en": {"single": "{a} is the most represented element", "duo": "A blend of {a} and {b}",
+    "en": {"single": "{a} is the most represented element",
+           "duo": "{a} is the most represented, with {b} second",
+           "duo_tie": "{a} is the most represented, followed by {b}",
+           "duo_even": "{a} are equally represented",
            "balanced": "All five elements are visible"},
-    "fr": {"single": "L'élément {a} est le plus représenté", "duo": "Un mélange de {a} et de {b}",
+    "fr": {"single": "L'élément {a} est le plus représenté",
+           "duo": "Surtout {a}, avec {b} en second",
+           "duo_tie": "Surtout {a}, puis {b}",
+           "duo_even": "{a} sont également représentés",
            "balanced": "Les cinq éléments sont visibles"},
-    "es": {"single": "El elemento {a} es el más presente", "duo": "Una combinación de {a} y {b}",
+    "es": {"single": "El elemento {a} es el más presente",
+           "duo": "Predomina {a}, con {b} en segundo lugar",
+           "duo_tie": "Predomina {a}, seguido de {b}",
+           "duo_even": "{a} están igual de presentes",
            "balanced": "Los cinco elementos son visibles"},
 }
+_AND = {"de": "und", "en": "and", "fr": "et", "es": "y"}
+
+
+def _join_names(keys, names, lang):
+    ns = [names[k] for k in keys]
+    return ns[0] if len(ns) == 1 else ", ".join(ns[:-1]) + " " + _AND[lang] + " " + ns[-1]
+
+
 _MISS = {
     "de": "{x} erscheint in dieser vereinfachten Übersicht nicht.",
     "en": "{x} doesn't show up in this simplified view.",
@@ -152,7 +172,18 @@ def card_texts(counts, day_key=None, lang="de"):
     elif r["kind"] == "single":
         subtitle = sub["single"].format(a=names[r["key"]])
     else:
-        subtitle = sub["duo"].format(a=names[r["key"]], b=names[r["key2"]])
+        # 부제는 표시용 문구만 바꾼다(분류·공유 코드·이미지 번호는 그대로).
+        top_n = counts[r["key"]]
+        leaders = [k for k in ORDER if counts.get(k, 0) == top_n]
+        if len(leaders) >= 2:
+            subtitle = sub["duo_even"].format(a=_join_names(leaders, names, lang))
+        else:
+            sec_n = counts[r["key2"]]
+            seconds = [k for k in ORDER if k != r["key"] and counts.get(k, 0) == sec_n]
+            if len(seconds) >= 2:
+                subtitle = sub["duo_tie"].format(a=names[r["key"]], b=_join_names(seconds, names, lang))
+            else:
+                subtitle = sub["duo"].format(a=names[r["key"]], b=names[r["key2"]])
     return {"kind": r["kind"], "ko": r["ko"], "de_name": de_name, "name": name, "line": line,
             "subtitle": subtitle,
             "missing": [_MISS[lang].format(x=names[k]) for k in r["missing"]],
