@@ -131,6 +131,7 @@
               var i=((y-4)%12+12)%12;
               res.innerHTML=C.res.replace('{A}',C.a[i]).replace('{B}',C.a[C.p[i]]);
               out.style.display='block';
+              try{setTimeout(function(){out.scrollIntoView({behavior:'smooth',block:'center'});},60);}catch(e){}
               if(!shown){shown=true;ev('yr_show');}
             });
             document.getElementById('yrToForm').addEventListener('click',function(){
