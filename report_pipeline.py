@@ -911,11 +911,18 @@ def _build_toc_flowables(report_text, *, heading="Inhalt", lang="de"):
 _TABLE_SEP_RE = re.compile(r"^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
 
 
+_GERMAN_DATE_RE = re.compile(
+    r"\b(\d{1,2}\.) (Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\b"
+)
+
+
 def _report_text_to_flowables(report_text, lang="de", compact=False):
     """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환.
 
     compact=True면 빈 줄 사이 간격을 줄인다(마지막 페이지가 거의 빌 때 한 번 더 만드는 용도).
     """
+    # 소제목의 "ab 4. Februar"가 줄 끝에서 "4." / "Februar"로 갈라지지 않게 줄바꿈 금지 공백을 쓴다.
+    report_text = _GERMAN_DATE_RE.sub("\\1\u00a0\\2", report_text)
     flowables = []
     table_rows = []  # 연속된 마크다운 표 행("| a | b |")을 모아 한 번에 표로 그린다
 

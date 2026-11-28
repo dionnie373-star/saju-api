@@ -168,6 +168,19 @@ def render_daewoon_facts_kr(facts):
             lines.append(f"- {el}({_ELEMENT_HANJA[el]}): 등장하지 않음(0번)")
 
     lines.append("")
+    lines.append("시기별 오행 등장 순번 (서수 표현 '몇 번째/마지막/처음'은 반드시 이 표의 값만 사용, 직접 세지 말 것):")
+    for e in facts["entries"]:
+        parts = []
+        for el in sorted(_period_elements(e), key=_ELEMENT_NAMES_KR.index):
+            occ = facts["element_occurrences"][el]
+            order = next(
+                (i + 1 for i, p_ in enumerate(occ) if p_["start_age"] == e["start_age"]), None
+            )
+            mark = " (마지막 등장)" if order == len(occ) else (" (첫 등장)" if order == 1 else "")
+            parts.append(f"{el}={order}번째/총 {len(occ)}번{mark}")
+        lines.append(f"- {e['start_age']}~{e['end_age']}세: " + ", ".join(parts))
+
+    lines.append("")
     lines.append("동일 축 연속 구간 (전부 나열, 다시 계산하지 말 것):")
     for run in facts["axis_runs"]:
         lines.append(
