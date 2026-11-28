@@ -46,3 +46,10 @@ def test_lifetime_prompt_does_not_assume_annual_report_and_uses_new_disclaimer()
     assert "알 수 없으므로" in c
     assert "persönlichen Reflexion" not in c
     assert "als persönliche Orientierung" in c
+
+
+def test_compat_prompt_disclaimer_has_no_reflexion():
+    d = json.loads((ROOT / "prompts" / "compatibility_report_prompt.json").read_text(encoding="utf-8"))
+    c = json.dumps(d, ensure_ascii=False)
+    assert "gemeinsamen Reflexion" not in c
+    assert "als gemeinsame Gesprächsgrundlage" in c
