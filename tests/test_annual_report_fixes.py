@@ -36,3 +36,13 @@ def test_annual_prompt_does_not_assume_free_report_and_uses_new_disclaimer():
     assert "persönlichen Reflexion" not in c
     assert "als persönliche Orientierung" in c
     assert "직접 번역하거나 새로 만들지" in c
+
+
+def test_lifetime_prompt_does_not_assume_annual_report_and_uses_new_disclaimer():
+    d = json.loads((ROOT / "prompts" / "premium_report_prompt.json").read_text(encoding="utf-8"))
+    c = d["messages"][0]["content"]
+    c = c if isinstance(c, str) else json.dumps(c, ensure_ascii=False)
+    assert "이미 연간 리포트를 읽은 고객" not in c
+    assert "알 수 없으므로" in c
+    assert "persönlichen Reflexion" not in c
+    assert "als persönliche Orientierung" in c
