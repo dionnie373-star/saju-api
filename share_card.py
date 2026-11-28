@@ -22,7 +22,7 @@ ORDER = ["wood", "fire", "earth", "metal", "water"]
 
 TXT = {
     "de": {"head": "Mein Saju-Profil", "day": "Tageselement", "type": "{n}-Typ", "dist": "Meine fünf Elemente",
-           "hook": "Welcher Elementetyp bist du?", "host": "palja.de", "note": "Zur Unterhaltung und Selbstreflexion"},
+           "hook": "Welcher Elementetyp bist du?", "host": "palja.de", "note": "Zur Unterhaltung und als Orientierung"},
     "fr": {"head": "Mon profil Saju", "day": "Élément du jour", "type": "Type {n}", "dist": "Mes cinq éléments",
            "hook": "Quel est ton type d'éléments ?", "host": "palja.fr", "note": "Pour le plaisir et la réflexion"},
     "es": {"head": "Mi perfil Saju", "day": "Elemento del día", "type": "Tipo {n}", "dist": "Mis cinco elementos",
@@ -193,7 +193,7 @@ def render_card(view, lang="de"):
 CTXT = {
     "de": {"head": "Unser Saju-Check", "you": "Ich", "him": "Du", "conn": "Verbindungen", "fric": "Reibungspunkte",
            "scenes": "{n} konkrete Alltagsmomente im Bericht", "hook": "Wie sieht eure Kombination aus?",
-           "host": "palja.de", "note": "Zur Unterhaltung und Selbstreflexion"},
+           "host": "palja.de", "note": "Zur Unterhaltung und als Orientierung"},
     "fr": {"head": "Notre test Saju", "you": "Moi", "him": "Toi", "conn": "points de rencontre", "fric": "points de friction",
            "scenes": "{n} moments concrets dans le rapport", "hook": "Et votre combinaison ?",
            "host": "palja.fr", "note": "Pour le plaisir et la réflexion"},

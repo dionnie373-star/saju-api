@@ -72,7 +72,7 @@ T = {
         "y_zero": "{the} fehlt in deinem Profil – 2027 kann dieses Thema von außen ins Spiel bringen. ",
         "y_high": "{the} ist bei dir ohnehin stark – 2027 kann das noch verstärken. ",
         "y_mid": "{the} ist bei dir vorhanden – 2027 kann dieses Element zusätzlich anregen. ",
-        "y_close": "Das ist ein Überblick zur Reflexion, keine Vorhersage. Wie das Jahr Monat für Monat aussehen kann, zeigt der Jahresreport.",
+        "y_close": "Das ist ein Überblick als persönliche Orientierung, keine Vorhersage. Wie das Jahr Monat für Monat aussehen kann, zeigt der Jahresreport.",
     },
     "fr": {
         "day_title": "Votre élément du jour : {name}",

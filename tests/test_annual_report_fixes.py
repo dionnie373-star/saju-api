@@ -69,3 +69,16 @@ def test_lifetime_prompt_fixes_axis_names_and_forbids_period_recap():
     # 그래프 라벨은 코드와 일치
     labels = report_pipeline._AXIS_LABELS_DE
     assert labels == {"재물운": "Ressourcen", "관계운": "Beziehung", "직업운": "Talent & Werk", "총운": "Stabilität"}
+
+
+def test_free_profile_and_share_card_use_unified_disclaimer_de():
+    import profile_view, share_card
+    assert "Selbstreflexion" not in share_card.TXT["de"]["note"]
+    assert "Selbstreflexion" not in share_card.CTXT["de"]["note"]
+    assert "Orientierung" in share_card.TXT["de"]["note"] and "Orientierung" in share_card.CTXT["de"]["note"]
+    assert "Überblick zur Reflexion" not in profile_view.T["de"]["y_close"]
+    assert "persönliche Orientierung" in profile_view.T["de"]["y_close"]
+    d = json.loads((ROOT / "prompts" / "free_report_prompt.json").read_text(encoding="utf-8"))
+    c = d["messages"][0]["content"]
+    c = c if isinstance(c, str) else json.dumps(c, ensure_ascii=False)
+    assert "Dieser Inhalt dient der Unterhaltung und als persönliche Orientierung." in c
