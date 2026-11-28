@@ -49,7 +49,7 @@ MISSING = {
     "water": ("Wasser erscheint in dieser vereinfachten Übersicht nicht.", "이 간단 보기에서는 물이 보이지 않습니다."),
 }
 
-NOTE = ("Eine spielerische Vereinfachung der fünf Elemente anhand der sichtbaren Zeichen – keine vollständige Saju-Analyse und keine klassische Deutung. Nur zur Unterhaltung und Selbstreflexion.",
+NOTE = ("Eine spielerische Vereinfachung der fünf Elemente anhand der sichtbaren Zeichen – keine vollständige Saju-Analyse und keine klassische Deutung. Zur Unterhaltung und als persönliche Orientierung.",
         "표면에 나타난 글자를 바탕으로 오행을 재미있게 단순화한 표현입니다. 완전한 사주 분석이나 전통적인 사주 해석이 아니며, 오락과 자기 성찰을 위한 것입니다.")
 
 # 카드 부제(상대 표현: '강하다'가 아니라 '가장 많이 나타남')
