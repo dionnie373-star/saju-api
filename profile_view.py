@@ -72,6 +72,8 @@ T = {
         "y_zero": "{the} fehlt in deinem Profil – 2027 kann dieses Thema von außen ins Spiel bringen. ",
         "y_high": "{the} ist bei dir ohnehin stark – 2027 kann das noch verstärken. ",
         "y_mid": "{the} ist bei dir vorhanden – 2027 kann dieses Element zusätzlich anregen. ",
+        "y_both_mid": "{The1} und {the2} sind bei dir vorhanden – 2027 kann beide Elemente zusätzlich anregen. ",
+        "y_both_high": "{The1} und {the2} sind bei dir ohnehin stark – 2027 kann beide noch verstärken. ",
         "y_close": "Das ist ein Überblick als persönliche Orientierung, keine Vorhersage. Wie das Jahr Monat für Monat aussehen kann, zeigt der Jahresreport.",
     },
     "fr": {
@@ -111,6 +113,8 @@ T = {
         "y_zero": "{The} manque dans votre profil : 2027 apporte ce thème de l'extérieur. ",
         "y_high": "{The} est déjà très {pres} chez vous : 2027 peut renforcer cet élément. ",
         "y_mid": "{The} est {pres} chez vous : 2027 peut activer cet élément davantage. ",
+        "y_both_mid": "{The1} et {the2} sont présents chez vous : 2027 peut activer ces deux éléments davantage. ",
+        "y_both_high": "{The1} et {the2} sont déjà très présents chez vous : 2027 peut renforcer ces deux éléments. ",
         "y_close": "Ceci est un aperçu pour la réflexion, pas une prédiction. Le rapport annuel détaille l'année mois par mois.",
     },
     "es": {
@@ -150,6 +154,8 @@ T = {
         "y_zero": "{The} falta en tu perfil: 2027 trae este tema desde fuera. ",
         "y_high": "{The} ya es muy fuerte en ti: 2027 puede reforzar este elemento. ",
         "y_mid": "{The} está presente en ti: 2027 puede activar este elemento aún más. ",
+        "y_both_mid": "{The1} y {the2} están presentes en ti: 2027 puede activar ambos elementos aún más. ",
+        "y_both_high": "{The1} y {the2} ya son muy fuertes en ti: 2027 puede reforzar ambos elementos. ",
         "y_close": "Es una visión general para reflexionar, no una predicción. El informe anual detalla el año mes a mes.",
     },
     "en": {
@@ -189,6 +195,8 @@ T = {
         "y_zero": "{The} is missing in your profile – 2027 brings this theme in from outside. ",
         "y_high": "{The} is already strong in you – 2027 may strengthen it further. ",
         "y_mid": "{The} is present in you – 2027 may bring it into play. ",
+        "y_both_mid": "{The1} and {the2} are present in you – 2027 may bring both into play. ",
+        "y_both_high": "{The1} and {the2} are already strong in you – 2027 may strengthen both further. ",
         "y_close": "This is an overview for reflection, not a prediction. The annual report shows the year month by month.",
     },
 }
@@ -275,10 +283,16 @@ def build_profile_view(calc_result, lang):
         else:
             y = t["y_two"].format(the1=the[e1], the2=the[e2], N1=_cap(the[e1]), N2=_cap(the[e2]), kw1=kw[e1], kw2=kw[e2])
             personal = [e1, e2]
-        for e in personal:
+        def _ykey(e):
             c = counts[e]
-            k = "y_zero" if c == 0 else ("y_high" if c >= 3 else "y_mid")
-            y += t[k].format(The=_cap(the[e]), the=the[e], **_gender_fmt(lang, e))
+            return "y_zero" if c == 0 else ("y_high" if c >= 3 else "y_mid")
+        if len(personal) == 2 and _ykey(personal[0]) == _ykey(personal[1]) != "y_zero":
+            # 천간·지지 두 오행이 같은 문장 틀이면 한 문장으로 합쳐 같은 말이 두 번 나오지 않게 한다.
+            y += t["y_both_" + _ykey(personal[0]).split("_")[1]].format(
+                The1=_cap(the[personal[0]]), the2=the[personal[1]])
+        else:
+            for e in personal:
+                y += t[_ykey(e)].format(The=_cap(the[e]), the=the[e], **_gender_fmt(lang, e))
         y += t["y_close"]
         sections.append({"title": t["y_title"], "key": None, "text": y.strip()})
 
