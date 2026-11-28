@@ -488,7 +488,7 @@ class EnglishPipelineEndToEndTests(unittest.TestCase):
         self.assertNotIn("{geocoding_notice}", rec["html_body"])
         self.assertIn("Legal notice", rec["html_body"])
         self.assert_pdf(rec, "Your Saju profile", "Prepared for Ana", "Contents", "Your profile at a glance",
-                        "Your five elements", "Wood", "Heavenly stem", "palja.de/en")
+                        "Your five elements", "Wood", "Heavenly stem", "palja.one")
 
     def test_free_anonymous_and_unknown_hour(self):
         payload, calc = self.calc(name="", birth_time="")
