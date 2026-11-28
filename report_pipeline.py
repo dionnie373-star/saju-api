@@ -1028,6 +1028,17 @@ def _keep_headings_with_next(flowables):
                 j += 1
             out.append(KeepTogether(flowables[i:j + 1]))
             i = j + 1
+        elif (
+            isinstance(f, Paragraph)
+            and f.style.name != "PaljaH2"
+            and (getattr(f, "text", "") or "").rstrip().endswith(":")
+            and i + 1 < n
+        ):
+            j = i + 1
+            while j < n - 1 and isinstance(flowables[j], Spacer):
+                j += 1
+            out.append(KeepTogether(flowables[i:j + 1]))
+            i = j + 1
         else:
             out.append(f)
             i += 1
@@ -1811,6 +1822,29 @@ _COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
 """
 
 
+def _element_diff_facts_kr(calc_a, calc_b, name_a, name_b):
+    """두 사람의 오행 개수 차이를 코드로 계산해 프롬프트에 사실로 준다.
+    (2026-11-28 궁합 PDF: AI가 차이 2인 수(水) 대신 차이 1인 금(金)을 '가장 큰 차이'로 골랐다.)"""
+    ca, cb = calc_a.get("element_counts") or {}, calc_b.get("element_counts") or {}
+    order = ["목", "화", "토", "금", "수"]
+    if not ca or not cb:
+        return ""
+    diffs = {el: abs(int(ca.get(el, 0)) - int(cb.get(el, 0))) for el in order}
+    ranked = sorted(order, key=lambda el: (-diffs[el], order.index(el)))
+    top_val = diffs[ranked[0]]
+    lines = ["", "[오행 개수 차이 - 코드 계산, 다시 세지 말 것]"]
+    for el in order:
+        lines.append(f"- {el}: {name_a} {ca.get(el, 0)} / {name_b} {cb.get(el, 0)} → 차이 {diffs[el]}")
+    second_val = diffs[ranked[1]] if len(ranked) > 1 else 0
+    cands = [el for el in ranked if diffs[el] >= second_val and diffs[el] > 0]
+    lines.append(
+        "=> '가장 차이가 큰 오행' 후보(차이 큰 순, 동률 포함): "
+        + ", ".join(f"{el}(차이 {diffs[el]})" for el in cands)
+        + ". 섹션 2에서 '가장 차이가 큰 2개'를 말할 때는 반드시 이 후보 안에서만 고르세요."
+    )
+    return "\n".join(lines)
+
+
 def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     """궁합(Kompatibilität) 리포트 파이프라인: 두 사람의 사주를 비교.
 
@@ -1844,6 +1878,7 @@ def run_compatibility_signup(*, payload, calc_result_a, calc_result_b):
     # 계산 실패 시 빈 문자열 → 프롬프트는 "관계 없음"으로 처리되고 리포트는 기존처럼 생성된다.
     import pair_relations
     relations_facts = pair_relations.relations_for_report(calc_result_a, calc_result_b, name_a, name_b, lang)
+    relations_facts = (relations_facts or "") + _element_diff_facts_kr(calc_result_a, calc_result_b, name_a, name_b)
 
     report_text = call_claude_checked(
         "compatibility_report_prompt.json",
