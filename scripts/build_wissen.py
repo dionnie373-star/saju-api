@@ -4,7 +4,7 @@ import html, json, os
 
 OUT = os.path.join(os.path.dirname(__file__), "..", "static_site", "wissen")
 BASE = "https://palja.de"
-DISCLAIMER = "Saju ist eine traditionelle Deutungslehre und dient hier der Unterhaltung und Selbstreflexion. Es sind keine Vorhersagen und kein Ersatz für professionelle Beratung."
+DISCLAIMER = "Saju ist eine traditionelle Deutungslehre und dient hier der Unterhaltung und als persönliche Orientierung. Es sind keine sicheren Vorhersagen und kein Ersatz für professionelle Beratung."
 
 TIERE = ["Ratte", "Ochse", "Tiger", "Hase", "Drache", "Schlange", "Pferd", "Schaf", "Affe", "Hahn", "Hund", "Schwein"]
 def tier(year): return TIERE[(year - 2020) % 12]
@@ -174,7 +174,7 @@ INDEX = """<!doctype html>
 </style></head><body><div class="wrap">
 <a class="back" href="/">← Zu Palja</a>
 <h1>Ratgeber</h1>
-<p>Saju und das chinesische Horoskop, verständlich erklärt. Alles zur Unterhaltung und Selbstreflexion, ohne Vorhersagen.</p>
+<p>Saju und das chinesische Horoskop, verständlich erklärt. Alles zur Unterhaltung und als persönliche Orientierung, ohne sichere Vorhersagen.</p>
 <ul>{items}</ul>
 </div></body></html>
 """
