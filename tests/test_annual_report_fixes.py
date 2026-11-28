@@ -62,7 +62,11 @@ def test_lifetime_prompt_fixes_axis_names_and_forbids_period_recap():
     # PDF 그래프 라벨과 같은 축 이름을 본문에서도 쓰도록 고정
     for ko, de in (("재물운", "Ressourcen"), ("관계운", "Beziehung"), ("직업운", "Talent & Werk"), ("총운", "Stabilität")):
         assert f"{ko}={de}" in c
-    assert "Vermögensachse" in c and "만들거나" in c  # 금지 예시로만 등장
+    assert "-achse" in c and "만들거나" in c  # 합성어 금지 규칙(예시 단어 자체는 노출하지 않음)
+    assert "Beziehungsachse" not in c  # 금지 예시가 오히려 단어를 유도하지 않도록
+    # 대운 연도 표기는 코드가 준 값만 사용(시기마다 형식이 달라지지 않게)
+    assert "표기용 연도: ab ca. YYYY" in c and "끝 연도" in c
+    assert "내부 점수" in c or "2,5 von 10" in c
     # 개요에서 8개 시기 재요약 금지
     assert "다시 요약하는 문단" in c
     assert "1시기당 1문장 이내" not in c

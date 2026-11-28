@@ -714,7 +714,7 @@ def _build_daewoon_compact(daewoon_out):
         p = e["pillar"]
         el_str = f"{p['cheon_gan_element']}{ELEMENT_HANJA[p['cheon_gan_element']]}/{p['ji_ji_element']}{ELEMENT_HANJA[p['ji_ji_element']]}"
         lines.append(
-            f"{e['start_age']}~{e['end_age']}세(약 {e['start_year']}년경~): "
+            f"{e['start_age']}~{e['end_age']}세(표기용 연도: ab ca. {e['start_year']}): "
             f"{p['hanja']}({p['hangul']}) 오행={el_str} "
             f"십성(천간/지지)={e['shipsin']['cheon_gan']}/{e['shipsin']['ji_ji']} "
             f"| 이 시기의 축={e['axis']}{marker}"
