@@ -1024,7 +1024,31 @@ def _keep_headings_with_next(flowables):
         else:
             out.append(f)
             i += 1
-    return out
+    return _keep_closing_block_together(out)
+
+
+def _keep_closing_block_together(flowables):
+    """마지막 제목(구매 안내 박스 등)부터 끝(면책 문구)까지가 짧으면 한 덩어리로 묶는다.
+    그러지 않으면 면책 문구 몇 줄만 마지막 페이지에 덩그러니 남는다(2026-11-28 무료 PDF 5쪽)."""
+    last_h = None
+    for idx in range(len(flowables) - 1, -1, -1):
+        f = flowables[idx]
+        inner = f._content[0] if isinstance(f, KeepTogether) and getattr(f, "_content", None) else f
+        if isinstance(inner, Paragraph) and inner.style.name == "PaljaH2":
+            last_h = idx
+            break
+    if last_h is None:
+        return flowables
+    tail = flowables[last_h:]
+    if len(tail) < 4 or len(tail) > 14 or any(isinstance(t, KeepTogether) and len(getattr(t, "_content", [])) > 14 for t in tail):
+        return flowables
+    flat = []
+    for t in tail:
+        if isinstance(t, KeepTogether):
+            flat.extend(t._content)
+        else:
+            flat.append(t)
+    return flowables[:last_h] + [KeepTogether(flat)]
 
 
 # 축(재물운/관계운/직업운/총운)별 색 — 2026-10-10 디자인 개편: 예전엔 초록/빨강/골드를
