@@ -240,7 +240,7 @@
           <button type="button" id="shShare" style="display:none;padding:12px 18px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Partager</button>
           <button type="button" id="shDl" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;cursor:pointer;">Enregistrer la carte</button>
           <button type="button" id="shCopy" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;cursor:pointer;">Copier le lien</button>
-          <a id="shMail" href="#" style="padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;text-decoration:none;">Envoyer par e-mail</a>
+          <a id="shMail" href="#" style="display:none;padding:12px 16px;background:#FFFDF9;color:#3B3630;border:1px solid #D8CFC2;border-radius:8px;font-size:14.5px;font-family:'Work Sans',sans-serif;text-decoration:none;">Envoyer par e-mail</a>
         </div>
         <p id="shToast" role="status" aria-live="polite" style="margin:4px 0 0;min-height:18px;font-size:13px;color:#3F7A63;"></p>
         <p style="margin:0;font-size:12px;color:#8A8074;max-width:480px;line-height:1.5;">Le lien contient uniquement la répartition de vos cinq éléments – ni date de naissance, ni nom, ni lieu.</p>
@@ -849,6 +849,12 @@
     var toast = $('shToast'); function say(m) { toast.textContent = m; setTimeout(function () { if (toast.textContent === m) { toast.textContent = ''; } }, 3500); }
     $('shMail').href = 'mailto:?subject=' + encodeURIComponent(SH.subj(t.name)) + '&body=' + encodeURIComponent(SH.body(t.name, link));
     $('shMail').onclick = function () { ev('card_mail'); };
+    // 데스크톱엔 기본 메일 프로그램이 없는 경우가 많아 mailto가 무반응 → 터치(휴대폰/태블릿)에서만 보인다. 데스크톱은 '링크 복사'를 주 버튼으로.
+    try {
+      var _touch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+      $('shMail').style.display = _touch ? '' : 'none';
+      if (!_touch) { var _c = $('shCopy'); _c.style.background = '#C1442E'; _c.style.color = '#fff'; _c.style.border = 'none'; _c.style.fontWeight = '600'; }
+    } catch (e) { $('shMail').style.display = ''; }
     $('shCopy').onclick = function () {
       ev('card_copy');
       var done = function () { say(SH.copied); };
