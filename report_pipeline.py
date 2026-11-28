@@ -55,6 +55,8 @@ from reportlab.platypus import (
     Paragraph,
     SimpleDocTemplate,
     Spacer,
+    Table,
+    TableStyle,
 )
 
 PROMPTS_DIR = os.path.join(os.path.dirname(__file__), "prompts")
@@ -773,6 +775,9 @@ _PDF_STYLES = {
         # 마지막 한 줄만 다음 페이지로 넘어가 거의 빈 페이지가 생기는 것을 막는다(과부/고아 줄 방지).
         allowWidows=0, allowOrphans=0,
     ),
+    "table": ParagraphStyle(
+        "PaljaTable", fontName="WorkSans", fontSize=9.5, leading=13, textColor="#3B3630",
+    ),
     "bullet": ParagraphStyle(
         "PaljaBullet", fontName="WorkSans", fontSize=10.5, leading=16,
         spaceAfter=2 * mm, textColor="#3B3630",
@@ -903,14 +908,52 @@ def _build_toc_flowables(report_text, *, heading="Inhalt", lang="de"):
     return [KeepTogether(block), PageBreak()]
 
 
+_TABLE_SEP_RE = re.compile(r"^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
+
+
 def _report_text_to_flowables(report_text, lang="de", compact=False):
     """Claude가 만든 (마크다운 ## 제목이 섞인) 평문 텍스트를 PDF 문단으로 변환.
 
     compact=True면 빈 줄 사이 간격을 줄인다(마지막 페이지가 거의 빌 때 한 번 더 만드는 용도).
     """
     flowables = []
+    table_rows = []  # 연속된 마크다운 표 행("| a | b |")을 모아 한 번에 표로 그린다
+
+    def _flush_table():
+        if not table_rows:
+            return
+        rows = [r for r in table_rows if not _TABLE_SEP_RE.match(r)]
+        table_rows.clear()
+        if not rows:
+            return
+        data = []
+        for r in rows:
+            cells = [c.strip() for c in r.strip().strip("|").split("|")]
+            data.append([
+                Paragraph(_markdown_bold_to_reportlab(
+                    _strip_unsupported_glyphs(c).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")),
+                    _PDF_STYLES["table"]) for c in cells])
+        ncols = max(len(r) for r in data)
+        for r in data:
+            r.extend([Paragraph("", _PDF_STYLES["table"])] * (ncols - len(r)))
+        t = Table(data, repeatRows=1, hAlign="LEFT")
+        t.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), HexColor("#EFE8DB")),
+            ("LINEBELOW", (0, 0), (-1, -1), 0.4, HexColor("#D8D0C2")),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+        ]))
+        flowables.append(Spacer(1, 1.5 * mm))
+        flowables.append(t)
+        flowables.append(Spacer(1, 3 * mm))
+
     for raw_line in report_text.split("\n"):
         line = raw_line.strip()
+        if line.startswith("|") and line.count("|") >= 2:
+            table_rows.append(line)
+            continue
+        _flush_table()
         if lang == "fr" and line:
             line = _fr_typography(line)
         if not line:
@@ -957,6 +1000,7 @@ def _report_text_to_flowables(report_text, lang="de", compact=False):
             flowables.append(Paragraph(quote, _PDF_STYLES["pullquote"]))
         else:
             flowables.append(Paragraph(safe, _PDF_STYLES["body"]))
+    _flush_table()
     return _keep_headings_with_next(flowables)
 
 
