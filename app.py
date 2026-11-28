@@ -2704,6 +2704,21 @@ def admin_test_report():
     return_text = bool(data.pop("return_text", False))
     model_override = (data.pop("model", "") or "").strip() or None
     import report_pipeline
+    if bool(data.pop("background", False)):
+        # 긴 리포트(재생성 포함)는 프록시/워커 제한시간(502)에 걸릴 수 있어 백그라운드로 돌리고 즉시 202를 준다.
+        # 완료되면 메일로 발송되고, 실패는 서버 로그에 남는다.
+        def _bg():
+            report_pipeline.MODEL_OVERRIDE = model_override
+            try:
+                _fulfill_report_order(tier, dict(data), email)
+                app.logger.warning("[test-report background] 완료 tier=%s lang=%s", tier, data.get("lang"))
+            except Exception as e:  # noqa: BLE001
+                app.logger.error("[test-report background] 실패 tier=%s lang=%s: %s", tier, data.get("lang"), e)
+            finally:
+                report_pipeline.MODEL_OVERRIDE = None
+        import threading
+        threading.Thread(target=_bg, daemon=True).start()
+        return jsonify({"ok": True, "accepted": True, "note": "백그라운드 생성 시작, 완료되면 메일 발송"}), 202
     report_pipeline.MODEL_OVERRIDE = model_override
     try:
         resp, status = _fulfill_report_order(tier, data, email)
