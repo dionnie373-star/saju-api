@@ -28,7 +28,7 @@ TXT = {
     "es": {"head": "Mi perfil Saju", "day": "Elemento del día", "type": "Tipo {n}", "dist": "Mis cinco elementos",
            "hook": "¿Cuál es tu tipo de elementos?", "host": "palja.es", "note": "Para entretenimiento y reflexión"},
     "en": {"head": "My Saju profile", "day": "Day element", "type": "{n} type", "dist": "My five elements",
-           "hook": "What's your element type?", "host": "palja.one", "note": "For entertainment and self-reflection"},
+           "hook": "What's your element type?", "host": "palja.one", "note": "For entertainment and personal orientation"},
 }
 
 
@@ -202,7 +202,7 @@ CTXT = {
            "host": "palja.es", "note": "Para entretenimiento y reflexión"},
     "en": {"head": "Our Saju check", "you": "Me", "him": "You", "conn": "connections", "fric": "friction points",
            "scenes": "{n} concrete everyday moments in the report", "hook": "What does your pair look like?",
-           "host": "palja.one", "note": "For entertainment and self-reflection"},
+           "host": "palja.one", "note": "For entertainment and personal orientation"},
 }
 
 

@@ -39,7 +39,7 @@ _FR_PROMPT_OVERRIDE = """\
 - 본문의 독일어 예시 소제목은 다음 프랑스어로 대응하세요: "Dein Jahr auf einen Blick" → "Votre année en un coup d'œil"; "Monate, in denen vieles leichter fließen kann" → "Les mois où les choses peuvent couler plus facilement"; "Monate für mehr Achtsamkeit" → "Les mois pour davantage d'attention".
 - 상품명: Jahresreport → "rapport annuel", Lebenskarte → "carte de vie", Kompatibilitäts-Check → "test de compatibilité". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 프랑스어로, 구간 개수는 "8 périodes de vie de dix ans"라고 쓰세요.
 - 무료 리포트의 유료 리포트 구매 유도 블록은 다음 프랑스어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Votre rapport annuel Saju 2027 — 9,90 €", 그다음 "Ce qui vous attend :" 아래 불릿 5개(Votre axe personnel pour 2027 / 12 chapitres mensuels avec des impulsions Saju personnalisées / Des questions de réflexion sur l'amour, le travail et le développement personnel / Vos forces personnelles et d'éventuelles tensions intérieures / Une boussole annuelle avec des questions concrètes pour vos propres décisions), 마무리 문장 "Un rapport de réflexion personnel fondé sur la tradition Saju — ni diagnostic scientifique de la personnalité, ni prédiction certaine de l'avenir."
-- 마지막 면책 문구는 프랑스어로: "Ce contenu est proposé à des fins de divertissement et de réflexion personnelle ; il ne remplace pas un avis médical ou psychologique."
+- 마지막 면책 문구는 프랑스어로: "Ce contenu est proposé à des fins de divertissement et d'orientation personnelle ; il ne remplace pas un avis médical ou psychologique."
 - 분량 기준(단어 수)은 프랑스어 단어 기준으로 동일하게 적용합니다(프랑스어는 독일어보다 단어 수가 많아지는 경향이 있으니 기준 미달이 되지 않도록 하세요).
 - 출력은 순수 프랑스어 텍스트만. 한글/한자/독일어 단어(예: "Holz", "Feuer", "Du", "dein")가 섞이지 않게 하세요.
 
@@ -211,7 +211,7 @@ FR_STRINGS = {
     },
     "hello": "Bonjour{name_suffix},",
     "disclaimer": (
-        "Palja est proposé à des fins de divertissement et de réflexion personnelle ; "
+        "Palja est proposé à des fins de divertissement et d'orientation personnelle ; "
         "il ne remplace pas un avis médical ou psychologique."
     ),
     "withdrawal_confirmation": (
@@ -259,7 +259,7 @@ _ES_PROMPT_OVERRIDE = """\
 - 본문의 독일어 예시 소제목은 다음 스페인어로 대응하세요: "Dein Jahr auf einen Blick" → "Tu año de un vistazo"; "Monate, in denen vieles leichter fließen kann" → "Los meses en que todo puede fluir con más facilidad"; "Monate für mehr Achtsamkeit" → "Los meses para prestar más atención".
 - 상품명: Jahresreport → "informe anual", Lebenskarte → "mapa de vida", Kompatibilitäts-Check → "test de compatibilidad". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 스페인어로, 구간 개수는 "8 etapas de vida de diez años"라고 쓰세요.
 - 무료 리포트의 유료 리포트 구매 유도 블록은 다음 스페인어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Tu informe anual Saju 2027 — 9,90 €", 그다음 "Lo que te espera:" 아래 불릿 5개(Tu eje personal para 2027 / 12 capítulos mensuales con impulsos Saju personalizados / Preguntas de reflexión sobre amor, trabajo y crecimiento personal / Tus fortalezas personales y posibles tensiones internas / Una brújula anual con preguntas concretas para tus propias decisiones), 마무리 문장 "Un informe de reflexión personal basado en la tradición Saju — ni un diagnóstico de personalidad con base científica, ni una predicción segura del futuro." (금액은 소수점 쉼표 "9,90 €".)
-- 마지막 면책 문구는 스페인어로: "Este contenido se ofrece con fines de entretenimiento y reflexión personal; no sustituye el consejo médico ni psicológico."
+- 마지막 면책 문구는 스페인어로: "Este contenido se ofrece con fines de entretenimiento y orientación personal; no sustituye el consejo médico ni psicológico."
 - 분량 기준(단어 수)은 스페인어 단어 기준으로 동일하게 적용합니다(스페인어도 독일어보다 단어 수가 많아지는 경향이 있으니 기준 미달이 되지 않도록 하세요).
 - 출력은 순수 스페인어 텍스트만. 한글/한자/독일어/프랑스어/영어 단어(예: "Holz", "Feuer", "Du", "dein", "vous", "your")가 섞이지 않게 하세요.
 
@@ -393,7 +393,7 @@ ES_STRINGS = {
     },
     "hello": "Hola{name_suffix},",
     "disclaimer": (
-        "Palja se ofrece con fines de entretenimiento y reflexión personal; "
+        "Palja se ofrece con fines de entretenimiento y orientación personal; "
         "no sustituye el consejo médico ni psicológico."
     ),
     "withdrawal_confirmation": (
@@ -445,7 +445,7 @@ _EN_PROMPT_OVERRIDE = """\
 - 본문의 독일어 예시 소제목은 다음 영어로 대응하세요: "Dein Jahr auf einen Blick" → "Your year at a glance"; "Monate, in denen vieles leichter fließen kann" → "Months in which things may flow more easily"; "Monate für mehr Achtsamkeit" → "Months for more attention".
 - 상품명: Jahresreport → "annual report", Lebenskarte → "life map", Kompatibilitäts-Check → "compatibility check". 프리미엄 소개 문장("인생 전체의 더 긴 흐름이 궁금하다면")도 영어로, 구간 개수는 "8 life phases of ten years"라고 쓰세요. 금액은 "$10.00"/"$24.90" 형식입니다.
 - 무료 리포트의 유료 리포트 구매 유도 블록은 다음 영어 구조로 쓰세요(독일어 예시 블록 대신): 제목 "### Your Saju annual report 2027 — $10.00", 그다음 "What you will get:" 아래 불릿 5개(Your personal theme for 2027 / 12 monthly chapters with personal Saju impulses / Reflection questions about love, work and personal growth / Your personal strengths and possible inner tensions / A yearly compass with concrete questions for your own decisions), 마무리 "A personal reflection report based on the Saju tradition. It is not a scientific personality diagnosis, and it is not a certain prediction of the future."
-- 마지막 면책 문구는 영어로: "This content is offered for entertainment and personal reflection. It does not replace medical or psychological advice."
+- 마지막 면책 문구는 영어로: "This content is offered for entertainment and personal orientation. It does not replace medical or psychological advice."
 - 분량 기준(단어 수)은 영어 단어 기준으로 동일하게 적용합니다(영어는 스페인어/독일어보다 단어 수가 적게 나오는 경향이 있으니 기준 미달이 되지 않도록 구체적 예시를 충분히 넣으세요).
 - 출력은 순수 영어 텍스트만. 한글/한자/독일어/프랑스어/스페인어 단어(예: "Holz", "Feuer", "Du", "dein", "vous", "tú")가 섞이지 않게 하세요.
 
@@ -605,7 +605,7 @@ EN_STRINGS = {
     },
     "hello": "Hello{name_suffix},",
     "disclaimer": (
-        "Palja is offered for entertainment and personal reflection. "
+        "Palja is offered for entertainment and personal orientation. "
         "It does not replace medical or psychological advice."
     ),
     "withdrawal_confirmation": (

@@ -137,9 +137,9 @@ _MISS = {
 }
 _NOTE = {
     "de": NOTE[0],
-    "en": "A playful overview of the five elements based on the visible characters – not a full Saju analysis or traditional reading. For entertainment and self-reflection only.",
-    "fr": "Une simplification ludique des cinq éléments à partir des caractères visibles – ni analyse Saju complète ni lecture classique. Pour le divertissement et la réflexion personnelle.",
-    "es": "Una simplificación lúdica de los cinco elementos a partir de los caracteres visibles – ni un análisis Saju completo ni una lectura clásica. Solo para entretenimiento y reflexión personal.",
+    "en": "A playful overview of the five elements based on the visible characters – not a full Saju analysis or traditional reading. For entertainment and personal orientation only.",
+    "fr": "Une simplification ludique des cinq éléments à partir des caractères visibles – ni analyse Saju complète ni lecture classique. Pour le divertissement et l'orientation personnelle.",
+    "es": "Una simplificación lúdica de los cinco elementos a partir de los caracteres visibles – ni un análisis Saju completo ni una lectura clásica. Solo para entretenimiento y orientación personal.",
 }
 
 
