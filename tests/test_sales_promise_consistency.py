@@ -43,3 +43,13 @@ def test_free_report_upsell_matches_annual_product():
 def test_brand_headline_is_deutung_not_selbstreflexion():
     assert "Koreanische Saju-Deutung" in SITE
     assert "Kunst der Selbstreflexion" not in SITE
+
+
+def test_hero_does_not_promise_life_phases_and_product_naming_is_unified():
+    h1 = SITE.split("<h1", 1)[1].split("</h1>", 1)[0]
+    assert "Lebensphasen" not in h1
+    assert "Premium-Lebenskarte" not in SITE
+    assert "Lebensphasen-Analyse (Daewoon)" not in SITE
+    assert "Saju-Lebenskarte bestellen" in SITE
+    assert "Im Jahresreport (PDF) zusätzlich" in SITE
+    assert "Im PDF zusätzlich" not in SITE
