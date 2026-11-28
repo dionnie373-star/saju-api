@@ -1538,6 +1538,14 @@ def _rate_limited(bucket: str, key: str, *, max_count: int, window_seconds: floa
         return False
 
 
+def _rate_release(bucket: str, key: str) -> None:
+    """실패한 요청이 차지한 가장 최근 슬롯을 돌려준다(처리에 실패했는데 10분 동안 재시도가 막히지 않게)."""
+    with _RATE_LIMIT_LOCK:
+        h = _RATE_LIMIT_HISTORY.get((bucket, key))
+        if h:
+            h.pop()
+
+
 def _client_ip() -> str:
     # X-Forwarded-For 헤더를 직접 파싱하지 않는다 - 그러면 클라이언트가 그
     # 헤더값 자체를 조작해서(레이트리밋 우회 목적) 아무 IP나 자처할 수 있다.
@@ -1585,6 +1593,7 @@ def signup():
     try:
         calc_result = run_calculation(payload)
     except CalcError as e:
+        _rate_release("signup_email", email.lower())
         return jsonify({"ok": False, "error": str(e)}), e.status
 
     # 영어: 출생지를 못 찾아 독일 기본값으로 대체됐는데 출생 시각이 있으면 시주/일주가 틀어진다.
@@ -1599,6 +1608,7 @@ def signup():
     try:
         run_free_signup(payload=payload, calc_result=calc_result)
     except PipelineError as e:
+        _rate_release("signup_email", email.lower())
         return jsonify({"ok": False, "error": str(e)}), e.status
 
     if not payload.get("via_result"):  # 웹 결과 화면에서 온 PDF 신청은 /profile에서 이미 집계됨

@@ -83,6 +83,27 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class SignupFailureReleasesLimitTests(unittest.TestCase):
+    def setUp(self):
+        app_module._RATE_LIMIT_HISTORY.clear()
+        self.client = app_module.app.test_client()
+        self._o1, self._o2 = app_module.run_calculation, rp.run_free_signup
+        app_module.run_calculation = lambda payload: {"compact": "x"}
+
+    def tearDown(self):
+        app_module.run_calculation, rp.run_free_signup = self._o1, self._o2
+        app_module._RATE_LIMIT_HISTORY.clear()
+
+    def test_pipeline_failure_does_not_block_retry(self):
+        def boom(*, payload, calc_result):
+            raise rp.PipelineError("fail", status=502)
+        rp.run_free_signup = boom
+        body = {"email": "retry@example.com", "birth_date": "1990-01-01"}
+        self.assertEqual(self.client.post("/signup", json=body).status_code, 502)
+        rp.run_free_signup = lambda *, payload, calc_result: {"ok": True}
+        self.assertEqual(self.client.post("/signup", json=body).status_code, 200)
+
+
 class SignupNoCityTests(unittest.TestCase):
     """시간 모름 + 출생지 없음으로 PDF를 신청해도 계산이 막히지 않아야 한다(2026-11-28 실제 사고)."""
 
