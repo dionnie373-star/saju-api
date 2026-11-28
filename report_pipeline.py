@@ -1596,6 +1596,21 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
 """
 
 
+# 월별 기운 등급은 규칙 검증(2026-11-28 1,500명 진단에서 구조적 쏠림 확인)이 끝날 때까지
+# 고객용 리포트에 전달하지 않는다. 기본값 OFF. 내부 검증 때만 PALJA_MONTHLY_GRADES=1 로 켠다.
+MONTHLY_GRADES_ENABLED = os.environ.get("PALJA_MONTHLY_GRADES", "0") == "1"
+
+
+def _grade_rules_text():
+    if not MONTHLY_GRADES_ENABLED:
+        return ""
+    try:
+        with open(os.path.join(PROMPTS_DIR, "paid_grade_rules_kr.txt"), "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except OSError:
+        return ""
+
+
 def run_paid_signup(*, payload, calc_result):
     """유료(9,90€) 12개월 연간 리포트 파이프라인.
 
@@ -1620,7 +1635,8 @@ def run_paid_signup(*, payload, calc_result):
         try:
             monthly_facts = compute_monthly_facts(monthly_struct, calc_result.get("element_counts"))
             computed_facts_kr = render_monthly_facts_kr(monthly_facts)
-            computed_facts_kr += render_monthly_grades_kr(compute_monthly_grades(calc_result), monthly_struct.get('year') or 0)
+            if MONTHLY_GRADES_ENABLED:
+                computed_facts_kr += render_monthly_grades_kr(compute_monthly_grades(calc_result), monthly_struct.get('year') or 0)
         except Exception as e:  # noqa: BLE001 - 계산된 사실은 부가 QA 장치이지 필수 전제조건이 아님
             print(f"[report_pipeline] 경고: compute_monthly_facts 실패, computed_facts 없이 진행: {e}")
 
@@ -1630,6 +1646,7 @@ def run_paid_signup(*, payload, calc_result):
             "compact": calc_result["compact"],
             "monthly_compact": calc_result["monthly_compact"],
             "computed_facts": computed_facts_kr,
+            "grade_rules": _grade_rules_text(),
         },
         # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
         # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
@@ -1831,6 +1848,7 @@ def run_premium_signup(*, payload, calc_result):
             "compact": calc_result["compact"],
             "daewoon_compact": calc_result["daewoon_compact"],
             "computed_facts": computed_facts_kr,
+            "grade_rules": _grade_rules_text(),
         },
         # 검증 패스에도 코드로 계산된 사실을 같이 줘서, 검증 모델이 원본 데이터를
         # 보고 직접 다시 계산하다가 스스로 틀리는 일(실제로 한 번 발생함)을 줄인다.
