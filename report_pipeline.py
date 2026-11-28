@@ -38,6 +38,8 @@ from report_facts import (
     compute_monthly_facts,
     render_daewoon_facts_kr,
     render_monthly_facts_kr,
+    render_monthly_grades_kr,
+    compute_monthly_grades,
 )
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -1618,6 +1620,7 @@ def run_paid_signup(*, payload, calc_result):
         try:
             monthly_facts = compute_monthly_facts(monthly_struct, calc_result.get("element_counts"))
             computed_facts_kr = render_monthly_facts_kr(monthly_facts)
+            computed_facts_kr += render_monthly_grades_kr(compute_monthly_grades(calc_result), monthly_struct.get('year') or 0)
         except Exception as e:  # noqa: BLE001 - 계산된 사실은 부가 QA 장치이지 필수 전제조건이 아님
             print(f"[report_pipeline] 경고: compute_monthly_facts 실패, computed_facts 없이 진행: {e}")
 

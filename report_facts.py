@@ -235,3 +235,116 @@ def render_monthly_facts_kr(facts):
         lines.append("축 전환점 없음(전체 달이 같은 축)")
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# 월별 지지 관계 + 기운 등급 (2026-11-28 추가)
+# 원칙: 등급은 AI가 정하지 않고 아래 규칙으로 계산한다. 규칙은 단순하고 투명하게 둔다.
+#  - 오행 점수: 월간·월지 오행이 용신 +2, 희신(용신을 생하는 오행) +1, 기신(용신을 극하는 오행) -1.5, 그 외 0
+#  - 관계 점수: 합(육합·반합·방합) +0.5, 충 -1, 형(부분형·자묘형·삼형 완성) -1, 해·파·원진 -0.5, 자형 -0.5
+#  - 관계는 (월지 vs 원국 각 기둥 지지)와 (월지 vs 세운 지지)를 모두 본다.
+#  - 인성(정인/편인) 십성이 천간·지지 모두인 달은 점수와 무관하게 '쉬어가는 달'로 분류한다.
+# ---------------------------------------------------------------------------
+import re as _re
+
+_EL_GEN = {"목": "화", "화": "토", "토": "금", "금": "수", "수": "목"}   # 상생
+_EL_OVR = {"목": "토", "토": "수", "수": "화", "화": "금", "금": "목"}   # 상극
+_STEMS = "甲乙丙丁戊己庚辛壬癸"
+_BRANCHES = "子丑寅卯辰巳午未申酉戌亥"
+_BANGHAP = ({"寅", "卯", "辰"}, {"巳", "午", "未"}, {"申", "酉", "戌"}, {"亥", "子", "丑"})
+_SAMHYUNG = ({"寅", "巳", "申"}, {"丑", "戌", "未"})
+_JAHYUNG = {"辰", "午", "酉", "亥"}
+_POS_KR = {"year": "년지", "month": "월지", "day": "일지", "hour": "시지"}
+_REL_SCORE = {"yukhap": 0.5, "banhap": 0.5, "bangap": 0.5, "chung": -1.0, "hyung": -1.0,
+              "hyung_partial": -1.0, "samhyung": -1.0, "hae": -0.5, "pa": -0.5, "wonjin": -0.5, "jahyung": -0.5}
+_REL_KO = {"yukhap": "육합", "banhap": "반합", "bangap": "방합(삼회)", "chung": "충", "hyung": "자묘형",
+           "hyung_partial": "부분 형", "samhyung": "삼형 완성", "hae": "해", "pa": "파", "wonjin": "원진", "jahyung": "자형"}
+GRADE_DE = {"up": "Rückenwind", "mid": "Ausgewogen", "hard": "Herausfordernd", "rest": "Ruhiger"}
+GRADE_KO = {"up": "힘이 실리는 달", "mid": "보통의 달", "hard": "고민이 생기는 달", "rest": "쉬어가는 달"}
+
+
+def _yongsin_element(yongsin_text):
+    m = _re.search(r"용신=([목화토금수])", yongsin_text or "")
+    return m.group(1) if m else None
+
+
+def _year_pillar_hanja(year):
+    return _STEMS[(year - 4) % 10] + _BRANCHES[(year - 4) % 12]
+
+
+def compute_monthly_grades(calc_result):
+    """calc_result(run_calculation 결과, monthly 포함) -> 월별 관계·점수·등급 리스트. 실패 시 [] ."""
+    from pair_relations import branch_relations, pillar_chars
+    monthly = calc_result.get("monthly") or {}
+    months = monthly.get("months") or []
+    year = monthly.get("year")
+    yong = _yongsin_element(calc_result.get("yongsin"))
+    if not months or not year or not yong:
+        return []
+    hee = next((k for k, v in _EL_GEN.items() if v == yong), None)
+    gi = next((k for k, v in _EL_OVR.items() if v == yong), None)
+    natal = pillar_chars(calc_result.get("pillars"))
+    natal_branches = {pos: b for pos, (_, b) in natal.items()}
+    se_hanja = _year_pillar_hanja(year)
+    se_branch = se_hanja[1]
+
+    def el_score(el):
+        return 2.0 if el == yong else 1.0 if el == hee else -1.5 if el == gi else 0.0
+
+    out = []
+    for m in months:
+        hanja = m["pillar"]["hanja"]
+        mb = hanja[1]
+        rels = []  # (코드, 대상 설명)
+        targets = [(f"원국 {_POS_KR[p]} {b}", b) for p, b in natal_branches.items()] + [(f"세운 {se_branch}", se_branch)]
+        for label, tb in targets:
+            if tb == mb:
+                if mb in _JAHYUNG:
+                    rels.append(("jahyung", label))
+                continue
+            for code in branch_relations(mb, tb):
+                if code in _REL_SCORE:
+                    rels.append((code, label))
+        pool = set(natal_branches.values()) | {se_branch}
+        for g in _BANGHAP:
+            if mb in g and g <= (pool | {mb}) and len(g & pool) >= 2:
+                rels.append(("bangap", "·".join(sorted(g))))
+        for g in _SAMHYUNG:
+            if mb in g and g <= (pool | {mb}) and len(g & pool) >= 2:
+                rels.append(("samhyung", "·".join(sorted(g))))
+        # 같은 코드·같은 대상 중복 제거
+        seen, uniq = set(), []
+        for r in rels:
+            if r not in seen:
+                seen.add(r); uniq.append(r)
+        score = el_score(m["pillar"]["cheon_gan_element"]) + el_score(m["pillar"]["ji_ji_element"])
+        # 같은 대상과 여러 관계가 겹치면(예: 子未 해+원진) 가장 영향이 큰 것 하나만 점수에 반영한다.
+        by_target = {}
+        for c, t in uniq:
+            if t not in by_target or abs(_REL_SCORE[c]) > abs(_REL_SCORE[by_target[t]]):
+                by_target[t] = c
+        rel_score = sum(_REL_SCORE[c] for c in by_target.values())
+        score += max(-3.0, min(1.5, rel_score))
+        sh = m["shipsin"]
+        if sh["cheon_gan"] in ("정인", "편인") and sh["ji_ji"] in ("정인", "편인"):
+            grade = "rest"
+        elif score >= 2.0:
+            grade = "up"
+        elif score <= -1.5:
+            grade = "hard"
+        else:
+            grade = "mid"
+        volatile = sum(1 for c, _ in uniq if c in ("chung", "hyung", "hyung_partial", "samhyung")) >= 2
+        out.append({"month": m["month"], "pillar": hanja, "relations": uniq, "score": round(score, 1), "grade": grade, "volatile": volatile})
+    return out
+
+
+def render_monthly_grades_kr(grades, year):
+    if not grades:
+        return ""
+    lines = ["", f"[월별 지지 관계와 기운 등급 — 계산 결과, 다시 정하지 말고 그대로 사용 (세운 {_year_pillar_hanja(year)})]"]
+    for g in grades:
+        rel = "; ".join(f"{_REL_KO[c]}({t})" for c, t in g["relations"]) or "특별한 관계 없음"
+        lines.append(f"- {g['month']}월 {g['pillar']}: 등급={GRADE_KO[g['grade']]}({GRADE_DE[g['grade']]}), 점수 {g['score']}{', 변동 큰 달(충·형 2개 이상: 좋다/나쁘다보다 \'움직임이 큰 달\'로 서술)' if g.get('volatile') else ''}, 관계: {rel}")
+    lines.append("등급 해석 규칙: 힘이 실리는 달=순풍, 보통=균형, 고민이 생기는 달=조정할 일이 두드러짐(나쁜 달로 쓰지 말 것), 쉬어가는 달=정리·재점검. 충·형·해가 있는 달은 그 관계를 월별 서술에 구체적으로 반영하되 사건을 단정하지 말 것.")
+    return "\n".join(lines)
