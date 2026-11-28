@@ -15,10 +15,16 @@ class DashboardRenderTests(unittest.TestCase):
         app_module.app.config["TESTING"] = True
         orders_store.reset_for_tests()
         self.client = app_module.app.test_client()
-        pw = os.environ["ADMIN_DASH_PASSWORD"]
+        pw = "dash_test_pw"
+        self._old_pw = os.environ.get("ADMIN_DASH_PASSWORD")
+        os.environ["ADMIN_DASH_PASSWORD"] = pw  # 다른 테스트가 지웠을 수 있으므로 매번 직접 설정
         self.hdr = {"Authorization": "Basic " + base64.b64encode(f"u:{pw}".encode()).decode()}
 
     def tearDown(self):
+        if self._old_pw is None:
+            os.environ.pop("ADMIN_DASH_PASSWORD", None)
+        else:
+            os.environ["ADMIN_DASH_PASSWORD"] = self._old_pw
         orders_store.reset_for_tests()
 
     def test_dashboard_renders_with_tier_rows(self):
