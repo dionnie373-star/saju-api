@@ -356,27 +356,34 @@ def render_monthly_grades_kr(grades, year):
 _JEOL_MONTHS = ["소한", "입춘", "경칩", "청명", "입하", "망종", "소서", "입추", "백로", "한로", "입동", "대설"]
 
 
-def solar_month_boundaries(year):
-    """year의 1~12월(사주 월 丑·寅·…·子) 시작/끝 절입 시각(한국시간)을 돌려준다.
+_LANG_DISPLAY_TZ = {"de": "Europe/Berlin", "es": "Europe/Madrid", "fr": "Europe/Paris", "en": "Europe/London"}
+
+
+def solar_month_boundaries(year, lang="de"):
+    """year의 1~12월(사주 월 丑·寅·…·子) 시작/끝 절입 시각을 독자 언어권의 현지 시간대로 돌려준다.
     1월 = 소한(丑월), 2월 = 입춘(寅월) … 12월 = 대설(子월). 12월의 끝은 다음 해 소한.
-    반환: [{"month", "name", "start": datetime(KST naive), "end": datetime(KST naive)}]
+    절입은 하나의 천문 순간이며(월주 계산은 이 순간 기준, 시간대 무관), 여기서 바꾸는 것은 표시 날짜뿐이다.
+    반환: [{"month", "name", "start": datetime(현지 naive), "end": datetime(현지 naive)}], tz 이름
     """
-    from datetime import timedelta
+    from zoneinfo import ZoneInfo
     from korean_saju.calendar.solar_term_calculator import SolarTermCalculator as _C
+    tz = ZoneInfo(_LANG_DISPLAY_TZ.get(lang, "Europe/Berlin"))
     cur = {t.name: t.datetime for t in _C.terms_for_year(year)}
     nxt = {t.name: t.datetime for t in _C.terms_for_year(year + 1)}
-    kst = lambda dt: (dt + timedelta(hours=9)).replace(tzinfo=None)
+    loc = lambda dt: dt.astimezone(tz).replace(tzinfo=None)
     out = []
     for i, name in enumerate(_JEOL_MONTHS):
-        start = kst(cur[name])
-        end = kst(cur[_JEOL_MONTHS[i + 1]]) if i < 11 else kst(nxt["소한"])
+        start = loc(cur[name])
+        end = loc(cur[_JEOL_MONTHS[i + 1]]) if i < 11 else loc(nxt["소한"])
         out.append({"month": i + 1, "name": name, "start": start, "end": end})
     return out
 
 
-def render_solar_boundaries_kr(year):
-    lines = ["", f"[절기 기준 사주 월 경계 — 계산 결과, 이 날짜를 그대로 사용 (한국 시각 기준)]"]
-    for b in solar_month_boundaries(year):
-        lines.append(f"- {b['month']}월: {b['name']} {b['start']:%m월 %d일 %H:%M} ~ {b['end']:%m월 %d일 %H:%M}")
-    lines.append(f"참고: 1월(丑월)은 {year}년 입춘 이전이라 세운으로는 전년도에 속한다. {year}년 세운은 입춘({solar_month_boundaries(year)[1]['start']:%m월 %d일})부터 시작한다.")
+def render_solar_boundaries_kr(year, lang="de"):
+    tzname = _LANG_DISPLAY_TZ.get(lang, "Europe/Berlin")
+    b = solar_month_boundaries(year, lang)
+    lines = ["", f"[절기(Solartermine) 기준 사주 월 경계 — 계산 결과, 이 날짜를 그대로 사용 (독자 현지 시간대 {tzname} 기준)]"]
+    for x in b:
+        lines.append(f"- {x['month']}월: {x['name']} {x['start']:%m월 %d일 %H:%M} ~ {x['end']:%m월 %d일 %H:%M}")
+    lines.append(f"참고: 1월(丑월)은 {year}년 입춘 이전이라 세운으로는 전년도에 속한다. {year}년 세운은 입춘({b[1]['start']:%m월 %d일})부터 시작한다.")
     return "\n".join(lines)
