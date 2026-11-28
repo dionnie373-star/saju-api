@@ -1577,6 +1577,11 @@ def signup():
     # 추측해 틀린다(2026=병오=화인데 "토·금"으로 서술, 2026-10-16 실제 PDF 3건에서 확인).
     payload = dict(payload)
     payload["target_years"] = [2026, 2027]
+    # 출생지·경도 둘 다 없으면(시간 모름으로 PDF를 신청한 경우) 언어별 기본 도시로 대신한다.
+    # 사주 계산(시간 모름)에는 출생지가 영향이 없고, /profile·주문 경로와 같은 규칙이다.
+    # 이게 없어서 시간 모름 신청이 한국어 오류("longitude(경도) 또는 birth_city…")로 막혔다(2026-11-28).
+    if not str(payload.get("birth_city") or "").strip() and payload.get("longitude") is None:
+        payload["birth_city"] = {"de": "Berlin", "fr": "Paris", "es": "Madrid", "en": "London"}.get(_lang, "Berlin")
     try:
         calc_result = run_calculation(payload)
     except CalcError as e:

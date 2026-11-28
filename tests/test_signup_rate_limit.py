@@ -81,3 +81,34 @@ class SignupRateLimitTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SignupNoCityTests(unittest.TestCase):
+    """시간 모름 + 출생지 없음으로 PDF를 신청해도 계산이 막히지 않아야 한다(2026-11-28 실제 사고)."""
+
+    def setUp(self):
+        app_module._RATE_LIMIT_HISTORY.clear()
+        self.client = app_module.app.test_client()
+        self._orig = rp.run_free_signup
+        self.seen = {}
+
+        def fake(*, payload, calc_result):
+            self.seen["payload"] = payload
+            self.seen["calc"] = calc_result
+            return {"ok": True}
+
+        rp.run_free_signup = fake
+
+    def tearDown(self):
+        rp.run_free_signup = self._orig
+        app_module._RATE_LIMIT_HISTORY.clear()
+
+    def test_no_time_no_city_uses_default_city(self):
+        resp = self.client.post(
+            "/signup",
+            json={"email": "nocity@example.com", "birth_date": "1996-12-05", "lang": "de"},
+            headers={"X-Forwarded-For": "9.9.9.9"},
+        )
+        self.assertEqual(resp.status_code, 200, resp.get_json())
+        self.assertEqual(self.seen["payload"]["birth_city"], "Berlin")
+        self.assertIn("pillars", self.seen["calc"])
