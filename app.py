@@ -2548,7 +2548,7 @@ if _ds24_compat_id:
 # 프랑스어 사이트(palja.fr)용 Digistore24 상품 (2026-10-10 생성, 아직 승인 요청 전).
 # 독일어 상품을 복제해 언어/판매·감사 페이지만 바꾼 것 — 가격은 동일(EUR, 부가세 포함).
 #   746476 -> Palja FR Rapport annuel (9,90 EUR)
-#   746480 -> Palja FR Carte de vie premium (24,90 EUR)
+#   746480 -> Palja FR Carte de vie Saju (24,90 EUR)
 #   746481 -> Palja FR Test de compatibilite (9,90 EUR)
 for _fr_id, _fr_tier in (
     (os.environ.get("DIGISTORE24_PRODUCT_ID_PAID_FR", "746476"), "paid"),
@@ -2560,7 +2560,7 @@ for _fr_id, _fr_tier in (
 
 # 스페인어 사이트용 Digistore24 상품(2026-10-12 생성, 승인 요청 전 상태):
 #   746748 -> Palja ES Informe anual (9,90 EUR)
-#   746751 -> Palja ES Mapa de vida premium (24,90 EUR)
+#   746751 -> Palja ES Mapa de vida Saju (24,90 EUR)
 #   746753 -> Palja ES Test de compatibilidad (9,90 EUR)
 # 환경변수로 덮어쓸 수 있다(언어는 주문 payload의 lang=es가 결정하므로 티어만 매핑).
 #   DIGISTORE24_PRODUCT_ID_PAID_ES / _PREMIUM_ES / _COMPATIBILITY_ES
@@ -2575,7 +2575,7 @@ for _es_env, _es_default, _es_tier in (
 
 # 영어 사이트용 Digistore24 상품(2026-10-29 생성, USD, 승인 요청 전):
 #   756320 -> Palja EN Annual Report (USD 10.00)
-#   756325 -> Palja EN Life Map Premium (USD 24.90)
+#   756325 -> Palja EN Saju Life Map (USD 24.90)
 #   756333 -> Palja EN Compatibility Check (USD 10.00)
 for _en_env, _en_default, _en_tier in (
     ("DIGISTORE24_PRODUCT_ID_PAID_EN", "756320", "paid"),

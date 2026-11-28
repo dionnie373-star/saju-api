@@ -243,7 +243,7 @@
             <button type="button" id="resBuyPaid" style="margin-top:auto;padding:12px 16px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Get the annual report — $10.00</button>
           </div>
           <div style="flex:1 1 280px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><h4 style="margin:0;font-size:17px;font-weight:600;">Life Map Premium</h4><span class="display" style="font-size:19px;font-weight:600;white-space:nowrap;">$24.90</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;"><h4 style="margin:0;font-size:17px;font-weight:600;">Saju Life Map</h4><span class="display" style="font-size:19px;font-weight:600;white-space:nowrap;">$24.90</span></div>
             <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li><strong>Your ten-year life phases (Daewoon)</strong></li><li><strong>PDF file</strong> – your personal guide for reflection</li></ul>
             <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Get the life map — $24.90</button>
           </div>
@@ -368,7 +368,7 @@
 
         <div style="flex: 1 1 280px; max-width: 380px; background: #FFFFFF; border: 2px solid #C1442E; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Life Map Premium</h3>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Saju Life Map</h3>
             <span class="display" style="font-size: 20px; font-weight: 600;">$24.90</span>
           </div>
           <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
@@ -557,7 +557,7 @@
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Birth time (optional)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">I don't know</option><option value="23:30">11 pm–12 am (late night)</option><option value="00:30">12–1 am (after midnight)</option><option value="02:00">1–3 am</option><option value="04:00">3–5 am</option><option value="06:00">5–7 am</option><option value="08:00">7–9 am</option><option value="10:00">9–11 am</option><option value="12:00">11 am–1 pm</option><option value="14:00">1–3 pm</option><option value="16:00">3–5 pm</option><option value="18:00">5–7 pm</option><option value="20:00">7–9 pm</option><option value="22:00">9–11 pm</option></select></div>
       <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Place of birth <span style="font-weight:400;color:#8A8074;">(needed with your birth time)</span></label><input id="mBirthplace" type="text" autocomplete="off" placeholder="City, Country (e.g. Lagos, Nigeria)" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Email address <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" autocomplete="email" placeholder="you@example.com" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><span style="font-size: 12px; color: #675E55;">We send your report to this address.</span></div>
-      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Gender (needed for the Life Map Premium) <span style="color: #C1442E;">*</span></label>
+      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Gender (needed for the Saju Life Map) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Please choose</option><option value="female">Female</option><option value="male">Male</option></select>
         <span style="font-size: 12px; color: #675E55;">Used only to calculate the direction of your ten-year life phases.</span></div>
       <p id="mError" role="alert" style="margin: 0; font-size: 13px; color: #C1442E; line-height: 1.5; display: none;"></p>
@@ -590,10 +590,10 @@
   // with the email and only a random token ("custom"). No personal data is put into the URL except the email.
   var DIGISTORE24_PRODUCT_IDS = {
     paid: '756320',          // Palja EN Annual Report - USD 10.00
-    premium: '756325',       // Palja EN Life Map Premium - USD 24.90
+    premium: '756325',       // Palja EN Saju Life Map - USD 24.90
     compatibility: '756333', // Palja EN Compatibility Check - USD 10.00
   };
-  var PRODUCT_LABEL = { paid: 'Annual Report — $10.00', premium: 'Life Map Premium — $24.90' };
+  var PRODUCT_LABEL = { paid: 'Annual Report — $10.00', premium: 'Saju Life Map — $24.90' };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
   function $(id) { return document.getElementById(id); }
   function ev(n) { if (window.paljaEv) { paljaEv(n); } }
@@ -652,7 +652,7 @@
     if (!birthdate) { showCheckoutError('Please enter your date of birth.'); return; }
     if (birthtime && !birthplace) { showCheckoutError('Please add your place of birth for your birth time.'); return; }
     if (!email || email.indexOf('@') === -1) { showCheckoutError('Please enter a valid email address.'); return; }
-    if (tier === 'premium' && !gender) { showCheckoutError('For the Life Map Premium, please choose your gender.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('For the Saju Life Map, please choose your gender.'); return; }
     var productId = DIGISTORE24_PRODUCT_IDS[tier];
     if (!productId) { showCheckoutError('This report cannot be ordered yet. Please come back soon.'); return; }
 

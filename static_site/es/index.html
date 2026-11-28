@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Palja — El arte coreano de la reflexión personal (Saju)</title>
-<meta name="description" content="Tu perfil personal de los cinco elementos según la tradición coreana del Saju — gratis, en pocos segundos, directamente en el navegador. Con informe anual, mapa de vida premium y test de compatibilidad.">
+<meta name="description" content="Tu perfil personal de los cinco elementos según la tradición coreana del Saju — gratis, en pocos segundos, directamente en el navegador. Con informe anual, mapa de vida Saju y test de compatibilidad.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Palja">
 <meta property="og:locale" content="es_ES">
@@ -170,7 +170,7 @@
         <input id="email" type="hidden">
 
         <div style="display: none; flex-direction: column; gap: 6px;">
-          <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexo <span style="font-weight: 400; color: #8A8074;">(solo necesario para el mapa de vida premium)</span></label>
+          <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexo <span style="font-weight: 400; color: #8A8074;">(solo necesario para el mapa de vida Saju)</span></label>
           <select id="gender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
             <option value="">Elige una opción</option>
             <option value="female">Femenino</option>
@@ -278,7 +278,7 @@
             <button type="button" id="resBuyPaid" style="margin-top:auto;padding:12px 16px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Ver el informe anual — 9,90 €</button>
           </div>
           <div style="flex:1 1 300px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Mapa de vida premium</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Mapa de vida Saju</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
             <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li><strong>Análisis de las etapas de vida (Daewoon)</strong>: tus grandes ciclos de diez años</li><li><strong>En formato PDF</strong>: tu guía de reflexión personal</li></ul>
             <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Ver el mapa de vida — 24,90 €</button>
           </div>
@@ -394,7 +394,7 @@
 
         <div style="flex: 1 1 320px; max-width: 380px; background: #FFFFFF; border: 2px solid #C1442E; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Mapa de vida premium</h3>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Mapa de vida Saju</h3>
             <span class="display" style="font-size: 20px; font-weight: 600;">24,90 €</span>
           </div>
           <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
@@ -601,7 +601,7 @@
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Hora de nacimiento (opcional)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">No lo sé</option><option value="23:30">23:00–00:00 h (muy tarde por la noche)</option><option value="00:30">00:00–01:00 h (pasada la medianoche)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select></div>
       <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lugar de nacimiento <span style="font-weight:400;color:#8A8074;">(opcional; necesario con la hora)</span></label><input id="mBirthplace" type="text" placeholder="p. ej. Madrid" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Correo electrónico <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" placeholder="tu@ejemplo.es" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
-      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexo (necesario para el mapa de vida premium) <span style="color: #C1442E;">*</span></label>
+      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexo (necesario para el mapa de vida Saju) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Elige una opción</option><option value="female">Femenino</option><option value="male">Masculino</option></select></div>
       <p id="mError" style="margin: 0; font-size: 13px; color: #C1442E; line-height: 1.5; display: none;"></p>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -646,7 +646,7 @@
   var DIGISTORE24_PRODUCT_IDS = {
     // 스페인어 상품 ID(DS-ie). 746751(premium)은 승인 상태를 Digistore24 상품 목록에서 확인할 것(2026-10 시점 미승인 회신).
     paid: '746748',    // Palja ES Informe anual - EUR 9,90
-    premium: '746751', // Palja ES Mapa de vida premium - EUR 24,90
+    premium: '746751', // Palja ES Mapa de vida Saju - EUR 24,90
     compatibility: '746753', // Palja ES Test de compatibilidad - EUR 9,90
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
@@ -705,7 +705,7 @@
     if (!birthdate) { showCheckoutError('Indica tu fecha de nacimiento.'); return; }
     if (birthtime && !birthplace) { showCheckoutError('Para la hora de nacimiento, indica también el lugar de nacimiento.'); return; }
     if (!email || email.indexOf('@') === -1) { showCheckoutError('Indica un correo electrónico válido.'); return; }
-    if (tier === 'premium' && !gender) { showCheckoutError('Para el mapa de vida premium, elige tu sexo.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('Para el mapa de vida Saju, elige tu sexo.'); return; }
     var productId = DIGISTORE24_PRODUCT_IDS[tier];
     if (!productId) { showCheckoutError('Este informe todavía no está disponible para pedir. Vuelve pronto.'); return; }
 

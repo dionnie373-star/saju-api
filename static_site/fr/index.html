@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Palja — L'art coréen de la réflexion sur soi (Saju)</title>
-<meta name="description" content="Votre profil personnel des cinq éléments selon la tradition coréenne du Saju — gratuit, en quelques secondes, directement dans le navigateur. Avec rapport annuel, carte de vie premium et test de compatibilité.">
+<meta name="description" content="Votre profil personnel des cinq éléments selon la tradition coréenne du Saju — gratuit, en quelques secondes, directement dans le navigateur. Avec rapport annuel, carte de vie Saju et test de compatibilité.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Palja">
 <meta property="og:locale" content="fr_FR">
@@ -176,7 +176,7 @@
         <input id="email" type="hidden">
 
         <div style="display: none; flex-direction: column; gap: 6px;">
-          <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(nécessaire uniquement pour la carte de vie premium)</span></label>
+          <label for="gender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe <span style="font-weight: 400; color: #8A8074;">(nécessaire uniquement pour la carte de vie Saju)</span></label>
           <select id="gender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box;">
             <option value="">Veuillez choisir</option>
             <option value="female">Féminin</option>
@@ -285,7 +285,7 @@
             <button type="button" id="resBuyPaid" style="margin-top:auto;padding:12px 16px;background:#C1442E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Voir le rapport annuel — 9,90 €</button>
           </div>
           <div style="flex:1 1 300px;max-width:380px;background:#FFFFFF;border:2px solid #C1442E;border-radius:12px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:14px;">
-            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Carte de vie premium</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;"><h4 style="margin:0;font-size:17px;font-weight:600;">Carte de vie Saju</h4><span class="display" style="font-size:19px;font-weight:600;">24,90 €</span></div>
             <ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.9;color:#4A4239;"><li><strong>Analyse des périodes de vie (Daewoon)</strong> — vos grands cycles de dix ans</li><li><strong>Au format PDF</strong> — votre guide de réflexion personnel</li></ul>
             <button type="button" id="resBuyPremium" style="margin-top:auto;padding:12px 16px;background:#211D1A;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:'Work Sans',sans-serif;cursor:pointer;">Voir la carte de vie — 24,90 €</button>
           </div>
@@ -403,7 +403,7 @@
 
         <div style="flex: 1 1 320px; max-width: 380px; background: #FFFFFF; border: 2px solid #C1442E; border-radius: 12px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: baseline;">
-            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Carte de vie premium</h3>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600;">Carte de vie Saju</h3>
             <span class="display" style="font-size: 20px; font-weight: 600;">24,90 €</span>
           </div>
           <ul style="margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 2; color: #4A4239;">
@@ -607,7 +607,7 @@
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mBirthtime" style="font-size: 13px; font-weight: 500; color: #4A4239;">Heure de naissance (facultatif)</label><select id="mBirthtime" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Je ne sais pas</option><option value="23:30">23:00–00:00 h (tard dans la nuit)</option><option value="00:30">00:00–01:00 h (après minuit)</option><option value="02:00">01:00–03:00 h</option><option value="04:00">03:00–05:00 h</option><option value="06:00">05:00–07:00 h</option><option value="08:00">07:00–09:00 h</option><option value="10:00">09:00–11:00 h</option><option value="12:00">11:00–13:00 h</option><option value="14:00">13:00–15:00 h</option><option value="16:00">15:00–17:00 h</option><option value="18:00">17:00–19:00 h</option><option value="20:00">19:00–21:00 h</option><option value="22:00">21:00–23:00 h</option></select></div>
       <div id="mPlaceRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mBirthplace" style="font-size: 13px; font-weight: 500; color: #4A4239;">Lieu de naissance <span style="font-weight:400;color:#8A8074;">(facultatif ; requis avec l’heure)</span></label><input id="mBirthplace" type="text" placeholder="p. ex. Paris" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
       <div style="display: flex; flex-direction: column; gap: 6px;"><label for="mEmail" style="font-size: 13px; font-weight: 500; color: #4A4239;">Adresse e-mail <span style="color: #C1442E;">*</span></label><input id="mEmail" type="email" placeholder="vous@exemple.fr" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"></div>
-      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe (nécessaire pour la carte de vie premium) <span style="color: #C1442E;">*</span></label>
+      <div id="mGenderRow" style="display: none; flex-direction: column; gap: 6px;"><label for="mGender" style="font-size: 13px; font-weight: 500; color: #4A4239;">Sexe (nécessaire pour la carte de vie Saju) <span style="color: #C1442E;">*</span></label>
         <select id="mGender" style="padding: 12px 14px; border: 1px solid #D8CFC2; border-radius: 8px; font-size: 15px; font-family: 'Work Sans', sans-serif; background: #FAF7F1; box-sizing: border-box; width: 100%;"><option value="">Veuillez choisir</option><option value="female">Féminin</option><option value="male">Masculin</option></select></div>
       <p id="mError" style="margin: 0; font-size: 13px; color: #C1442E; line-height: 1.5; display: none;"></p>
       <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -652,7 +652,7 @@
   var DIGISTORE24_PRODUCT_IDS = {
     // Digistore24 프랑스어 상품 (초안 상태 — 승인 요청 전까지는 테스트 결제만 가능).
     paid: '746476',          // Palja FR Rapport annuel - EUR 9,90
-    premium: '746480',       // Palja FR Carte de vie premium - EUR 24,90
+    premium: '746480',       // Palja FR Carte de vie Saju - EUR 24,90
     compatibility: '746481', // Palja FR Test de compatibilite - EUR 9,90
   };
   var DIGISTORE24_ORDER_FORM_BASE = 'https://www.checkout-ds24.com/product/';
@@ -711,7 +711,7 @@
     if (!birthdate) { showCheckoutError('Veuillez indiquer votre date de naissance.'); return; }
     if (birthtime && !birthplace) { showCheckoutError('Pour l’heure de naissance, indiquez aussi le lieu de naissance.'); return; }
     if (!email || email.indexOf('@') === -1) { showCheckoutError('Veuillez indiquer une adresse e-mail valide.'); return; }
-    if (tier === 'premium' && !gender) { showCheckoutError('Pour la carte de vie premium, veuillez choisir votre sexe.'); return; }
+    if (tier === 'premium' && !gender) { showCheckoutError('Pour la carte de vie Saju, veuillez choisir votre sexe.'); return; }
     var productId = DIGISTORE24_PRODUCT_IDS[tier];
     if (!productId) { showCheckoutError('Ce rapport n\'est pas encore disponible à la commande. Revenez bientôt.'); return; }
 
