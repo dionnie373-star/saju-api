@@ -53,3 +53,19 @@ def test_compat_prompt_disclaimer_has_no_reflexion():
     c = json.dumps(d, ensure_ascii=False)
     assert "gemeinsamen Reflexion" not in c
     assert "als gemeinsame Gesprächsgrundlage" in c
+
+
+def test_lifetime_prompt_fixes_axis_names_and_forbids_period_recap():
+    d = json.loads((ROOT / "prompts" / "premium_report_prompt.json").read_text(encoding="utf-8"))
+    c = d["messages"][0]["content"]
+    c = c if isinstance(c, str) else json.dumps(c, ensure_ascii=False)
+    # PDF 그래프 라벨과 같은 축 이름을 본문에서도 쓰도록 고정
+    for ko, de in (("재물운", "Ressourcen"), ("관계운", "Beziehung"), ("직업운", "Talent & Werk"), ("총운", "Stabilität")):
+        assert f"{ko}={de}" in c
+    assert "Vermögensachse" in c and "만들거나" in c  # 금지 예시로만 등장
+    # 개요에서 8개 시기 재요약 금지
+    assert "다시 요약하는 문단" in c
+    assert "1시기당 1문장 이내" not in c
+    # 그래프 라벨은 코드와 일치
+    labels = report_pipeline._AXIS_LABELS_DE
+    assert labels == {"재물운": "Ressourcen", "관계운": "Beziehung", "직업운": "Talent & Werk", "총운": "Stabilität"}
