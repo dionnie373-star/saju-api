@@ -82,3 +82,10 @@ def test_free_profile_and_share_card_use_unified_disclaimer_de():
     c = d["messages"][0]["content"]
     c = c if isinstance(c, str) else json.dumps(c, ensure_ascii=False)
     assert "Dieser Inhalt dient der Unterhaltung und als persönliche Orientierung." in c
+
+
+def test_annual_cross_sell_uses_product_name():
+    """연간 리포트 끝 교차판매는 상품 이름을 Saju-Lebenskarte로만 쓰게 한다(실제 PDF에서 Premium-Report/Daeun이 나온 사고)."""
+    c = json.loads((ROOT / "prompts" / "paid_report_prompt.json").read_text(encoding="utf-8"))["messages"][0]["content"]
+    assert '정확히 "Saju-Lebenskarte"' in c
+    assert "프리미엄(대운 리포트)" not in c
