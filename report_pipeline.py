@@ -1014,8 +1014,13 @@ def _keep_headings_with_next(flowables):
         f = flowables[i]
         is_h2 = isinstance(f, Paragraph) and f.style.name == "PaljaH2"
         if is_h2 and i + 2 < n and flowables[i + 1] is _H2_RULE:
-            out.append(KeepTogether([f, flowables[i + 1], flowables[i + 2]]))
-            i += 3
+            # 제목 뒤에 빈 줄(Spacer)이 오는 경우가 많다. Spacer까지만 묶으면 본문은 다음 페이지로 가고
+            # 제목만 페이지 맨 아래에 남으므로(실제 연간 PDF 5·12쪽), 첫 실제 흐름요소까지 함께 묶는다.
+            j = i + 2
+            while j < n - 1 and isinstance(flowables[j], Spacer):
+                j += 1
+            out.append(KeepTogether(flowables[i:j + 1]))
+            i = j + 1
         else:
             out.append(f)
             i += 1

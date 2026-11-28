@@ -379,11 +379,23 @@ def solar_month_boundaries(year, lang="de"):
     return out
 
 
+# 독일어 절기 이름(고정). AI가 한국어 이름을 스스로 번역하면 입춘을 "Lichtbeginn"처럼 지어내는 일이 실제로 발생했다.
+_TERM_DE = {
+    "소한": "Kleine Kälte", "입춘": "Frühlingsbeginn", "경칩": "Erwachen der Insekten", "청명": "Klare Helle",
+    "입하": "Sommerbeginn", "망종": "Korn in Ähren", "소서": "Kleine Hitze", "입추": "Herbstbeginn",
+    "백로": "Weißer Tau", "한로": "Kalter Tau", "입동": "Winterbeginn", "대설": "Großer Schnee",
+}
+
+
 def render_solar_boundaries_kr(year, lang="de"):
     tzname = _LANG_DISPLAY_TZ.get(lang, "Europe/Berlin")
     b = solar_month_boundaries(year, lang)
     lines = ["", f"[절기(Solartermine) 기준 사주 월 경계 — 계산 결과, 이 날짜를 그대로 사용 (독자 현지 시간대 {tzname} 기준)]"]
+    if lang == "de":
+        lines.append("절기 이름은 괄호 안의 독일어 이름만 그대로 쓰고, 스스로 번역하거나 바꾸지 마세요.")
     for x in b:
-        lines.append(f"- {x['month']}월: {x['name']} {x['start']:%m월 %d일 %H:%M} ~ {x['end']:%m월 %d일 %H:%M}")
+        de = _TERM_DE.get(x["name"]) if lang == "de" else None
+        nm = f"{x['name']}({de})" if de else x["name"]
+        lines.append(f"- {x['month']}월: {nm} {x['start']:%m월 %d일 %H:%M} ~ {x['end']:%m월 %d일 %H:%M}")
     lines.append(f"참고: 1월(丑월)은 {year}년 입춘 이전이라 세운으로는 전년도에 속한다. {year}년 세운은 입춘({b[1]['start']:%m월 %d일})부터 시작한다.")
     return "\n".join(lines)

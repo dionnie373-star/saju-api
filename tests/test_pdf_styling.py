@@ -194,7 +194,11 @@ class HeadingKeepTogetherTests(unittest.TestCase):
         import report_pipeline as rp
         fl = rp._report_text_to_flowables("## Titre\n\nCorps du texte.\n\nAutre paragraphe.", lang="fr")
         self.assertIsInstance(fl[0], KeepTogether)
-        self.assertEqual(len(fl[0]._content), 3)
+        from reportlab.platypus import Spacer
+        # 제목 + 구분선 (+ 사이의 빈 줄 Spacer) + 첫 실제 본문 단락까지 한 묶음이어야 한다.
+        # (예전에는 빈 줄 Spacer만 묶여 본문이 다음 페이지로 가고 제목이 페이지 하단에 홀로 남았다.)
+        self.assertGreaterEqual(len(fl[0]._content), 3)
+        self.assertNotIsInstance(fl[0]._content[-1], Spacer)
         self.assertLess(len(fl), 6)
 
 
