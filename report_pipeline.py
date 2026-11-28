@@ -40,6 +40,7 @@ from report_facts import (
     render_monthly_facts_kr,
     render_monthly_grades_kr,
     compute_monthly_grades,
+    render_solar_boundaries_kr,
 )
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -1635,6 +1636,7 @@ def run_paid_signup(*, payload, calc_result):
         try:
             monthly_facts = compute_monthly_facts(monthly_struct, calc_result.get("element_counts"))
             computed_facts_kr = render_monthly_facts_kr(monthly_facts)
+            computed_facts_kr += render_solar_boundaries_kr(monthly_struct.get('year') or 0)
             if MONTHLY_GRADES_ENABLED:
                 computed_facts_kr += render_monthly_grades_kr(compute_monthly_grades(calc_result), monthly_struct.get('year') or 0)
         except Exception as e:  # noqa: BLE001 - 계산된 사실은 부가 QA 장치이지 필수 전제조건이 아님

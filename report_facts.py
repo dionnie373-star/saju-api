@@ -348,3 +348,35 @@ def render_monthly_grades_kr(grades, year):
         lines.append(f"- {g['month']}월 {g['pillar']}: 등급={GRADE_KO[g['grade']]}({GRADE_DE[g['grade']]}), 점수 {g['score']}{', 변동 큰 달(충·형 2개 이상: 좋다/나쁘다보다 \'움직임이 큰 달\'로 서술)' if g.get('volatile') else ''}, 관계: {rel}")
     lines.append("등급 해석 규칙: 힘이 실리는 달=순풍, 보통=균형, 고민이 생기는 달=조정할 일이 두드러짐(나쁜 달로 쓰지 말 것), 쉬어가는 달=정리·재점검. 충·형·해가 있는 달은 그 관계를 월별 서술에 구체적으로 반영하되 사건을 단정하지 말 것.")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# 절기 기준 월 경계 (사주 월은 양력 1일~말일이 아니라 절입 시각으로 바뀐다)
+# ---------------------------------------------------------------------------
+_JEOL_MONTHS = ["소한", "입춘", "경칩", "청명", "입하", "망종", "소서", "입추", "백로", "한로", "입동", "대설"]
+
+
+def solar_month_boundaries(year):
+    """year의 1~12월(사주 월 丑·寅·…·子) 시작/끝 절입 시각(한국시간)을 돌려준다.
+    1월 = 소한(丑월), 2월 = 입춘(寅월) … 12월 = 대설(子월). 12월의 끝은 다음 해 소한.
+    반환: [{"month", "name", "start": datetime(KST naive), "end": datetime(KST naive)}]
+    """
+    from datetime import timedelta
+    from korean_saju.calendar.solar_term_calculator import SolarTermCalculator as _C
+    cur = {t.name: t.datetime for t in _C.terms_for_year(year)}
+    nxt = {t.name: t.datetime for t in _C.terms_for_year(year + 1)}
+    kst = lambda dt: (dt + timedelta(hours=9)).replace(tzinfo=None)
+    out = []
+    for i, name in enumerate(_JEOL_MONTHS):
+        start = kst(cur[name])
+        end = kst(cur[_JEOL_MONTHS[i + 1]]) if i < 11 else kst(nxt["소한"])
+        out.append({"month": i + 1, "name": name, "start": start, "end": end})
+    return out
+
+
+def render_solar_boundaries_kr(year):
+    lines = ["", f"[절기 기준 사주 월 경계 — 계산 결과, 이 날짜를 그대로 사용 (한국 시각 기준)]"]
+    for b in solar_month_boundaries(year):
+        lines.append(f"- {b['month']}월: {b['name']} {b['start']:%m월 %d일 %H:%M} ~ {b['end']:%m월 %d일 %H:%M}")
+    lines.append(f"참고: 1월(丑월)은 {year}년 입춘 이전이라 세운으로는 전년도에 속한다. {year}년 세운은 입춘({solar_month_boundaries(year)[1]['start']:%m월 %d일})부터 시작한다.")
+    return "\n".join(lines)
