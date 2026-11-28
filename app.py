@@ -622,6 +622,24 @@ def _resolve_gender(gender_str):
     raise ValueError("gender 값은 'male' 또는 'female'(또는 '남'/'여')이어야 합니다.")
 
 
+def _daewoon_start_dates(birth_date, first_start_age, first_months_offset, count):
+    """대운 구간별 실제 시작 날짜(근사, 표시용).
+
+    엔진이 계산한 첫 대운 시작(나이 연 + 개월)을 출생일에 더하고 이후 구간은 120개월씩 더한다.
+    예전의 start_year = 출생연도 + 시작나이 는 개월·출생월을 무시해 약 절반이 1년 어긋났다.
+    대운 방향·간지·대운수는 건드리지 않는다.
+    """
+    import calendar
+    base = first_start_age * 12 + first_months_offset
+    out = []
+    for i in range(count):
+        total = birth_date.year * 12 + (birth_date.month - 1) + base + 120 * i
+        y, m0 = divmod(total, 12)
+        day = min(birth_date.day, calendar.monthrange(y, m0 + 1)[1])
+        out.append(date(y, m0 + 1, day))
+    return out
+
+
 def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8, birth_local_date=None):
     """프리미엄(대운) 리포트용: 10년 단위 대운 시퀀스 + 각 시기의 십성/축 계산.
 
@@ -645,6 +663,10 @@ def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8, 
         (today.month, today.day) < (birth_date.month, birth_date.day)
     )
 
+    first = daewoon.entries[0]
+    start_dates = _daewoon_start_dates(
+        birth_date, first.start_age, getattr(first, "start_months_offset", 0) or 0, len(daewoon.entries)
+    )
     entries = []
     for i, entry in enumerate(daewoon.entries):
         stem_shipsin = ShipsinCalculator.for_cheon_gan(day_stem, entry.gan_ji.cheon_gan)
@@ -660,7 +682,8 @@ def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8, 
             "index": i + 1,
             "start_age": entry.start_age,
             "end_age": end_age,
-            "start_year": birth_date.year + entry.start_age,
+            "start_year": start_dates[i].year,
+            "start_month": start_dates[i].month,
             "pillar": {
                 "hanja": entry.gan_ji.hanja,
                 "hangul": entry.gan_ji.hangul,
@@ -672,7 +695,7 @@ def _compute_daewoon_forecast(saju, day_stem, gender_str, solar_terms, count=8, 
                 "ji_ji": branch_shipsin.hangul,
             },
             "axis": primary_axis,
-            "is_current": entry.start_age <= current_age <= end_age,
+            "is_current": start_dates[i] <= today and (i + 1 >= len(start_dates) or today < start_dates[i + 1]),
         })
 
     return {
@@ -691,7 +714,7 @@ def _build_daewoon_compact(daewoon_out):
         p = e["pillar"]
         el_str = f"{p['cheon_gan_element']}{ELEMENT_HANJA[p['cheon_gan_element']]}/{p['ji_ji_element']}{ELEMENT_HANJA[p['ji_ji_element']]}"
         lines.append(
-            f"{e['start_age']}~{e['end_age']}세({e['start_year']}년~): "
+            f"{e['start_age']}~{e['end_age']}세(약 {e['start_year']}년경~): "
             f"{p['hanja']}({p['hangul']}) 오행={el_str} "
             f"십성(천간/지지)={e['shipsin']['cheon_gan']}/{e['shipsin']['ji_ji']} "
             f"| 이 시기의 축={e['axis']}{marker}"
