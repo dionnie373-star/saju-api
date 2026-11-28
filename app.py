@@ -1971,8 +1971,13 @@ def admin_dashboard():
         ("유료 안내가 보임", lambda s: ev_sum(site=s, ev=("res_up_view",))),
         ("연간 리포트 클릭", lambda s: ev_sum(site=s, ev=("res_up_paid",))),
         ("프리미엄 클릭", lambda s: ev_sum(site=s, ev=("res_up_premium",))),
-        ("구매 시도(주문서 열기)", lambda s: ev_sum(site=s, ev=("buy_open",))),
-        ("결제 완료(실주문, 테스트 제외)", lambda s: ev_sum(site=s, ev=("order_paid",))),
+        ("주문서 이동 직전(이메일 검증 후, 상품 구분 없음)", lambda s: ev_sum(site=s, ev=("buy_open",))),
+        ("결제 완료 전체(실주문, 테스트 제외)", lambda s: ev_sum(site=s, ev=("order_paid",))),
+        ("└ 연간 리포트", lambda s: ev_sum(site=s, ev=("order_paid_annual",))),
+        ("└ 일생(프리미엄)", lambda s: ev_sum(site=s, ev=("order_paid_lifetime",))),
+        ("└ 궁합", lambda s: ev_sum(site=s, ev=("order_paid_compat",))),
+        ("└ 상품 구분 도입 전 결제", lambda s: ev_sum(site=s, ev=("order_paid",)) - sum(
+            ev_sum(site=s, ev=(x,)) for x in ("order_paid_annual", "order_paid_lifetime", "order_paid_compat"))),
     ]
     step_rows = "".join(td(lbl, *[fn(s) for s in SITES], sum(fn(s) for s in SITES)) for lbl, fn in steps)
     # 5) 일별 구매 단계(사이트별, 활동 있는 날만)
@@ -2055,19 +2060,20 @@ th,td{{text-align:right;padding:6px 8px;border-bottom:1px solid #d9cfbd}} th:fir
 .k b{{font-size:24px;display:block}} small{{color:#7a6f60}} .w{{overflow-x:auto}}</style></head><body>
 <h1>Palja 통계 · 최근 {days}일 (UTC)</h1>
 <div class="k"><div><b>{tv}</b>페이지뷰</div><div><b>{ts}</b>무료 프로필</div><div><b>{to}</b>주문(전체, 기존 포함)</div><div><b>{_cv}</b>유형 카드 표시</div><div><b>{sh_rate}</b>카드 공유율</div></div>
-<h2>사이트별 합계</h2><div class="w"><table>{th("사이트","페이지뷰","무료 프로필","구매 클릭","결제 완료")}{tot_rows}</table></div>
-<h2>일별 접속자(페이지뷰) · 사이트별</h2><div class="w"><table>{th("날짜","DE","EN","FR","ES","합계","무료","구매 클릭","결제 완료(신규)","주문(기존 합계)")}{day_rows or '<tr><td colspan=10>–</td></tr>'}</table></div>
+<h2>사이트별 합계</h2><div class="w"><table>{th("사이트","페이지뷰","무료 프로필","구매 관련 이벤트 횟수(중복 포함)","결제 완료")}{tot_rows}</table></div>
+<h2>일별 접속자(페이지뷰) · 사이트별</h2><div class="w"><table>{th("날짜","DE","EN","FR","ES","합계","무료","구매 관련 이벤트 횟수(중복 포함)","결제 완료(신규)","주문(기존 합계)")}{day_rows or '<tr><td colspan=10>–</td></tr>'}</table></div>
 <h2>접속 루트(src) × 사이트 (페이지뷰)</h2><div class="w"><table>{th("src","DE","EN","FR","ES","합계")}{src_rows or '<tr><td colspan=6>–</td></tr>'}</table></div>
 <h2>구매 단계별 진행 현황 · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{step_rows}</table></div>
 <h2>궁합 흐름 · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{cp_rows}</table></div>
 <h2>공유 카드(원소 유형) · 사이트별(누적)</h2><div class="w"><table>{th("단계","DE","EN","FR","ES","합계")}{sh_rows}</table></div>
 <h2>일별 공유 카드</h2><div class="w"><table>{th("날짜","카드 표시","공유 행동","공유 링크 열람","메인 방문(src=share)")}{sh_day_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
-<h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 클릭","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
+<h2>일별 구매 단계 · 사이트별</h2><div class="w"><table>{th("날짜","사이트","페이지뷰","폼 보임","무료","유료 안내 보임","구매 관련 이벤트 횟수(중복 포함)","결제 완료")}{dfun_rows or '<tr><td colspan=8>–</td></tr>'}</table></div>
 <h2>구매 클릭 × 접속 루트(src) · 날짜별 <small>(src는 이미 저장돼 있어 과거 건도 표시됨. 시각은 저장하지 않음)</small></h2><div class="w"><table>{th("날짜","사이트","src","이벤트","횟수")}{buy_src_rows or '<tr><td colspan=5>–</td></tr>'}</table></div>
 <h2>히어로 v2 전/후 · 모바일/데스크톱 <small>(배포 2026-11-21 KST 오전. 시작률 = 입력 시작 ÷ 폼 보임. hero_v2 = 새 버전 로드 수)</small></h2><div class="w"><table>{th("날짜","구분","hero_v2","폼 보임","입력 시작","시작률","제출","모바일 폼","모바일 시작","모바일 시작률","데스크톱 폼","데스크톱 시작","데스크톱 시작률","연도 입력 시작","연도 결과")}{h2_rows or '<tr><td colspan=15>–</td></tr>'}</table></div>
 <p><small>페이지뷰 = JS 비콘 집계(봇 제외). 쿠키·IP 미저장이라 순방문자 수는 없음.
 사이트 구분은 이번 배포 이후부터 정확함: 호스트(palja.fr/palja.es/palja.one)와 /en 경로로 분류하며, 배포 이전 기록은 전부 DE로 표시됨(FR/ES 도메인 방문이 섞여 있을 수 있음).
-EN은 palja.de/en과 palja.one을 합산. 무료 프로필은 신청 언어 기준. 결제 완료(신규)는 이번 배포 이후 실결제만(테스트 제외), 「주문(기존 합계)」은 사이트 구분 없는 기존 처리 건수(테스트 포함 가능).
+EN은 palja.de/en과 palja.one을 합산. 무료 프로필은 신청 언어 기준.
+「구매 관련 이벤트 횟수」는 결과 화면 클릭(res_up_*)·주문서 이동 직전(buy_open, 이메일 검증 완료 후)·상단 구매 버튼을 단순 합한 이벤트 횟수이며, 한 사람이 여러 번 셀 수 있어 구매 시도 인원이 아님. 단계별 표의 개별 행을 기준으로 볼 것. 결제 완료(신규)는 이번 배포 이후 실결제만(테스트 제외), 「주문(기존 합계)」은 사이트 구분 없는 기존 처리 건수(테스트 포함 가능).
 전환율은 방문일과 가입일이 달라 대략값. 카드 공유율 = (저장+링크 복사+이메일+공유 버튼) ÷ 유형 카드 표시, 한 사람이 여러 번 누르면 중복 집계됨. 공유 링크 열람은 받은 사람이 /t/ 페이지를 연 횟수(봇 제외, 본인 방문 제외 설정 가능).</small></p></body></html>"""
     return Response(page, 200, {"Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow"})
 
@@ -2906,8 +2912,11 @@ def _digistore24_webhook_impl():
         try:  # 사이트별 결제 완료 집계(개인정보 없음)
             _l = str(custom_data.get("lang") or "de").lower()
             orders_store.record_event("none", "order_paid", _l if _l in ("en", "fr", "es") else "de")
-            if tier == "compatibility":
-                orders_store.record_event("none", "order_paid_compat", _l if _l in ("en", "fr", "es") else "de")
+            # 기존 order_paid(전체)는 유지하고, 상품별 보조 카운터만 추가한다(대시보드에서 tier별로 나눠 보기 위함).
+            _tier_ev = {"compatibility": "order_paid_compat", "paid": "order_paid_annual",
+                        "premium": "order_paid_lifetime"}.get(tier)
+            if _tier_ev:
+                orders_store.record_event("none", _tier_ev, _l if _l in ("en", "fr", "es") else "de")
         except Exception as e:  # noqa: BLE001
             print(f"order_paid event failed: {e}", flush=True)
     return jsonify(response_dict), status

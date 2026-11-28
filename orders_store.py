@@ -599,3 +599,4 @@ def reset_for_tests():
         _MEM_SIGNUP_META.clear()
     with _MEM_HITS_LOCK:
         _MEM_HITS.clear()
+        _MEM_EVENTS.clear()
