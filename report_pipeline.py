@@ -1500,7 +1500,7 @@ _FREE_EMAIL_HTML_TEMPLATE = """\
   </p>
 {geocoding_notice}""" + _COMPATIBILITY_PROMO_HTML + """\
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
-    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    Palja dient der Unterhaltung und als persönliche Orientierung und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
 """ + _EMAIL_FOOTER_HTML + """\
@@ -1633,7 +1633,7 @@ _PAID_EMAIL_HTML_TEMPLATE = """\
     einfach, wenn der Report nicht zu dir passt.
   </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
-    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    Palja dient der Unterhaltung und als persönliche Orientierung und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
 """ + _EMAIL_FOOTER_HTML + """\
@@ -1744,7 +1744,7 @@ _PREMIUM_EMAIL_HTML_TEMPLATE = """\
     einfach, wenn der Report nicht zu dir passt.
   </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
-    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    Palja dient der Unterhaltung und als persönliche Orientierung und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
 """ + _EMAIL_FOOTER_HTML + """\
@@ -1767,7 +1767,7 @@ _COMPATIBILITY_EMAIL_HTML_TEMPLATE = """\
     einfach, wenn der Report nicht zu dir passt.
   </p>
   <p style="font-size: 13px; line-height: 1.6; color: #8A8074;">
-    Palja dient der Unterhaltung und persönlichen Selbstreflexion und ersetzt keine
+    Palja dient der Unterhaltung und als persönliche Orientierung und ersetzt keine
     medizinische oder psychologische Beratung.
   </p>
 """ + _EMAIL_FOOTER_HTML + """\

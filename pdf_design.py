@@ -66,7 +66,7 @@ STRINGS = {
                       "den Bausteinen jeder Säule. Darunter steht das zugehörige Element.",
         "hour_note": "Ohne Geburtszeit wird keine Stundensäule berechnet. "
                      "Die Elementverteilung beruht dann auf den drei übrigen Säulen.",
-        "footer_line": "palja.de  ·  Koreanische Saju-Lehre zur Selbstreflexion",
+        "footer_line": "palja.de  ·  Koreanische Saju-Deutung",
     },
     "fr": {
         "overview": "Votre profil en un coup d'œil",
