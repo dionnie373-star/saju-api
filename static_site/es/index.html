@@ -66,8 +66,6 @@
 </style>
 </head>
 <body>
-<div id="promoBar" style="background:#211D1A;color:#FAF7F1;text-align:center;padding:10px 14px;font:600 14px/1.4 'Work Sans',sans-serif;">50&nbsp;% de descuento en el Informe anual · Código <b style="letter-spacing:.06em">PJ6S4N9WDK</b> · solo hasta el 27/11 (10 usos) · introdúcelo al pagar</div>
-<script>(function(){var b=document.getElementById('promoBar');if(b&&Date.now()>Date.UTC(2026,10,27,22,59,59)){b.parentNode.removeChild(b);}})();</script>
 
 <div style="width: 100%; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch;">
 
@@ -741,7 +739,6 @@
   (function () { var t = document.getElementById('mBirthtime'); if (t) { t.addEventListener('change', syncMPlace); t.addEventListener('input', syncMPlace); } })();
   function openBuyModal(tier) {
     buyModalTier = tier;
-    try { var _ph = document.getElementById('promoHint'); if (!_ph) { _ph = document.createElement('p'); _ph.id = 'promoHint'; _ph.style.cssText = 'margin:0;padding:10px 12px;background:#FFF4E5;border-radius:8px;font-size:13px;line-height:1.5;color:#4A4239;'; var _t = document.getElementById('buyModalTitle'); _t.parentNode.insertBefore(_ph, _t.nextSibling); } var _on = (tier === 'paid' && Date.now() < Date.UTC(2026, 10, 27, 22, 59, 59)); _ph.style.display = _on ? 'block' : 'none'; _ph.innerHTML = '🎁 <b>50 % de descuento</b> con el código <b>PJ6S4N9WDK</b> – lo copiamos por ti. Pégalo en el pago, en el campo «Cupón».'; } catch (e) {}
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var s = document.getElementById(p[1]); if (s) document.getElementById(p[0]).value = s.value; });
     document.getElementById('mGenderRow').style.display = tier === 'premium' ? 'flex' : 'none';
@@ -755,7 +752,6 @@
   buyModalEl.addEventListener('click', function (ev) { if (ev.target === buyModalEl) closeBuyModal(); });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeBuyModal(); });
   document.getElementById('mGo').addEventListener('click', function (ev) {
-    try { if (buyModalTier === 'paid' && Date.now() < Date.UTC(2026, 10, 27, 22, 59, 59)) { navigator.clipboard.writeText('PJ6S4N9WDK'); } } catch (e) {}
     var map = [['mBirthdate','birthdate'],['mBirthtime','birthtime'],['mBirthplace','birthplace'],['mEmail','email'],['mGender','gender']];
     map.forEach(function (p) { var d = document.getElementById(p[1]); if (d) d.value = document.getElementById(p[0]).value; });
     try { document.getElementById('birthtime').dispatchEvent(new Event('change')); } catch (e) {}
