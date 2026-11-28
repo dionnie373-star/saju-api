@@ -120,7 +120,7 @@ STRINGS = {
                       "(bottom), the building blocks of each pillar. The matching element is shown below them.",
         "hour_note": "Without a birth time, no hour pillar is calculated. "
                      "The element distribution is then based on the other three pillars.",
-        "footer_line": (os.environ.get("EN_DOMAIN", "").strip() or "palja.de/en") + "  ·  Korean Saju for personal reflection",
+        "footer_line": (os.environ.get("EN_DOMAIN", "").strip() or "palja.one") + "  ·  Korean Saju for personal reflection",
     },
 }
 
